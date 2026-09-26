@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="冷库不制冷、降温慢、高低压报警的常见原因与现场排查顺序。" />
+    <link rel="canonical" href="https://bradyci.com/articles/cold-room-troubleshooting.html" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../article.css" />
+    <title>冷库不制冷、降温慢、高低压报警怎么办？｜阿杰聊制冷</title>
+  </head>
+  <body class="article-page">
+    <header class="site-header"><a class="brand" href="../index.html" aria-label="返回首页"><span class="brand-mark">BC</span><span><strong>慢光之间</strong><small>BRADY CI</small></span></a><a class="back-home" href="../index.html#notes">← 返回文章</a></header>
+    <main>
+      <header class="article-hero section-shell"><p class="article-kicker">阿杰聊制冷 · 故障排查手册</p><h1>冷库不制冷、降温慢、高低压报警怎么办？</h1><p class="article-deck">别急着加制冷剂。先确认故障现象，再从使用条件、通风换热和控制系统逐步查到制冷系统。</p><div class="article-byline"><span>阿杰</span><span>2026-09-20</span><span>约 12 分钟阅读</span></div></header>
+      <figure class="article-cover"><img src="../assets/articles/cold-room-troubleshooting-cover.webp" alt="冷库机组检修示意图" /></figure>
+      <div class="article-layout section-shell">
+        <aside class="article-toc"><strong>本文目录</strong><a href="#before">检查前先问清</a><a href="#start">压缩机不启动</a><a href="#cooling">降温慢</a><a href="#high">高压报警</a><a href="#low">低压报警</a><a href="#frost">结霜严重</a><a href="#cycling">频繁启停</a><a href="#temperature">温度波动</a><a href="#self-check">用户自查</a><a href="#sequence">排查顺序</a></aside>
+        <article class="article-body">
+          <p>冷库温度降不下来，不少人的第一反应就是“是不是缺制冷剂了”。但从现场维修经验看，库门没关严、蒸发器结霜、冷凝器太脏、风机停转、控制参数不合适，都可能出现类似表现。</p>
+          <div class="article-callout"><strong>核心原则</strong>不能只盯着压力表，也不能看到管路结霜就急着加制冷剂。先确认现象，再按顺序排查。</div>
+          <h2 id="before">一、动手检查前，先把情况问清楚</h2>
+          <p>同样是“温度降不下来”，刚进了一批高温货物和空库运行时的判断完全不同。到现场后，建议先确认：</p>
+          <ul><li>冷库原来运行是否正常，故障是突然出现还是逐渐加重？</li><li>近期是否大量进货、频繁开门或调整过温控参数？</li><li>机组是否维修过，是否补充或更换过制冷剂？</li><li>控制器有没有高压、低压、过载或缺相报警？</li><li>压缩机、冷凝风机和蒸发器风机是否都在运行？</li><li>故障发生时的环境温度、库内温度和货物温度分别是多少？</li></ul>
+          <figure><img src="../assets/articles/cold-room-troubleshooting-flow.webp" alt="冷库故障排查顺序示意图" loading="lazy" /><figcaption>先确认运行变化和报警，再逐步检查换热与制冷系统。</figcaption></figure>
+          <h2 id="start">二、压缩机不启动，先查控制链路</h2>
+          <p>压缩机不启动，并不等于压缩机已经损坏。先看控制器是否有制冷输出、接触器是否吸合，以及机组是否处于高低压、过载、缺相或排气温度保护状态。</p>
+          <ul><li>主电源、控制电源或保险熔断；</li><li>温控器没有输出制冷信号；</li><li>温度探头损坏或显示失真；</li><li>高低压保护、热保护或相序保护动作；</li><li>接触器线圈、控制线路或接线端子异常；</li><li>压缩机内部保护尚未复位；</li><li>压缩机电机或机械部分故障。</li></ul>
+          <div class="article-callout article-warning"><strong>不要只做复位</strong>保护是结果，背后的高压、低压、过热或电气异常才是真正需要查找的原因。带电测量、绝缘检测和绕组判断应由专业人员操作。</div>
+          <h2 id="cooling">三、机组一直运行，库温却降不下来</h2>
+          <p>这是最常见的一类问题，建议按“热负荷—风量—散热—供液—压缩机能力”的顺序进行。</p>
+          <h3>1. 先排除使用条件问题</h3><p>检查库门、门封和开门频率。刚入库的货物温度高、数量大，也会延长降温时间。货物不能堵住蒸发器回风口和出风通道，还要观察保温板接缝、库门周边和穿墙管道是否漏冷。</p>
+          <h3>2. 检查蒸发器换热</h3><p>积灰、油污、厚霜、风机停转或风道受阻都会降低换热能力。如果只有蒸发器入口附近结霜、后面大面积干燥，通常说明供液不足，但原因也可能是过滤器、膨胀阀或电磁阀节流堵塞，不能直接认定缺制冷剂。</p>
+          <h3>3. 检查冷凝器散热</h3><p>风冷系统检查翅片、冷凝风机和热风回流；水冷系统检查水温、水量、水泵、过滤器和冷凝器结垢。</p>
+          <h3>4. 再检查制冷系统</h3><p>外部条件正常后，再结合制冷剂类型、库温、环境温度和负荷，测量压力、温度、过热度、过冷度及电流。压力不能脱离工况谈“统一正常值”。</p>
+          <h2 id="high">四、冷库高压报警怎么查</h2>
+          <p>高压报警通常意味着冷凝侧热量排不出去，或者高压侧存在异常。依次检查冷凝器脏堵、风机、水量与水温、通风热回流、高压阀门、充注量、不凝性气体及压力传感器。</p>
+          <div class="article-callout article-warning"><strong>不能因为高压就直接放制冷剂</strong>如果真正原因是冷凝器脏堵或风机故障，放制冷剂只会制造新的问题。</div>
+          <h2 id="low">五、冷库低压报警怎么查</h2>
+          <p>先确认冷库是否已经达到设定温度。若库温仍偏高，可重点检查：</p>
+          <ul><li>蒸发器严重结霜、风机不转或货物遮挡回风；</li><li>电磁阀未完全开启；</li><li>干燥过滤器、膨胀阀或供液管路堵塞；</li><li>膨胀阀选型、调节或感温包安装异常；</li><li>制冷剂泄漏导致供液不足；</li><li>冬季冷凝压力过低，供液压差不足；</li><li>低压传感器、压力开关或参数异常。</li></ul>
+          <p>发现制冷剂不足时，应先找漏点，修复后保压、抽真空，再按设备要求定量充注。只补不修，故障还会出现。</p>
+          <h2 id="frost">六、压缩机或回气管结霜严重</h2>
+          <p>回气管轻微结露或结霜不一定是故障。如果霜层延伸到压缩机壳体，并伴随声音异常、油位波动或排气温度偏低，要警惕回液。常见原因包括膨胀阀供液过大、感温包异常、蒸发器风机停转、化霜后启动时序不合理，以及负荷或参数变化。</p>
+          <h2 id="cycling">七、频繁启停或长时间不停机</h2>
+          <p>频繁启停要检查温控回差、探头位置、电源和接触器、高低压保护、冷凝风机、供液稳定性以及机组选型。长时间不停机，则要区分是真降不下来还是探头显示错误，并重新核对当前负荷是否已经超过原设计工况。</p>
+          <h2 id="temperature">八、库温波动大，不能只调控制器</h2>
+          <p>检查探头是否靠近库门、出风口或货物表面，货物是否影响空气循环，开门是否频繁，以及化霜温升是否合理。控制器显示温度、库内空气温度和货物中心温度变化速度不同，不能用一个瞬时读数代替货物实际温度。</p>
+          <h2 id="self-check">九、哪些项目可以先自查</h2>
+          <ul><li>温控器设定和报警信息；</li><li>库门是否关严，货物是否堵住风道；</li><li>风机是否运行，蒸发器是否严重结霜；</li><li>冷凝器是否脏堵，设备周围是否通风不良；</li><li>管路接头周围是否出现异常油迹。</li></ul>
+          <div class="article-callout article-warning"><strong>这些情况应及时停机</strong>异味、烧焦痕迹、剧烈振动、异常撞击声、保护频繁动作或压缩机壳体温度异常。电气柜、压力测试、检漏、焊接、抽真空、膨胀阀调整和制冷剂充注不适合非专业人员操作。</div>
+          <h2 id="sequence">十、现场排查最重要的是顺序</h2>
+          <p>先问运行变化，再看控制报警；先查库门和风量，再查蒸发器与冷凝器；外部条件正常后，再测压力、温度、电流和过热度等参数。</p><p>单独一个压力、一个温度或一处结霜，通常不足以确定故障。把故障现象、运行工况和测量数据放在一起分析，往往比凭经验猜故障更快，也更安全。</p>
+          <p class="article-source">本文由阿杰原创，原载于今日头条「阿杰聊制冷」。<a href="https://www.toutiao.com/article/7687517598484808242/" target="_blank" rel="noopener">查看原文</a></p>
+          <nav class="article-nav"><a href="../index.html#notes">← 返回文章列表</a><a href="chiller-selection.html">下一篇：风冷还是水冷？ →</a></nav>
+        </article>
+      </div>
+    </main>
+    <footer class="site-footer section-shell"><span>© <span id="year"></span> 阿杰 · Brady Ci</span><span>慢光之间 · 生活有温度，创造有痕迹。</span></footer><script src="../script.js"></script>
+  </body>
+</html>
