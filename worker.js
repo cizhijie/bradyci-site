@@ -27,15 +27,24 @@ export default {
           },
           body: JSON.stringify({
             model: "openrouter/free",
+            stream: true,
             messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages]
           })
         });
 
-        const data = await response.json();
         if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
           return json({ error: data?.error?.message || "Model request failed" }, response.status);
         }
-        return json({ reply: data?.choices?.[0]?.message?.content || "模型没有返回内容。" });
+
+        return new Response(response.body, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+          }
+        });
       } catch (error) {
         return json({ error: error?.message || "Request failed" }, 500);
       }
