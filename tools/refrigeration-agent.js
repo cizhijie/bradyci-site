@@ -80,6 +80,23 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     }
   }
 
+  const coldLoadIntent = /(?:冷库|围护|传热).*(?:负荷|冷量|计算|核算)|(?:负荷|冷量).*(?:冷库|围护)/i.test(text);
+  if (coldLoadIntent) {
+    const commonThickness = text.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)\s*(?:厚)?\s*(?:聚氨酯|PIR|XPS|EPS|保温)/i) || text.match(/(?:聚氨酯|PIR|XPS|EPS|保温)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
+    const commonMaterial = findInsulationMaterial(text);
+    if (commonThickness && commonMaterial && Number.isFinite(commonMaterial.lambda)) {
+      const theoreticalU = commonMaterial.lambda / (Number(commonThickness[1]) / 1000);
+      const hasExplicitU = /(?:墙体|墙板|墙|顶板|顶棚|屋顶|顶|地面|地板|地坪)?\s*(?:U\s*值|传热系数)\s*[:：=]?\s*-?\d/i.test(text);
+      if (!hasExplicitU) {
+        const enriched = text + ` 统一U值${theoreticalU}`;
+        return detectDeterministicRefrigerationRequest([{ role:"user", content:enriched }]);
+      }
+    }
+    if (commonThickness && commonMaterial && Number.isFinite(commonMaterial.lambdaMin) && Number.isFinite(commonMaterial.lambdaMax)) {
+      return { __brady_clarify__: `你给的是${commonMaterial.label}和厚度，但现有可靠资料的导热系数是 ${commonMaterial.lambdaMin}–${commonMaterial.lambdaMax} W/(m·K)，因此只能得到 U 值范围，不能替你选一个单一 U 值直接做正式负荷。请提供厂家整板 U 值/型号；或者明确说“按范围算”，我可以给围护负荷上下限。` };
+    }
+  }
+
   const productIntent = /(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜)/i.test(text);
   const food = findFoodThermalProperties(text);
   const ambiguousFood = findAmbiguousFoodTerm(text);
