@@ -1,4 +1,4 @@
-import { calculateColdStorageLoad } from "./cold-storage-load.js";
+import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
@@ -9,6 +9,9 @@ export function runRefrigerationTool(input = {}) {
 
   if (input.tool === "cold_storage_load") {
     return { tool: input.tool, result: calculateColdStorageLoad(input.args || {}) };
+  }
+  if (input.tool === "cold_storage_load_range") {
+    return { tool: input.tool, result: calculateColdStorageLoadRange(input.args || {}) };
   }
   if (input.tool === "product_load") {
     return { tool: input.tool, result: calculateProductLoad(input.args || {}) };
@@ -29,6 +32,8 @@ export const REFRIGERATION_TOOL_PROTOCOL = `
 只有在所需输入已经明确时，输出且只输出一个工具请求 JSON，不要加 Markdown、解释或代码围栏：
 {"__brady_tool__":"cold_storage_load","args":{...}}
 或
+{"__brady_tool__":"cold_storage_load_range","args":{...}}
+或
 {"__brady_tool__":"product_load","args":{...}}
 或
 {"__brady_tool__":"envelope_u_value","args":{...}}
@@ -37,8 +42,13 @@ export const REFRIGERATION_TOOL_PROTOCOL = `
 
 cold_storage_load 可用字段：
 lengthM, widthM, heightM, roomTempC, ambientTempC, uValueWm2K,
+wallUValueWm2K, roofUValueWm2K, floorUValueWm2K, groundTempC, floorOutsideTempC, roofOutsideTempC,
 productLoadW, infiltrationLoadW, peopleLoadW, lightingLoadW, fanLoadW,
 defrostLoadW, otherLoadW, safetyFactor
+
+cold_storage_load_range 可用字段：
+lengthM, widthM, heightM, roomTempC, ambientTempC, uValueMinWm2K, uValueMaxWm2K,
+productLoadW, infiltrationLoadW, peopleLoadW, lightingLoadW, fanLoadW, defrostLoadW, otherLoadW, safetyFactor
 
 product_load 可用字段：
 massKg, entryTempC, targetTempC, pullDownHours, freezingPointC,
