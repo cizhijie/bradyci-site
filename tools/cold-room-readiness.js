@@ -18,6 +18,7 @@ import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./d
 import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad, calculateElectricDefrostLoad } from "./internal-loads.js";
 import { getFloorBoundaryRule, getGenericFloorBoundaryEstimate } from "../data/floor-boundary-rules.js";
 import { calculateRequiredCoolingCapacity, assessEquipmentSelectionReadiness } from "./cooling-capacity-bridge.js";
+import { deriveEvaporatingTemperature, deriveCondensingTemperature, assessRefrigerationConditionInputs } from "./refrigeration-design-conditions.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -386,6 +387,17 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       reserveFactor:Number.isFinite(Number(state.reserveFactor)) ? Number(state.reserveFactor) : undefined
     });
     results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
+    results.condition_readiness=assessRefrigerationConditionInputs(state);
+    if (Number.isFinite(Number(state.evaporatingTempC))) {
+      results.evaporating_condition={ok:true,evaporatingTempC:Number(state.evaporatingTempC),source:"project_or_explicit_input"};
+    } else if (Number.isFinite(Number(state.evaporatorTDK))) {
+      results.evaporating_condition=deriveEvaporatingTemperature({roomTempC:state.roomTempC,evaporatorTDK:state.evaporatorTDK});
+    }
+    if (Number.isFinite(Number(state.condensingTempC))) {
+      results.condensing_condition={ok:true,condensingTempC:Number(state.condensingTempC),source:"project_or_explicit_input"};
+    } else if (state.heatRejectionType && Number.isFinite(Number(state.condenserApproachK))) {
+      results.condensing_condition=deriveCondensingTemperature({heatRejectionType:state.heatRejectionType,designAmbientTempC:state.projectOutdoorTempC,condenserApproachK:state.condenserApproachK,designWetBulbC:state.designWetBulbC});
+    }
   }
   return results;
 }
