@@ -2,6 +2,7 @@ import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
 import { calculateEnvelopeUValue } from "./envelope-u-value.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
+import { findInsulationMaterial, VERIFIED_PANEL_PRODUCTS } from "../data/insulation-properties.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -52,6 +53,24 @@ layers:[{label, thicknessMm, lambdaWmK}], innerSurfaceConductanceWm2K, outerSurf
 
 export function detectDeterministicRefrigerationRequest(messages = []) {
   const text = messages.filter(m => m?.role === "user" && typeof m.content === "string").slice(-6).map(m => m.content).join("\n");
+
+  const uIntent = /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
+  if (uIntent) {
+    const thickness = text.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
+    const material = findInsulationMaterial(text);
+    const panel = VERIFIED_PANEL_PRODUCTS.find(p => text.toLowerCase().includes(p.manufacturer.toLowerCase()) || text.toLowerCase().includes(p.product.toLowerCase()));
+    if (panel && thickness) {
+      const mm = Number(thickness[1]), u = panel.uValues[mm];
+      if (Number.isFinite(u)) return { __brady_clarify__: `${panel.manufacturer} ${panel.product} ${mm} mm 厂家整板 U 值为 ${u} W/(m²·K)。来源：${panel.source}。该值优先于用芯材 λ 简化倒算。` };
+    }
+    if (!thickness) return { __brady_clarify__: "请提供保温层厚度（mm）。" };
+    if (!material) return { __brady_clarify__: "请说明保温材料类型（例如聚氨酯、PIR、XPS、EPS），或提供厂家板材型号/样本。" };
+    const mm = Number(thickness[1]);
+    if (Number.isFinite(material.lambda)) return { __brady_tool__:"envelope_u_value", args:{ layers:[{ label:material.label, thicknessMm:mm, lambdaWmK:material.lambda }] } };
+    if (Number.isFinite(material.lambdaMin) && Number.isFinite(material.lambdaMax)) {
+      return { __brady_clarify__: `按现有通用资料，${material.label} 的导热系数是范围 ${material.lambdaMin}–${material.lambdaMax} W/(m·K)，不能伪装成单一精确值。若有厂家型号/样本请提供；没有的话我可以按这个范围给你计算 U 值区间。` };
+    }
+  }
 
   const productIntent = /(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜)/i.test(text);
   const food = findFoodThermalProperties(text);
