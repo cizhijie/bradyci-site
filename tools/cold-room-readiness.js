@@ -16,6 +16,7 @@ import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
 import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates.js";
 import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
 import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad, calculateElectricDefrostLoad } from "./internal-loads.js";
+import { getFloorBoundaryRule } from "../data/floor-boundary-rules.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -202,7 +203,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     }
   }
 
-  const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
+  const floorBoundaryRule=getFloorBoundaryRule(state);\n  if (floorBoundaryRule) results.floor_boundary_rule=floorBoundaryRule;\n\n  const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const floorMaterial = findInsulationMaterial(floorInsulationText);
   const floorThicknessMm = Number(state.floor?.insulation?.thicknessMm);
   if (floorMaterial && Number.isFinite(floorThicknessMm) && floorThicknessMm > 0) {
@@ -387,7 +388,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("• ⚠ 这是快速估算，不是正式设计值；室外湿度为独立观测宽范围，并非与该高温干球的规范同时气象条件。");
     lines.push(`• 方法：${il.method}；来源：${il.source}`, "");
   }
-  const f = results.floor_thermal_data;
+  const fbr=results.floor_boundary_rule;\n  if (fbr) {\n    lines.push("**地面边界计算规则**", "");\n    lines.push("• 当前为负温一楼落地库：地面传热快速/工程边界应采用**年平均地温**，不拿夏季室外38℃直接代替。");\n    lines.push("• 依据："+fbr.source+"。");\n    lines.push("• 在年平均地温数据取得前，地面负荷继续保持待核定；严谨板-地传热需更多土壤与板体参数。", "");\n  }\n  const f = results.floor_thermal_data;
   if (f?.ok) {
     lines.push("**地面保温热工资料已自动补全**", "");
     if (f.uValueRangeWm2K) {
