@@ -1,25 +1,30 @@
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
-你可能会收到“Owner 私人长期记忆”作为额外上下文。只有已通过 Owner 身份验证时才会提供这些记忆。只把它们当作 Owner 此前明确保存的信息使用；若与 Owner 当前说法冲突，以当前说法为准。不要向未验证访客泄露 Owner 私人记忆，也不要声称记得未提供的信息。`;
+你可能会收到 Owner 的“长期记忆”和“项目记忆”。只有已通过 Owner 身份验证时才会提供。长期记忆只用于稳定身份、长期偏好和长期工作背景；项目记忆只用于当前阶段项目的目标、状态和进度。若记忆与 Owner 当前说法冲突，以当前说法为准。不要向未验证访客泄露 Owner 私人记忆，也不要声称记得未提供的信息。
+
+【资料真实性规则】
+当任务依赖教材、厂家样本、客户文件、图片或其他外部资料，而这些资料没有出现在当前对话或项目资料中时，不得凭模型常识补写、猜测或伪造资料中的章节、原句、参数、型号、题目或结论。应明确告诉 Owner 当前缺少哪份资料，并请他提供当前任务所需的页面/文件；可以讲通用知识，但必须明确标为“通用知识，不是来自你的资料”。`;
 
 const SKILLS = {
   economist: {
     label: "中级经济师学习",
+    project: "economist",
     detect: /中级经济师|经济师|工商管理|经济基础|继续.*学习|继续.*复习|刷题|错题|模拟卷/,
     prompt: `【当前 Skill：中级经济师学习】
 你现在作为阿杰的中级经济师学习助手工作。
-1. 优先读取长期记忆中的考试目标、专业、当前学习进度和学习偏好，不重复询问已经知道的信息。
-2. 如果用户说“继续学习/继续复习”但没有指定章节，就依据记忆中的最新进度继续；若记忆不足，再简短询问。
-3. 教学以理解、主动回忆、间隔复习和做题检验为主；避免一次塞入过多内容。
-4. 用户没有提供教材原文时，不要声称回答来自其教材；如涉及教材具体章节、原句或题目，应请用户提供材料后再严格按材料学习。
-5. 学习进度发生明确变化时，正常回答即可，长期记忆系统会独立处理进度更新。
-6. 不要在回答里反复解释你正在调用 Skill，直接进入学习任务。`
+1. 优先读取“中级经济师”项目记忆中的考试目标和最新学习进度，不重复询问已经知道的信息。
+2. 如果用户说“继续学习/继续复习”，依据项目记忆中的最新进度继续。
+3. 如果当前任务需要教材具体章节内容，而当前对话没有教材页面/文字，则只能说明已知学习进度，并请用户拍摄或提供今天要学的相关页面。严禁自行生成“第三章大纲”“教材考点”“教材原文”等看似来自教材的内容。
+4. 若用户明确说“不按教材，先按通用知识讲”，才可以使用模型通用知识，并明确标注其不是教材内容。
+5. 教学以理解、主动回忆、间隔复习和做题检验为主；避免一次塞入过多内容。
+6. 学习进度发生明确变化时正常回答；系统会把它更新到该项目记忆。
+7. 不要反复解释正在调用 Skill，直接进入任务。`
   }
 };
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v0.6";
+const AGENT_VERSION = "v0.7";
 
 export default {
   async fetch(request, env) {
@@ -38,48 +43,32 @@ export default {
       if (!env.brady_agent_memory) return json({ error: "Memory database is not configured" }, 500);
 
       if (request.method === "GET") {
-        const result = await env.brady_agent_memory
-          .prepare("SELECT id, category, content, created_at, updated_at FROM memories ORDER BY updated_at DESC, id DESC LIMIT 100")
-          .all();
+        const result = await env.brady_agent_memory.prepare("SELECT id, category, content, created_at, updated_at FROM memories ORDER BY updated_at DESC, id DESC LIMIT 100").all();
         return json({ memories: result.results || [] });
       }
-
       if (request.method === "PUT") {
         try {
-          const body = await request.json();
-          const id = Number(body.id);
+          const body = await request.json(), id = Number(body.id);
           const content = typeof body.content === "string" ? body.content.trim() : "";
-          const category = typeof body.category === "string" && body.category.trim()
-            ? body.category.trim().slice(0, 50) : "general";
+          const category = typeof body.category === "string" && body.category.trim() ? body.category.trim().slice(0, 50) : "general";
           if (!Number.isInteger(id) || id <= 0) return json({ error: "Valid memory id is required" }, 400);
           if (!content) return json({ error: "Memory content is required" }, 400);
           if (content.length > 2000) return json({ error: "Memory is too long" }, 400);
-          await env.brady_agent_memory
-            .prepare("UPDATE memories SET category = ?, content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-            .bind(category, content, id).run();
+          await env.brady_agent_memory.prepare("UPDATE memories SET category = ?, content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(category, content, id).run();
           return json({ ok: true });
-        } catch (error) {
-          return json({ error: error?.message || "Failed to update memory" }, 500);
-        }
+        } catch (error) { return json({ error: error?.message || "Failed to update memory" }, 500); }
       }
-
       if (request.method === "POST") {
         try {
           const body = await request.json();
           const content = typeof body.content === "string" ? body.content.trim() : "";
-          const category = typeof body.category === "string" && body.category.trim()
-            ? body.category.trim().slice(0, 50) : "general";
+          const category = typeof body.category === "string" && body.category.trim() ? body.category.trim().slice(0, 50) : "general";
           if (!content) return json({ error: "Memory content is required" }, 400);
           if (content.length > 2000) return json({ error: "Memory is too long" }, 400);
-          const result = await env.brady_agent_memory
-            .prepare("INSERT INTO memories (category, content) VALUES (?, ?)")
-            .bind(category, content).run();
+          const result = await env.brady_agent_memory.prepare("INSERT INTO memories (category, content) VALUES (?, ?)").bind(category, content).run();
           return json({ ok: true, id: result.meta?.last_row_id });
-        } catch (error) {
-          return json({ error: error?.message || "Failed to save memory" }, 500);
-        }
+        } catch (error) { return json({ error: error?.message || "Failed to save memory" }, 500); }
       }
-
       if (request.method === "DELETE") {
         const id = Number(url.searchParams.get("id"));
         if (!Number.isInteger(id) || id <= 0) return json({ error: "Valid memory id is required" }, 400);
@@ -92,51 +81,37 @@ export default {
     if (url.pathname === "/api/chat") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!env.OPENROUTER_API_KEY) return json({ error: "OPENROUTER_API_KEY is not configured" }, 500);
-
       try {
         const body = await request.json();
         const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
-
         const owner = isOwner(request, env);
         const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
         if (owner && latestUser) await processMemoryCandidate(env, latestUser.content);
 
         const memories = owner ? await loadMemories(env) : [];
         const activeSkill = latestUser ? routeSkill(latestUser.content, memories) : null;
+        const split = splitMemories(memories, activeSkill);
         const identityPrompt = owner
-          ? "\n\n【当前身份】已验证 Owner。当前聊天者就是阿杰本人，可以使用下面的私人长期记忆来帮助他。"
+          ? "\n\n【当前身份】已验证 Owner。当前聊天者就是阿杰本人，可以使用下面的私人记忆帮助他。"
           : "\n\n【当前身份】未验证访客。不要假定聊天者是阿杰，不得读取、透露或猜测阿杰的私人资料。";
-        const memoryPrompt = memories.length
-          ? `\n\n【Owner 私人长期记忆】\n${memories.map((m) => `- [${m.category}] ${m.content}`).join("\n")}`
-          : "";
+        const longPrompt = split.longTerm.length ? `\n\n【Owner 长期记忆】\n${split.longTerm.map(m => `- [${m.category}] ${m.content}`).join("\n")}` : "";
+        const projectPrompt = split.project.length ? `\n\n【当前项目记忆：${activeSkill?.label || "相关项目"}】\n${split.project.map(m => `- ${m.content}`).join("\n")}` : "";
         const skillPrompt = activeSkill ? `\n\n${activeSkill.prompt}` : "";
-        const systemPrompt = SYSTEM_PROMPT + identityPrompt + memoryPrompt + skillPrompt;
+        const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt;
 
-        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt);
-        let usedModel = PRIMARY_MODEL;
-        if (!response.ok) {
-          response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt);
-          usedModel = FALLBACK_MODEL;
-        }
+        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt), usedModel = PRIMARY_MODEL;
+        if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt); usedModel = FALLBACK_MODEL; }
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           return json({ error: data?.error?.message || "免费模型暂时不可用，请稍后再试。" }, response.status);
         }
-        return new Response(response.body, {
-          status: 200,
-          headers: {
-            "Content-Type": "text/event-stream; charset=utf-8",
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-            "X-Brady-Model": usedModel,
-            "X-Brady-Role": owner ? "owner" : "visitor",
-            "X-Brady-Skill": activeSkill?.id || "general"
-          }
-        });
-      } catch (error) {
-        return json({ error: error?.message || "Request failed" }, 500);
-      }
+        return new Response(response.body, { status: 200, headers: {
+          "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
+          "X-Brady-Model": usedModel, "X-Brady-Role": owner ? "owner" : "visitor", "X-Brady-Skill": activeSkill?.id || "general",
+          "X-Brady-Version": AGENT_VERSION
+        }});
+      } catch (error) { return json({ error: error?.message || "Request failed" }, 500); }
     }
     return env.ASSETS.fetch(request);
   }
@@ -144,154 +119,93 @@ export default {
 
 function routeSkill(text, memories = []) {
   const raw = String(text || "");
-  for (const [id, skill] of Object.entries(SKILLS)) {
-    if (skill.detect.test(raw)) return { id, ...skill };
-  }
-  // Owner can say a short continuation such as “继续学习”; route from saved study context.
+  for (const [id, skill] of Object.entries(SKILLS)) if (skill.detect.test(raw)) return { id, ...skill };
   if (/^(继续|开始|复习|学习|接着来|继续吧)[。！!？?\s]*$/.test(raw)) {
-    const hasEconomistContext = memories.some((m) =>
-      m.category === "learning" && /中级经济师|经济师|工商管理/.test(m.content)
-    );
+    const hasEconomistContext = memories.some(m => /中级经济师|经济师|工商管理/.test(m.content));
     if (hasEconomistContext) return { id: "economist", ...SKILLS.economist };
   }
   return null;
 }
-
+function splitMemories(memories, activeSkill) {
+  const project = [], longTerm = [];
+  for (const m of memories) {
+    const economist = /中级经济师|经济师|工商管理|经济基础/.test(m.content);
+    if (activeSkill?.project === "economist" && economist) project.push(m);
+    else if (m.category !== "learning" || !economist) longTerm.push(m);
+  }
+  return { longTerm: longTerm.slice(0, 24), project: project.slice(0, 12) };
+}
 function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
   return safeEqual(request.headers.get("X-Owner-Pin") || "", String(env.OWNER_PIN));
 }
 function safeEqual(a, b) {
   if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
+  let diff = 0; for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i); return diff === 0;
 }
 async function processMemoryCandidate(env, text) {
   if (!env.brady_agent_memory || typeof text !== "string") return;
-  const raw = text.trim();
-  if (!raw || raw.length > 1200) return;
-
+  const raw = text.trim(); if (!raw || raw.length > 1200) return;
   const explicit = raw.match(/^(?:请)?(?:帮我)?记住[：:，,\s]*(.+)$/s);
-  let content = explicit ? explicit[1].trim() : raw;
-  if (!content) return;
-
+  let content = explicit ? explicit[1].trim() : raw; if (!content) return;
   if (!explicit) {
     if (content.length < 8 || content.length > 800) return;
     if (/^(好|好的|可以|行|开始|继续|谢谢|收到|明白|知道了|没问题)[。！!？?]*$/.test(content)) return;
-    if (/^(今天|刚才|现在|这次|临时|测试)/.test(content) && !/(以后|长期|一直|目标|计划|准备|考试)/.test(content)) return;
+    if (/^(今天|刚才|现在|这次|临时|测试)/.test(content) && !/(以后|长期|一直|目标|计划|准备|考试|第[一二三四五六七八九十\d]+章)/.test(content)) return;
   }
-
   let category = null;
   const rules = [
     ["profile", /(?:我叫|我的名字|叫我|我是\d+岁|我今年\d+|我住在|我来自|我的职业|我从事|我有[一二两三四五六七八九\d]+个孩子)/],
     ["preference", /(?:我喜欢|我偏好|我不喜欢|我习惯|我希望你以后|以后回答我|以后请|我更喜欢|我倾向于)/],
     ["project", /(?:我正在(?:开发|做|搭建|运营)|我目前在(?:开发|做|搭建|运营)|我的项目|我准备长期做|我的网站|我的Agent|我的智能体)/i],
     ["work", /(?:我主要做|我的工作|我负责|我做制冷|我做冷库|我的客户|我的业务)/],
-    ["learning", /(?:我正在学|我在学习|我的学习|学习目前|我的学习目标|我的考试|我要考|准备考|我想在\d+天|我计划学习|\d+月.*考试|已经完成第[一二三四五六七八九十\d]+章|完成第[一二三四五六七八九十\d]+章|学完第[一二三四五六七八九十\d]+章|学到第[一二三四五六七八九十\d]+章|开始学习第[一二三四五六七八九十\d]+章|开始第[一二三四五六七八九十\d]+章|开始刷题|正在刷题|错题|模拟考试|模拟卷)/]
+    ["learning", /(?:中级经济师|经济师|工商管理|经济基础|我正在学|我在学习|我的学习|学习目前|我的学习目标|我的考试|我要考|准备考|我想在\d+天|我计划学习|\d+月.*考试|已经完成第[一二三四五六七八九十\d]+章|完成第[一二三四五六七八九十\d]+章|学完第[一二三四五六七八九十\d]+章|学到第[一二三四五六七八九十\d]+章|开始学习第[一二三四五六七八九十\d]+章|开始第[一二三四五六七八九十\d]+章|开始刷题|正在刷题|错题|模拟考试|模拟卷)/]
   ];
-  const found = rules.find(([, re]) => re.test(content));
-  category = found?.[0] || (explicit ? "general" : null);
-  if (!category) return;
-
+  const found = rules.find(([, re]) => re.test(content)); category = found?.[0] || (explicit ? "general" : null); if (!category) return;
   content = content.replace(/\s+/g, " ").slice(0, 800);
-
-  const rows = await env.brady_agent_memory
-    .prepare("SELECT id, category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 100").all();
-  const memories = rows.results || [];
-
-  const normalized = normalizeMemory(content);
-  if (memories.some((m) => normalizeMemory(m.content) === normalized)) return;
-
+  const rows = await env.brady_agent_memory.prepare("SELECT id, category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 100").all();
+  const memories = rows.results || [], normalized = normalizeMemory(content);
+  if (memories.some(m => normalizeMemory(m.content) === normalized)) return;
   const topic = memoryTopic(category, content);
-  const related = topic
-    ? memories.find((m) => m.category === category && memoryTopic(m.category, m.content) === topic)
-    : null;
-
+  const related = topic ? memories.find(m => m.category === category && memoryTopic(m.category, m.content) === topic) : null;
   if (related) {
     const similarity = memorySimilarity(related.content, content);
     if (similarity >= 0.82) return;
-    await env.brady_agent_memory
-      .prepare("UPDATE memories SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-      .bind(content, related.id).run();
+    await env.brady_agent_memory.prepare("UPDATE memories SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(content, related.id).run();
     return;
   }
-
-  await env.brady_agent_memory
-    .prepare("INSERT INTO memories (category, content) VALUES (?, ?)")
-    .bind(category, content).run();
+  await env.brady_agent_memory.prepare("INSERT INTO memories (category, content) VALUES (?, ?)").bind(category, content).run();
 }
-
-function normalizeMemory(text) {
-  return String(text).toLowerCase().replace(/[\s，。！？、,.!?;；:："'“”‘’（）()\-]/g, "");
-}
-
+function normalizeMemory(text) { return String(text).toLowerCase().replace(/[\s，。！？、,.!?;；:："'“”‘’（）()\-]/g, ""); }
 function memoryTopic(category, text) {
   const rules = {
-    profile: [
-      ["name", /名字|我叫|叫我/], ["location", /住在|来自|常驻/],
-      ["career", /职业|从事/], ["family", /孩子|家庭/]
-    ],
-    preference: [
-      ["english-style", /英语|英式|发音|口音/],
-      ["answer-style", /回答|简短|详细|直接/]
-    ],
-    project: [
-      ["brady-agent", /Brady\s*Agent|Agent|智能体/i],
-      ["website", /网站|bradyci/i]
-    ],
+    profile: [["name", /名字|我叫|叫我/], ["location", /住在|来自|常驻/], ["career", /职业|从事/], ["family", /孩子|家庭/]],
+    preference: [["english-style", /英语|英式|发音|口音/], ["answer-style", /回答|简短|详细|直接/]],
+    project: [["brady-agent", /Brady\s*Agent|Agent|智能体/i], ["website", /网站|bradyci/i]],
     work: [["refrigeration", /制冷|冷库|冷风机|压缩机/]],
     learning: [
-      ["economist-progress", /(?:经济师|工商管理).*(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟)|(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟).*(?:经济师|工商管理)/],
-      ["economist-goal", /经济师|工商管理/],
+      ["economist-progress", /(?:经济师|工商管理|经济基础).*(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟)|(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟).*(?:经济师|工商管理|经济基础)|^(?:我(?:的)?中级经济师)?第[一二三四五六七八九十\d]+章.*(?:学完|完成|开始)/],
+      ["economist-goal", /经济师|工商管理|经济基础/],
       ["english-progress", /英语.*(?:学到|进度|练习了|完成)|(?:学到|进度|练习了|完成).*英语/],
       ["english-goal", /英语|口语|英式/]
     ]
   };
-  const hit = (rules[category] || []).find(([, re]) => re.test(text));
-  return hit?.[0] || null;
+  const hit = (rules[category] || []).find(([, re]) => re.test(text)); return hit?.[0] || null;
 }
-
 function memorySimilarity(a, b) {
-  const x = memoryTokens(a), y = memoryTokens(b);
-  if (!x.size || !y.size) return 0;
-  let common = 0;
-  for (const token of x) if (y.has(token)) common++;
-  return common / Math.max(x.size, y.size);
+  const x = memoryTokens(a), y = memoryTokens(b); if (!x.size || !y.size) return 0;
+  let common = 0; for (const token of x) if (y.has(token)) common++; return common / Math.max(x.size, y.size);
 }
-
-function memoryTokens(text) {
-  const s = normalizeMemory(text);
-  const out = new Set();
-  for (let i = 0; i < s.length - 1; i++) out.add(s.slice(i, i + 2));
-  return out;
-}
-
+function memoryTokens(text) { const s = normalizeMemory(text), out = new Set(); for (let i = 0; i < s.length - 1; i++) out.add(s.slice(i, i + 2)); return out; }
 async function loadMemories(env) {
   if (!env.brady_agent_memory) return [];
-  try {
-    const result = await env.brady_agent_memory
-      .prepare("SELECT category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 30").all();
-    return result.results || [];
-  } catch { return []; }
+  try { const result = await env.brady_agent_memory.prepare("SELECT category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 40").all(); return result.results || []; }
+  catch { return []; }
 }
 function callModel(env, model, messages, systemPrompt) {
-  return fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://bradyci.com",
-      "X-Title": "Brady Agent"
-    },
-    body: JSON.stringify({
-      model, stream: true, max_tokens: 900, temperature: 0.6,
-      messages: [{ role: "system", content: systemPrompt }, ...messages]
-    })
-  });
+  return fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: {
+    "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json",
+    "HTTP-Referer": "https://bradyci.com", "X-Title": "Brady Agent"
+  }, body: JSON.stringify({ model, stream: true, max_tokens: 900, temperature: 0.6, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
 }
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status, headers: { "Content-Type": "application/json; charset=utf-8" }
-  });
-}
+function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8" } }); }
