@@ -1,6 +1,6 @@
 import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
-import { calculateEnvelopeUValue } from "./envelope-u-value.js";
+import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 import { findInsulationMaterial, VERIFIED_PANEL_PRODUCTS } from "../data/insulation-properties.js";
 
@@ -15,6 +15,9 @@ export function runRefrigerationTool(input = {}) {
   }
   if (input.tool === "envelope_u_value") {
     return { tool: input.tool, result: calculateEnvelopeUValue(input.args || {}) };
+  }
+  if (input.tool === "envelope_u_value_range") {
+    return { tool: input.tool, result: calculateEnvelopeUValueRange(input.args || {}) };
   }
   return { ok: false, error: "Unknown refrigeration tool" };
 }
@@ -68,7 +71,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     const mm = Number(thickness[1]);
     if (Number.isFinite(material.lambda)) return { __brady_tool__:"envelope_u_value", args:{ layers:[{ label:material.label, thicknessMm:mm, lambdaWmK:material.lambda }] } };
     if (Number.isFinite(material.lambdaMin) && Number.isFinite(material.lambdaMax)) {
-      return { __brady_clarify__: `按现有通用资料，${material.label} 的导热系数是范围 ${material.lambdaMin}–${material.lambdaMax} W/(m·K)，不能伪装成单一精确值。若有厂家型号/样本请提供；没有的话我可以按这个范围给你计算 U 值区间。` };
+      return { __brady_tool__:"envelope_u_value_range", args:{ label:material.label, thicknessMm:mm, lambdaMinWmK:material.lambdaMin, lambdaMaxWmK:material.lambdaMax } };
     }
   }
 
