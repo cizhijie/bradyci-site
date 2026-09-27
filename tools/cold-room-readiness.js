@@ -16,7 +16,7 @@ import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
 import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates.js";
 import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
 import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad, calculateElectricDefrostLoad } from "./internal-loads.js";
-import { getFloorBoundaryRule } from "../data/floor-boundary-rules.js";
+import { getFloorBoundaryRule, getGenericFloorBoundaryEstimate } from "../data/floor-boundary-rules.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -205,6 +205,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
   const floorBoundaryRule=getFloorBoundaryRule(state);
   if (floorBoundaryRule) results.floor_boundary_rule=floorBoundaryRule;
+  if (floorBoundaryRule && results.engineering_mode.id === "estimate") results.floor_boundary_estimate=getGenericFloorBoundaryEstimate(state);
   const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const floorMaterial = findInsulationMaterial(floorInsulationText);
   const floorThicknessMm = Number(state.floor?.insulation?.thicknessMm);
