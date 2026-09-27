@@ -2,7 +2,7 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
-import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL } from "./tools/refrigeration-agent.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest } from "./tools/refrigeration-agent.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.2";
+const AGENT_VERSION = "v1.3";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -132,6 +132,19 @@ export default {
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (owner && activeSkill?.id === "refrigeration") {
+          const directRequest = detectDeterministicRefrigerationRequest(messages);
+          if (directRequest) {
+            const directResult = runRefrigerationTool({ tool: directRequest.__brady_tool__, args: directRequest.args });
+            const directMessages = [...messages, { role: "user", content: "【后端确定性计算结果】\n" + JSON.stringify(directResult) + "\n请依据该结果简洁回答，不要重新心算覆盖工具结果。" }];
+            let directResponse = await callModel(env, PRIMARY_MODEL, directMessages, systemPrompt, maxTokens);
+            let directModel = PRIMARY_MODEL;
+            if (!directResponse.ok) { directResponse = await callModel(env, FALLBACK_MODEL, directMessages, systemPrompt, maxTokens); directModel = FALLBACK_MODEL; }
+            if (!directResponse.ok) return json({ error: "计算结果解释暂时不可用，请稍后再试。" }, directResponse.status);
+            return new Response(directResponse.body, { status: 200, headers: {
+              "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
+              "X-Brady-Model": directModel, "X-Brady-Role": "owner", "X-Brady-Skill": activeSkill.id, "X-Brady-Tool": directRequest.__brady_tool__, "X-Brady-Version": AGENT_VERSION
+            }});
+          }
           const toolTurn = await callModelNonStream(env, PRIMARY_MODEL, messages, systemPrompt, 700);
           let toolModel = PRIMARY_MODEL;
           let toolData = toolTurn.ok ? await toolTurn.json().catch(() => null) : null;
