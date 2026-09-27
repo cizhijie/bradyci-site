@@ -5,6 +5,7 @@
 import { findInsulationMaterial } from "../data/insulation-properties.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 import { calculateProductLoad } from "./product-load.js";
+import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -83,6 +84,30 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const results = {};
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
 
+  // Thermal-property enrichment is allowed before a full envelope load is ready.
+  // It is explicitly kept separate from whole-panel U and from boundary temperatures.
+  const insulationText = [state.insulation?.material, state.insulation?.thicknessMm ? state.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
+  const insulation = findInsulationMaterial(insulationText);
+  const thicknessMm = Number(state.insulation?.thicknessMm);
+  if (insulation && Number.isFinite(thicknessMm) && thicknessMm > 0) {
+    if (Number.isFinite(insulation.lambdaMin) && Number.isFinite(insulation.lambdaMax)) {
+      results.envelope_thermal_data = calculateEnvelopeUValueRange({
+        label: insulation.label,
+        thicknessMm,
+        lambdaMinWmK: insulation.lambdaMin,
+        lambdaMaxWmK: insulation.lambdaMax
+      });
+    } else if (Number.isFinite(insulation.lambda)) {
+      results.envelope_thermal_data = calculateEnvelopeUValue({
+        layers:[{ label:insulation.label, thicknessMm, lambdaWmK:insulation.lambda }]
+      });
+    }
+    if (results.envelope_thermal_data?.ok) {
+      results.envelope_thermal_data.source = insulation.source;
+      results.envelope_thermal_data.sourceUrl = insulation.sourceUrl;
+    }
+  }
+
   if (readyIds.has("product_load")) {
     const food = findFoodThermalProperties(state.productCategory || "");
     if (food) {
@@ -106,6 +131,19 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  const e = results.envelope_thermal_data;
+  if (e?.ok) {
+    lines.push("**围护热工资料已自动补全**", "");
+    if (e.uValueRangeWm2K) {
+      lines.push(`• 保温芯材理论 U 值范围：**${e.uValueRangeWm2K.min}–${e.uValueRangeWm2K.max} W/(m²·K)**`);
+      lines.push(`• 计算依据：${e.input.thicknessMm} mm，λ=${e.input.lambdaMinWmK}–${e.input.lambdaMaxWmK} W/(m·K)`);
+    } else if (Number.isFinite(e.uValueWm2K)) {
+      lines.push(`• 保温芯材理论 U 值：**${e.uValueWm2K} W/(m²·K)**`);
+    }
+    if (e.source) lines.push(`• 资料来源：${e.source}`);
+    lines.push("• 口径：仅保温芯材理论热工值；不是厂家整板 U 值，未计表面热阻和接缝/连接件热桥。");
+    lines.push("• 当前仍不据此强行计算正式围护负荷；室外设计条件和地面边界条件必须有可靠依据。", "");
+  }
   const p = results.product_load;
   if (p?.ok) {
     lines.push("**已自动完成可计算分项**", "");
