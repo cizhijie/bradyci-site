@@ -1,5 +1,6 @@
 import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
+import { calculateEnvelopeUValue } from "./envelope-u-value.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 
 export function runRefrigerationTool(input = {}) {
@@ -10,6 +11,9 @@ export function runRefrigerationTool(input = {}) {
   }
   if (input.tool === "product_load") {
     return { tool: input.tool, result: calculateProductLoad(input.args || {}) };
+  }
+  if (input.tool === "envelope_u_value") {
+    return { tool: input.tool, result: calculateEnvelopeUValue(input.args || {}) };
   }
   return { ok: false, error: "Unknown refrigeration tool" };
 }
@@ -22,6 +26,8 @@ export const REFRIGERATION_TOOL_PROTOCOL = `
 {"__brady_tool__":"cold_storage_load","args":{...}}
 或
 {"__brady_tool__":"product_load","args":{...}}
+或
+{"__brady_tool__":"envelope_u_value","args":{...}}
 
 cold_storage_load 可用字段：
 lengthM, widthM, heightM, roomTempC, ambientTempC, uValueWm2K,
@@ -31,6 +37,9 @@ defrostLoadW, otherLoadW, safetyFactor
 product_load 可用字段：
 massKg, entryTempC, targetTempC, pullDownHours, freezingPointC,
 cpAboveKJkgK, latentHeatKJkg, cpBelowKJkgK
+
+envelope_u_value 可用字段：
+layers:[{label, thicknessMm, lambdaWmK}], innerSurfaceConductanceWm2K, outerSurfaceConductanceWm2K
 
 规则：
 1. 不得猜测 U 值、食品比热、冻结点、潜热、换气负荷或其他关键工程参数。
