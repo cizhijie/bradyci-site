@@ -1,26 +1,11 @@
+import { routeSkill, splitMemories } from "./skills/index.js";
+
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
 你可能会收到 Owner 的“长期记忆”和“项目记忆”。只有已通过 Owner 身份验证时才会提供。长期记忆只用于稳定身份、长期偏好和长期工作背景；项目记忆只用于当前阶段项目的目标、状态和进度。若记忆与 Owner 当前说法冲突，以当前说法为准。不要向未验证访客泄露 Owner 私人记忆，也不要声称记得未提供的信息。
 
 【资料真实性规则】
 当任务依赖教材、厂家样本、客户文件、图片或其他外部资料，而这些资料没有出现在当前对话或项目资料中时，不得凭模型常识补写、猜测或伪造资料中的章节、原句、参数、型号、题目或结论。应明确告诉 Owner 当前缺少哪份资料，并请他提供当前任务所需的页面/文件；可以讲通用知识，但必须明确标为“通用知识，不是来自你的资料”。`;
-
-const SKILLS = {
-  economist: {
-    label: "中级经济师学习",
-    project: "economist",
-    detect: /中级经济师|经济师|工商管理|经济基础|继续.*学习|继续.*复习|刷题|错题|模拟卷/,
-    prompt: `【当前 Skill：中级经济师学习】
-你现在作为阿杰的中级经济师学习助手工作。
-1. 优先读取“中级经济师”项目记忆中的考试目标和最新学习进度，不重复询问已经知道的信息。
-2. 如果用户说“继续学习/继续复习”，依据项目记忆中的最新进度继续。
-3. 如果当前任务需要教材具体章节内容，而当前对话没有教材页面/文字，则只能说明已知学习进度，并请用户拍摄或提供今天要学的相关页面。严禁自行生成“第三章大纲”“教材考点”“教材原文”等看似来自教材的内容。
-4. 若用户明确说“不按教材，先按通用知识讲”，才可以使用模型通用知识，并明确标注其不是教材内容。
-5. 教学以理解、主动回忆、间隔复习和做题检验为主；避免一次塞入过多内容。
-6. 学习进度发生明确变化时正常回答；系统会把它更新到该项目记忆。
-7. 不要反复解释正在调用 Skill，直接进入任务。`
-  }
-};
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
@@ -117,24 +102,6 @@ export default {
   }
 };
 
-function routeSkill(text, memories = []) {
-  const raw = String(text || "");
-  for (const [id, skill] of Object.entries(SKILLS)) if (skill.detect.test(raw)) return { id, ...skill };
-  if (/^(继续|开始|复习|学习|接着来|继续吧)[。！!？?\s]*$/.test(raw)) {
-    const hasEconomistContext = memories.some(m => /中级经济师|经济师|工商管理/.test(m.content));
-    if (hasEconomistContext) return { id: "economist", ...SKILLS.economist };
-  }
-  return null;
-}
-function splitMemories(memories, activeSkill) {
-  const project = [], longTerm = [];
-  for (const m of memories) {
-    const economist = /中级经济师|经济师|工商管理|经济基础/.test(m.content);
-    if (activeSkill?.project === "economist" && economist) project.push(m);
-    else if (m.category !== "learning" || !economist) longTerm.push(m);
-  }
-  return { longTerm: longTerm.slice(0, 24), project: project.slice(0, 12) };
-}
 function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
   return safeEqual(request.headers.get("X-Owner-Pin") || "", String(env.OWNER_PIN));
