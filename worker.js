@@ -1,4 +1,5 @@
 import { routeSkill, splitMemories } from "./skills/index.js";
+import { checkVisitorLimit } from "./lib/visitor-limit.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -9,7 +10,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v0.7";
+const AGENT_VERSION = "v0.8";
 
 export default {
   async fetch(request, env) {
@@ -72,6 +73,17 @@ export default {
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
         const owner = isOwner(request, env);
         const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
+        if (!owner) {
+          const limit = await checkVisitorLimit(request, env);
+          if (!limit.ok) {
+            const message = limit.reason === "minute"
+              ? "请求太频繁，请稍等一分钟再试。"
+              : limit.reason === "daily"
+                ? "今日访客体验次数已用完。Brady Agent 是阿杰的个人 AI 助手，并非公共 AI 聊天服务。"
+                : "访客体验暂时不可用，请稍后再试。";
+            return json({ error: message }, 429);
+          }
+        }
         if (owner && latestUser) await processMemoryCandidate(env, latestUser.content);
 
         const memories = owner ? await loadMemories(env) : [];
