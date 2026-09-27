@@ -14,7 +14,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.17";
+const AGENT_VERSION = "v1.18";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -149,6 +149,20 @@ export default {
           const startsNewProject = /(?:另一个|新的|新项目|重新做|重新算).{0,8}(?:冷库|项目)|(?:冷库|项目).{0,8}(?:另一个|新的|新项目)/i.test(currentText);
           if (startsNewProject) await clearColdRoomProjectState(env);
           let coldRoomState = await loadColdRoomProjectState(env);
+          // Recovery path: after a deployment or older version, rebuild the active project
+          // only from explicit cold-room intake messages in the current chat history.
+          if (!coldRoomState) {
+            const priorIntake = [...messages].reverse().find((m) =>
+              m?.role === "user" &&
+              typeof m.content === "string" &&
+              /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(m.content) &&
+              /(?:怎么配|怎么选|方案|看看|配置)/i.test(m.content)
+            );
+            if (priorIntake) {
+              coldRoomState = extractColdRoomProject(priorIntake.content);
+              if (Object.keys(coldRoomState).length) await saveColdRoomProjectState(env, coldRoomState);
+            }
+          }
           const startsIntake = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(currentText) && /(?:怎么配|怎么选|方案|看看|配置)/i.test(currentText);
           const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|入库|货温|小时|一楼|落地|楼层|地面|保温|开门|次|分钟)/i.test(currentText);
           if (startsIntake || isProjectFollowup) {
