@@ -131,10 +131,22 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
   set("heightM", /(?:高|高度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
   set("roomTempC", /(?:库温|库内温度|目标库温)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*°?\s*[cC℃]?/);
   set("ambientTempC", /(?:环境温度|室外温度|环温)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*°?\s*[cC℃]?/);
-  set("uValueWm2K", /(?:U\s*(?:值)?|综合传热系数)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("wallUValueWm2K", /(?:墙体|墙板|墙)\s*(?:U\s*值|传热系数)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("roofUValueWm2K", /(?:顶板|顶棚|屋顶|顶)\s*(?:U\s*值|传热系数)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("floorUValueWm2K", /(?:地面|地板|地坪)\s*(?:U\s*值|传热系数)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("groundTempC", /(?:地温|土壤温度|地下温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("floorOutsideTempC", /(?:地面外侧温度|地板外侧温度|地坪外侧温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("roofOutsideTempC", /(?:顶板外侧温度|屋面温度|屋顶外侧温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+  set("uValueWm2K", /(?:统一|整体|综合)?\s*(?:U\s*(?:值)?|综合传热系数)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
   set("safetyFactor", /(?:安全系数|SF)\s*(?:按|取|为|[:：=])?\s*(-?\d+(?:\.\d+)?)/i);
-  const required = ["lengthM","widthM","heightM","roomTempC","ambientTempC","uValueWm2K"];
-  if (!required.every(k => Number.isFinite(args[k]))) return null;
+  const baseRequired = ["lengthM","widthM","heightM","roomTempC","ambientTempC"];
+  if (!baseRequired.every(k => Number.isFinite(args[k]))) return null;
+  const splitU = ["wallUValueWm2K","roofUValueWm2K","floorUValueWm2K"].some(k => Number.isFinite(args[k]));
+  if (splitU) {
+    if (!["wallUValueWm2K","roofUValueWm2K","floorUValueWm2K"].every(k => Number.isFinite(args[k]))) return null;
+    if (!Number.isFinite(args.groundTempC) && !Number.isFinite(args.floorOutsideTempC)) return { __brady_clarify__: "墙、顶、地面分项计算还缺地面边界温度。请提供地温，或地面外侧温度；我不会默认拿室外空气温度代替。" };
+    delete args.uValueWm2K;
+  } else if (!Number.isFinite(args.uValueWm2K)) return null;
   if (!Number.isFinite(args.safetyFactor)) args.safetyFactor = 1;
   return { __brady_tool__: "cold_storage_load", args };
 }
