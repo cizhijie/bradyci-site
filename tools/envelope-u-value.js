@@ -43,3 +43,30 @@ export function calculateEnvelopeUValue(input = {}) {
 }
 function num(v){ if(v===null||v===undefined||v==="") return null; const n=Number(v); return Number.isFinite(n)?n:null; }
 function round(v,d){ const p=10**d; return Math.round(v*p)/p; }
+
+
+export function calculateEnvelopeUValueRange(input = {}) {
+  const thicknessMm = num(input.thicknessMm);
+  const lambdaMinWmK = num(input.lambdaMinWmK);
+  const lambdaMaxWmK = num(input.lambdaMaxWmK);
+  if (thicknessMm === null || lambdaMinWmK === null || lambdaMaxWmK === null) {
+    return { ok:false, missing:["thicknessMm","lambdaMinWmK","lambdaMaxWmK"] };
+  }
+  if (thicknessMm <= 0 || lambdaMinWmK <= 0 || lambdaMaxWmK <= 0 || lambdaMinWmK > lambdaMaxWmK) {
+    return { ok:false, error:"厚度和导热系数范围无效。" };
+  }
+  const x = thicknessMm / 1000;
+  const uMin = lambdaMinWmK / x;
+  const uMax = lambdaMaxWmK / x;
+  return {
+    ok:true,
+    method:"insulation-core-u-range-v1",
+    input:{ label:input.label || null, thicknessMm, lambdaMinWmK, lambdaMaxWmK },
+    uValueRangeWm2K:{ min:round(uMin,4), max:round(uMax,4) },
+    notes:[
+      "这是仅按保温芯材 R=x/λ、U=1/R 得到的理论范围。",
+      "未计入内外表面热阻，也未计入接缝、金属连接件、龙骨等热桥。",
+      "该范围不能替代具体厂家整板 U 值；有厂家产品数据时应优先采用厂家整板性能。"
+    ]
+  };
+}
