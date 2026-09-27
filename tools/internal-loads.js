@@ -34,19 +34,19 @@ export function calculateLightingLoad({totalInputPowerKW,areaM2,powerDensityWm2,
   return calculateElectricalInternalLoad({inputPowerKW:p,hoursPerDay});
 }
 
-export function calculateElectricDefrostLoad({heaterPowerKW,defrostsPerDay,minutesPerDefrost,heatToSpaceFraction}={}){
-  const p=Number(heaterPowerKW),n=Number(defrostsPerDay),m=Number(minutesPerDefrost),f=Number(heatToSpaceFraction);
-  if(![p,n,m,f].every(Number.isFinite)||p<0||n<0||m<0||f<0||f>1) return {ok:false,error:"invalid_defrost_input"};
+export function calculateElectricDefrostLoad({heaterPowerKW,defrostsPerDay,minutesPerDefrost,defrostEfficiency=0.2}={}){
+  const p=Number(heaterPowerKW),n=Number(defrostsPerDay),m=Number(minutesPerDefrost),eta=Number(defrostEfficiency);
+  if(![p,n,m,eta].every(Number.isFinite)||p<0||n<0||m<0||eta<=0||eta>1) return {ok:false,error:"invalid_defrost_input"};
   const dailyHours=n*m/60;
+  const suppliedKWh=p*dailyHours;
   return {
     ok:true,
     heaterPowerKW:r3(p),
     dailyDefrostHours:r3(dailyHours),
-    dailyHeatKWh:r3(p*dailyHours*f),
-    average24hLoadKW:r3(p*dailyHours*f/24),
-    heatToSpaceFraction:f,
-    source:"project/manufacturer inputs",
-    note:"Only the explicitly supplied fraction of electric defrost heat entering the refrigerated space is counted; no silent effectiveness assumption."
+    suppliedEnergyKWhPerDay:r3(suppliedKWh),
+    defrostEfficiency:eta,
+    source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads",
+    note:"ASHRAE reports typical electric/hot-gas defrost efficiency near 0.2 and recommends conservative low efficiency for design. Supplied heater energy is retained separately; a simple fixed fraction to room load is not assumed."
   };
 }
 
