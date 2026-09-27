@@ -248,7 +248,8 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("**开门工况已结构化**", "");
     lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
     lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
-    if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：1–5分钟；可信度低。依据只是“几分钟”的语义范围，不是标准值，也不是客户实测值。");\nlines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
+    if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：1–5分钟；可信度低。依据只是“几分钟”的语义范围，不是标准值，也不是客户实测值。");
+    lines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
   }
   const f = results.floor_thermal_data;
   if (f?.ok) {
