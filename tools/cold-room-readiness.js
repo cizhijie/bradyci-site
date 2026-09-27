@@ -17,6 +17,7 @@ import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates
 import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
 import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad, calculateElectricDefrostLoad } from "./internal-loads.js";
 import { getFloorBoundaryRule, getGenericFloorBoundaryEstimate } from "../data/floor-boundary-rules.js";
+import { calculateRequiredCoolingCapacity, assessEquipmentSelectionReadiness } from "./cooling-capacity-bridge.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -377,6 +378,15 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     provisional:true
   };
 
+  if (results.load_summary?.ok) {
+    results.design_capacity=calculateRequiredCoolingCapacity({
+      loadMinKW:results.load_summary.averageSubtotalRangeKW.min,
+      loadMaxKW:results.load_summary.averageSubtotalRangeKW.max,
+      refrigerationRunHoursPerDay:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) ? Number(state.refrigerationRunHoursPerDay) : 24,
+      reserveFactor:Number.isFinite(Number(state.reserveFactor)) ? Number(state.reserveFactor) : undefined
+    });
+    results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
+  }
   return results;
 }
 
