@@ -29,7 +29,10 @@ export function assessColdRoomProject(state = {}) {
       blocked.push({ id:"envelope_load", reason:"还缺已审核的室外设计温度，以及地面外侧边界温度/地温；这些边界条件不能由系统静默猜测。", sourceReady:true });
       customerQuestions.push("项目当地夏季室外设计温度若不清楚，可以只确认城市；后续由工程资料层查取并标明来源。");
     }
-    customerQuestions.push("地面虽然已确认做保温，但还需要明确地面构造/保温材料厚度；地温或地面外侧边界条件应由工程资料层确定并标明来源。");
+    if (!state.floor?.insulation?.material || !Number.isFinite(Number(state.floor?.insulation?.thicknessMm))) {
+      customerQuestions.push("地面已确认做保温，请补充地面保温材料和厚度，例如“100mm XPS挤塑板”；不需要提供 U 值或导热系数。");
+    }
+    customerQuestions.push("地面外侧边界温度/地温不要求客户凭经验填写；在取得可追溯工程依据前，地面传热分项保持“待核定”，不会拿室外温度代替。");
   } else {
     blocked.push({ id:"envelope_load", reason:"围护结构基础信息尚不完整。", sourceReady:false });
   }
@@ -93,6 +96,28 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const weather = findOutdoorDesignCondition(state.location || "");
   if (weather?.status === "reviewed") results.outdoor_design = weather;
 
+  const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
+  const floorMaterial = findInsulationMaterial(floorInsulationText);
+  const floorThicknessMm = Number(state.floor?.insulation?.thicknessMm);
+  if (floorMaterial && Number.isFinite(floorThicknessMm) && floorThicknessMm > 0) {
+    if (Number.isFinite(floorMaterial.lambdaMin) && Number.isFinite(floorMaterial.lambdaMax)) {
+      results.floor_thermal_data = calculateEnvelopeUValueRange({
+        label: floorMaterial.label,
+        thicknessMm: floorThicknessMm,
+        lambdaMinWmK: floorMaterial.lambdaMin,
+        lambdaMaxWmK: floorMaterial.lambdaMax
+      });
+    } else if (Number.isFinite(floorMaterial.lambda)) {
+      results.floor_thermal_data = calculateEnvelopeUValue({
+        layers:[{ label:floorMaterial.label, thicknessMm:floorThicknessMm, lambdaWmK:floorMaterial.lambda }]
+      });
+    }
+    if (results.floor_thermal_data?.ok) {
+      results.floor_thermal_data.source = floorMaterial.source;
+      results.floor_thermal_data.sourceUrl = floorMaterial.sourceUrl;
+    }
+  }
+
   // Thermal-property enrichment is allowed before a full envelope load is ready.
   // It is explicitly kept separate from whole-panel U and from boundary temperatures.
   const insulationText = [state.insulation?.material, state.insulation?.thicknessMm ? state.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
@@ -140,6 +165,18 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  const f = results.floor_thermal_data;
+  if (f?.ok) {
+    lines.push("**地面保温热工资料已自动补全**", "");
+    if (f.uValueRangeWm2K) {
+      lines.push(`• 地面保温芯材理论 U 值范围：**${f.uValueRangeWm2K.min}–${f.uValueRangeWm2K.max} W/(m²·K)**`);
+      lines.push(`• 依据：${f.input.thicknessMm} mm，λ=${f.input.lambdaMinWmK}–${f.input.lambdaMaxWmK} W/(m·K)`);
+    } else if (Number.isFinite(f.uValueWm2K)) {
+      lines.push(`• 地面保温芯材理论 U 值：**${f.uValueWm2K} W/(m²·K)**`);
+    }
+    if (f.source) lines.push(`• 资料来源：${f.source}`);
+    lines.push("• 地面外侧温度/地温尚未有审核依据时，地面传热负荷继续保持待核定，不用室外空气温度代替。", "");
+  }
   const w = results.outdoor_design;
   if (w) {
     lines.push("**室外设计气象条件已自动补全**", "");
