@@ -103,7 +103,21 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
       }
     }
     if (commonThickness && commonMaterial && Number.isFinite(commonMaterial.lambdaMin) && Number.isFinite(commonMaterial.lambdaMax)) {
-      return { __brady_clarify__: `你给的是${commonMaterial.label}和厚度，但现有可靠资料的导热系数是 ${commonMaterial.lambdaMin}–${commonMaterial.lambdaMax} W/(m·K)，因此只能得到 U 值范围，不能替你选一个单一 U 值直接做正式负荷。请提供厂家整板 U 值/型号；或者明确说“按范围算”，我可以给围护负荷上下限。` };
+      if (/按范围(?:算|计算|核算)|范围(?:算|计算|核算)/.test(text)) {
+        const x = Number(commonThickness[1]) / 1000;
+        const uMin = commonMaterial.lambdaMin / x, uMax = commonMaterial.lambdaMax / x;
+        const dims = {};
+        const grab = (key,re) => { const m=text.match(re); if(m) dims[key]=Number(m[1]); };
+        grab("lengthM",/(?:长|长度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
+        grab("widthM",/(?:宽|宽度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
+        grab("heightM",/(?:高|高度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
+        grab("roomTempC",/(?:库温|库内温度|目标库温)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+        grab("ambientTempC",/(?:环境温度|室外温度|环温)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i);
+        if (["lengthM","widthM","heightM","roomTempC","ambientTempC"].every(k=>Number.isFinite(dims[k]))) {
+          return { __brady_tool__:"cold_storage_load_range", args:{...dims,uValueMinWm2K:uMin,uValueMaxWm2K:uMax,safetyFactor:1} };
+        }
+      }
+      return { __brady_clarify__: `你给的是${commonMaterial.label}和厚度，但现有可靠资料的导热系数是 ${commonMaterial.lambdaMin}–${commonMaterial.lambdaMax} W/(m·K)，因此只能得到 U 值范围。请提供厂家整板 U 值/型号；或者明确说“按范围算”，我可以给围护负荷上下限。` };
     }
   }
 
