@@ -69,3 +69,31 @@ function isFiniteNumber(v){return v!==null&&v!==""&&Number.isFinite(Number(v));}
 function optionalNonNegative(v){if(!isFiniteNumber(v))return 0;return Math.max(0,Number(v));}
 function mapKW(obj){return Object.fromEntries(Object.entries(obj).map(([k,v])=>[k,round(v/1000,3)]));}
 function round(v,d){const p=10**d;return Math.round(v*p)/p;}
+
+
+export function calculateColdStorageLoadRange(input = {}) {
+  const minU = Number(input.uValueMinWm2K), maxU = Number(input.uValueMaxWm2K);
+  if (!Number.isFinite(minU) || !Number.isFinite(maxU) || minU <= 0 || maxU <= 0 || minU > maxU) {
+    return { ok:false, missing:["uValueMinWm2K","uValueMaxWm2K"], message:"需要有效的 U 值上下限。" };
+  }
+  const base = { ...input };
+  delete base.uValueMinWm2K; delete base.uValueMaxWm2K;
+  const low = calculateColdStorageLoad({ ...base, uValueWm2K:minU });
+  const high = calculateColdStorageLoad({ ...base, uValueWm2K:maxU });
+  if (!low.ok) return { ok:false, bound:"min", detail:low };
+  if (!high.ok) return { ok:false, bound:"max", detail:high };
+  return {
+    ok:true,
+    method:"deterministic-load-range-v1",
+    uValueRangeWm2K:{min:minU,max:maxU},
+    totalLoadRangeKW:{min:low.totalKW,max:high.totalKW},
+    transmissionLoadRangeKW:{min:low.componentsKW.transmission,max:high.componentsKW.transmission},
+    lowCase:low,
+    highCase:high,
+    notes:[
+      "上下限分别调用同一确定性冷库负荷计算器，除 U 值外其余输入保持一致。",
+      "这是由材料热工参数范围传播得到的负荷范围，不是设备选型裕量。",
+      "若获得厂家整板 U 值，应改用厂家数据重新核算。"
+    ]
+  };
+}
