@@ -83,7 +83,7 @@ export function extractColdRoomProject(text = "") {
   }
   const dailyTon = raw.match(/(?:一天|每日|每天|日)[^\d]{0,8}(?:大概|约)?\s*(?:进|入库|处理)?\s*(\d+(?:\.\d+)?)\s*吨/i) || raw.match(/(?:一天|每日|每天|日)[^\d]{0,8}(\d+(?:\.\d+)?)\s*吨/i);
   if (dailyTon) project.dailyInboundKg = Number(dailyTon[1]) * 1000;
-  const entry = raw.match(/(?:入库温度|进货温度|入库货温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
+  const entry = raw.match(/(?:入库温度|进货温度|入库货温|入库|进库)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
   if (entry) project.entryTempC = Number(entry[1]);
   const hours = raw.match(/(?:要求|用时|降温时间|冻结时间)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
   if (hours) project.pullDownHours = Number(hours[1]);
