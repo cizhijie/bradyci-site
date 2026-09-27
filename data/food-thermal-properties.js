@@ -104,11 +104,29 @@ export const FOOD_THERMAL_PROPERTIES = [
   }
 ];
 
+function normalizeFoodText(text = "") {
+  return String(text).toLowerCase()
+    .replace(/[（）()，,。.;；:：、\s_-]/g, "")
+    .replace(/公斤|千克|kg|吨/g, "");
+}
+
 export function findFoodThermalProperties(text = "") {
-  const normalized = String(text).toLowerCase();
-  return FOOD_THERMAL_PROPERTIES.find(item =>
-    item.aliases.some(alias => normalized.includes(alias.toLowerCase()))
-  ) || null;
+  const normalized = normalizeFoodText(text);
+  const exactAlias = FOOD_THERMAL_PROPERTIES.find(item =>
+    item.aliases.some(alias => normalized.includes(normalizeFoodText(alias)))
+  );
+  if (exactAlias) return exactAlias;
+
+  // Controlled word-order variants only for an already-reviewed food record.
+  // This improves natural Chinese phrasing without mapping a generic commodity
+  // such as “牛肉” to a specific cut.
+  const sirloin = FOOD_THERMAL_PROPERTIES.find(item => item.id === "beef_sirloin_lean");
+  if (sirloin && /牛/.test(normalized) && /西冷/.test(normalized) && /瘦肉|瘦/.test(normalized)) return sirloin;
+
+  const porkShoulder = FOOD_THERMAL_PROPERTIES.find(item => item.id === "pork_shoulder_whole_lean");
+  if (porkShoulder && /猪/.test(normalized) && /肩/.test(normalized) && /瘦肉|瘦/.test(normalized)) return porkShoulder;
+
+  return null;
 }
 
 
@@ -121,7 +139,5 @@ export const AMBIGUOUS_FOOD_TERMS = [
 ];
 
 export function findAmbiguousFoodTerm(text = "") {
-  const normalized = String(text).toLowerCase();
-  if (findFoodThermalProperties(normalized)) return null;
-  return AMBIGUOUS_FOOD_TERMS.find(item => normalized.includes(item.term)) || null;
+  const normalized = normalizeFoodText(text);\n  if (findFoodThermalProperties(text)) return null;\n  return AMBIGUOUS_FOOD_TERMS.find(item => normalized.includes(normalizeFoodText(item.term))) || null;
 }
