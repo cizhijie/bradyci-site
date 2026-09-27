@@ -359,17 +359,17 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       note:"墙+顶+地快速估算；墙顶采用芯材理论U范围，地面采用通用暖区年平均地温回退值。"
     };
   }
-  const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((s,x)=>s+x.averageKW,0);
+  const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((s,x)=>s+x.averageKW,0);\n  const env=results.envelope_total_estimate?.ok?results.envelope_total_estimate.loadRangeKW:null;
   const inf=results.infiltration_load_estimate?.ok?results.infiltration_load_estimate.averageLoadRangeKW:null;
   results.load_summary={
     ok:avgParts.length>0,
     averageSubtotalRangeKW:{
-      min:round3(fixed+(inf?.min||0)),
-      max:round3(fixed+(inf?.max||0))
+      min:round3(fixed+(inf?.min||0)+(env?.min||0)),
+      max:round3(fixed+(inf?.max||0)+(env?.max||0))
     },
     included:avgParts,
     excluded:[
-      {id:"envelope",reason:"墙顶目前为临时分项，地面边界未完成，暂不并入总计"},
+      {id:"envelope",reason:results.envelope_total_estimate?.ok?"已按快速估算口径并入；正式核算仍需替换地面回退边界并确认整板U值":"围护结构条件未齐，暂未并入"},
       {id:"defrost",reason:results.defrost_energy?.ok?"已知每日输入能量，但尚未转换成可与24h平均负荷直接相加的制冷负荷":"化霜数据未齐"},
       {id:"selection_margin",reason:"选型裕量/运行时间系数不属于基础热负荷，后续单独处理"}
     ],
