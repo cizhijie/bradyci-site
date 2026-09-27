@@ -5,6 +5,7 @@
 import { findInsulationMaterial } from "../data/insulation-properties.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 import { calculateProductLoad } from "./product-load.js";
+import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js";
 
@@ -160,6 +161,43 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       });
     }
   }
+  // Partial envelope calculation: walls + roof may be completed even while
+  // the ground/floor boundary remains unresolved. This is deliberately NOT
+  // presented as the total envelope load.
+  if (weather?.status === "reviewed" && results.envelope_thermal_data?.ok && state.dimensions && Number.isFinite(Number(state.roomTempC))) {
+    const e = results.envelope_thermal_data;
+    const uValues = e.uValueRangeWm2K
+      ? [e.uValueRangeWm2K.min, e.uValueRangeWm2K.max]
+      : Number.isFinite(e.uValueWm2K) ? [e.uValueWm2K, e.uValueWm2K] : [];
+    if (uValues.length) {
+      const L=Number(state.dimensions.lengthM), W=Number(state.dimensions.widthM), H=Number(state.dimensions.heightM);
+      const room=Number(state.roomTempC), outside=Number(weather.summerAcDryBulbC);
+      const wallArea=2*(L*H+W*H), roofArea=L*W, dt=Math.max(0,outside-room);
+      const cases=uValues.map(u=>({
+        uValueWm2K:u,
+        wallsKW:(u*wallArea*dt)/1000,
+        roofKW:(u*roofArea*dt)/1000
+      }));
+      results.envelope_partial = {
+        ok:true,
+        method:"walls-roof-partial-range-v1",
+        outsideTempC:outside,
+        roomTempC:room,
+        deltaTK:dt,
+        wallAreaM2:wallArea,
+        roofAreaM2:roofArea,
+        wallLoadRangeKW:{min:round3(cases[0].wallsKW),max:round3(cases[cases.length-1].wallsKW)},
+        roofLoadRangeKW:{min:round3(cases[0].roofKW),max:round3(cases[cases.length-1].roofKW)},
+        wallsRoofRangeKW:{
+          min:round3(cases[0].wallsKW+cases[0].roofKW),
+          max:round3(cases[cases.length-1].wallsKW+cases[cases.length-1].roofKW)
+        },
+        provisional:true,
+        note:"仅墙体+顶板分项；采用芯材理论U值范围，地面未计入，因此不是完整围护结构负荷。"
+      };
+    }
+  }
+
   return results;
 }
 
@@ -199,6 +237,15 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("• 口径：仅保温芯材理论热工值；不是厂家整板 U 值，未计表面热阻和接缝/连接件热桥。");
     lines.push("• 当前仍不据此强行计算正式围护负荷；室外设计条件和地面边界条件必须有可靠依据。", "");
   }
+  const ep = results.envelope_partial;
+  if (ep?.ok) {
+    lines.push("**墙体 + 顶板分项已先行计算**", "");
+    lines.push(`• 墙体传热负荷：**${ep.wallLoadRangeKW.min}–${ep.wallLoadRangeKW.max} kW**`);
+    lines.push(`• 顶板传热负荷：**${ep.roofLoadRangeKW.min}–${ep.roofLoadRangeKW.max} kW**`);
+    lines.push(`• 墙体+顶板合计：**${ep.wallsRoofRangeKW.min}–${ep.wallsRoofRangeKW.max} kW**`);
+    lines.push(`• 当前温差：${ep.outsideTempC}℃ - (${ep.roomTempC}℃) = ${ep.deltaTK} K`);
+    lines.push("• 状态：临时分项结果。地面负荷尚未计入；当前U值又是芯材理论范围，所以不能把这个数当作完整围护负荷或最终设计冷量。", "");
+  }
   const p = results.product_load;
   if (p?.ok) {
     lines.push("**已自动完成可计算分项**", "");
@@ -216,3 +263,5 @@ export function formatReadyColdRoomCalculations(results = {}) {
   }
   return lines.join("\n");
 }
+
+function round3(v){ return Math.round(Number(v)*1000)/1000; }
