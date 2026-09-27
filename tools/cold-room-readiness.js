@@ -10,6 +10,7 @@ import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelop
 import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js";
 import { calculateDoorOpenTimeFactor } from "./infiltration-load.js";
 import { resolveEngineeringMode } from "../lib/engineering-mode.js";
+import { getColdRoomEstimateDefaults } from "../data/cold-room-estimate-defaults.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -59,8 +60,14 @@ export function assessColdRoomProject(state = {}) {
   // transfer method also needs outdoor moisture state and a reviewed engineering method.
   const door = state.doorUsage || {};
   const hasDoorSize = Number.isFinite(Number(door.widthM)) && Number.isFinite(Number(door.heightM));
-  const hasDoorDuration = Number.isFinite(Number(door.minutesPerOpeningMin));
+  let hasDoorDuration = Number.isFinite(Number(door.minutesPerOpeningMin));
   const hasDoorCount = Number.isFinite(Number(door.openingsPerDayMin));
+  const estimateDefaults = getColdRoomEstimateDefaults();
+  const vagueDoorDuration = /几分钟/.test(String(door.description || ""));
+  if (!hasDoorDuration && mode.id === "estimate" && vagueDoorDuration) {
+    hasDoorDuration = true;
+    ready.push({ id:"door_duration_estimate", label:"单次开门时间按1–5分钟宽范围估算", confidence:"low" });
+  }
   if (hasDoorSize && hasDoorDuration && hasDoorCount) {
     blocked.push({ id:"infiltration_load", reason:"门洞尺寸、次数和持续时间已齐；还需室外空气含湿状态及审核后的开门渗透计算方法，暂不伪造负荷。", sourceReady:false });
     customerQuestions.push("开门数据已齐。室外湿度等气象参数不要求客户估算，将由审核资料层补全；在公式和参数来源锁定前不输出假精确渗透负荷。");
@@ -109,8 +116,17 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
 
   const d = state.doorUsage || {};
-  if ([d.openingsPerDayMin,d.openingsPerDayMax,d.minutesPerOpeningMin,d.minutesPerOpeningMax].every(x=>Number.isFinite(Number(x)))) {
-    results.door_open_time = calculateDoorOpenTimeFactor({ openingsPerDayMin:d.openingsPerDayMin, openingsPerDayMax:d.openingsPerDayMax, minutesPerOpeningMin:d.minutesPerOpeningMin, minutesPerOpeningMax:d.minutesPerOpeningMax });
+  const defaults = getColdRoomEstimateDefaults();
+  let minMinutes=d.minutesPerOpeningMin, maxMinutes=d.minutesPerOpeningMax;
+  let durationEstimated=false;
+  if (!Number.isFinite(Number(minMinutes)) && results.engineering_mode.id === "estimate" && /几分钟/.test(String(d.description || ""))) {
+    minMinutes=defaults.vagueDoorMinutes.min;
+    maxMinutes=defaults.vagueDoorMinutes.max;
+    durationEstimated=true;
+  }
+  if ([d.openingsPerDayMin,d.openingsPerDayMax,minMinutes,maxMinutes].every(x=>Number.isFinite(Number(x)))) {
+    results.door_open_time = calculateDoorOpenTimeFactor({ openingsPerDayMin:d.openingsPerDayMin, openingsPerDayMax:d.openingsPerDayMax, minutesPerOpeningMin:minMinutes, minutesPerOpeningMax:maxMinutes });
+    if (results.door_open_time?.ok && durationEstimated) results.door_open_time.assumption=defaults.vagueDoorMinutes;
   }
 
   const weather = findOutdoorDesignCondition(state.location || "");
@@ -232,7 +248,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("**开门工况已结构化**", "");
     lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
     lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
-    lines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
+    if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：1–5分钟；可信度低。依据只是“几分钟”的语义范围，不是标准值，也不是客户实测值。");\nlines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
   }
   const f = results.floor_thermal_data;
   if (f?.ok) {
