@@ -2,7 +2,8 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
-import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, formatColdRoomIntake } from "./tools/refrigeration-agent.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
+import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -13,7 +14,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.15";
+const AGENT_VERSION = "v1.16";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -144,8 +145,20 @@ export default {
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (owner && activeSkill?.id === "refrigeration") {
-          const intakeText = latestUser ? formatColdRoomIntake(latestUser.content) : null;
-          if (intakeText) return sseText(intakeText, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
+          const currentText = latestUser?.content || "";
+          const startsNewProject = /(?:另一个|新的|新项目|重新做|重新算).{0,8}(?:冷库|项目)|(?:冷库|项目).{0,8}(?:另一个|新的|新项目)/i.test(currentText);
+          if (startsNewProject) await clearColdRoomProjectState(env);
+          let coldRoomState = await loadColdRoomProjectState(env);
+          const startsIntake = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(currentText) && /(?:怎么配|怎么选|方案|看看|配置)/i.test(currentText);
+          const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|入库|货温|小时|一楼|落地|楼层|地面|保温|开门|次|分钟)/i.test(currentText);
+          if (startsIntake || isProjectFollowup) {
+            const patch = extractColdRoomProject(currentText);
+            if (/一楼|落地|楼层|地面|保温/.test(currentText) && !patch.insulation) patch.floor = { description: currentText };
+            if (/开门|每次|分钟/.test(currentText)) patch.doorUsage = { description: currentText };
+            coldRoomState = mergeColdRoomProjectState(coldRoomState || {}, patch);
+            await saveColdRoomProjectState(env, coldRoomState);
+            return sseText(formatColdRoomProjectState(coldRoomState), { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
+          }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
           if (directRequest?.__brady_clarify__) return sseText(directRequest.__brady_clarify__, { model: "deterministic-router", role: "owner", skill: activeSkill.id });
           if (directRequest) {
