@@ -12,6 +12,7 @@ import { calculateDoorOpenTimeFactor } from "./infiltration-load.js";
 import { resolveEngineeringMode } from "../lib/engineering-mode.js";
 import { getColdRoomEstimateDefaults } from "../data/cold-room-estimate-defaults.js";
 import { getDoorDimensionReference } from "../data/door-dimension-references.js";
+import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -130,14 +131,28 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const defaults = getColdRoomEstimateDefaults();
   let minMinutes=d.minutesPerOpeningMin, maxMinutes=d.minutesPerOpeningMax;
   let durationEstimated=false;
-  if (!Number.isFinite(Number(minMinutes)) && results.engineering_mode.id === "estimate" && /几分钟/.test(String(d.description || ""))) {
-    minMinutes=defaults.vagueDoorMinutes.min;
-    maxMinutes=defaults.vagueDoorMinutes.max;
+  let durationAssumption=null;
+  const reviewedDoorDefaults=getReviewedDoorDefaults();
+  if (!Number.isFinite(Number(minMinutes)) && results.engineering_mode.id === "estimate") {
+    const desc=String(d.description || "");
+    if (/高速门|快速门/.test(desc)) {
+      minMinutes=reviewedDoorDefaults.highSpeedDoorSecondsPerPassage.min/60;
+      maxMinutes=reviewedDoorDefaults.highSpeedDoorSecondsPerPassage.max/60;
+      durationAssumption={...reviewedDoorDefaults.highSpeedDoorSecondsPerPassage,label:"高速门5–10秒/次"};
+    } else if (/几分钟/.test(desc)) {
+      minMinutes=defaults.vagueDoorMinutes.min;
+      maxMinutes=defaults.vagueDoorMinutes.max;
+      durationAssumption={...defaults.vagueDoorMinutes,label:"“几分钟”语义估算1–5分钟"};
+    } else {
+      minMinutes=reviewedDoorDefaults.conventionalDoorSecondsPerPassage.min/60;
+      maxMinutes=reviewedDoorDefaults.conventionalDoorSecondsPerPassage.max/60;
+      durationAssumption={...reviewedDoorDefaults.conventionalDoorSecondsPerPassage,label:"常规门15–25秒/次"};
+    }
     durationEstimated=true;
   }
   if ([d.openingsPerDayMin,d.openingsPerDayMax,minMinutes,maxMinutes].every(x=>Number.isFinite(Number(x)))) {
     results.door_open_time = calculateDoorOpenTimeFactor({ openingsPerDayMin:d.openingsPerDayMin, openingsPerDayMax:d.openingsPerDayMax, minutesPerOpeningMin:minMinutes, minutesPerOpeningMax:maxMinutes });
-    if (results.door_open_time?.ok && durationEstimated) results.door_open_time.assumption=defaults.vagueDoorMinutes;
+    if (results.door_open_time?.ok && durationEstimated) results.door_open_time.assumption=durationAssumption;
   }
 
   const weather = findOutdoorDesignCondition(state.location || "");
@@ -268,7 +283,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("**开门工况已结构化**", "");
     lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
     lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
-    if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：1–5分钟；可信度低。依据只是“几分钟”的语义范围，不是标准值，也不是客户实测值。");
+    if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：" + dot.assumption.label + "；依据：" + (dot.assumption.source || dot.assumption.basis || "快速估算规则") + "；不是客户实测值。");
     lines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
   }
   const f = results.floor_thermal_data;
