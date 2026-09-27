@@ -91,6 +91,27 @@ export function extractColdRoomProject(text = "") {
   else if (/牛肉/.test(raw)) project.productCategory = "牛肉";
   else if (/猪肉/.test(raw)) project.productCategory = "猪肉";
   else if (/鸡肉/.test(raw)) project.productCategory = "鸡肉";
+  const floorParts = [];
+  if (/一楼(?:直接)?落地|一层(?:直接)?落地|落地库/.test(raw)) floorParts.push("一楼落地");
+  else if (/楼层上|楼上|二楼|三楼|四楼/.test(raw)) floorParts.push("楼层上");
+  if (/地面(?:已经|已|做了|有)?保温/.test(raw)) floorParts.push("地面已做保温");
+  else if (/地面(?:没有|没做|无)保温/.test(raw)) floorParts.push("地面未做保温");
+  if (floorParts.length) project.floor = { description:[...new Set(floorParts)].join("，") };
+
+  const doorCount = raw.match(/(?:每天|每日|一天)[^。；，,]{0,12}开门[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:-|到|至|~|～)?\s*(\d+(?:\.\d+)?)?\s*次/i);
+  const doorChinese = raw.match(/(?:每天|每日|一天)[^。；，,]{0,12}开门[^。；，,]{0,8}(七八|六七|八九|五六|十来)次/i);
+  const doorMinutes = raw.match(/每次[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:-|到|至|~|～)?\s*(\d+(?:\.\d+)?)?\s*分钟/i);
+  const vagueMinutes = /每次(?:大概|约)?几分钟/.test(raw);
+  const doorParts = [];
+  if (doorCount) doorParts.push("每天约" + doorCount[1] + (doorCount[2] ? "–" + doorCount[2] : "") + "次");
+  else if (doorChinese) {
+    const ranges = {"七八":"7–8","六七":"6–7","八九":"8–9","五六":"5–6","十来":"约10"};
+    doorParts.push("每天约" + ranges[doorChinese[1]] + "次");
+  }
+  if (doorMinutes) doorParts.push("每次约" + doorMinutes[1] + (doorMinutes[2] ? "–" + doorMinutes[2] : "") + "分钟");
+  else if (vagueMinutes) doorParts.push("每次几分钟（具体时长待确认）");
+  if (doorParts.length) project.doorUsage = { description:doorParts.join("，") };
+
   const city = raw.match(/(成都|重庆|贵阳|昆明|绵阳|德阳|泸州|宜宾|南充|乐山|眉山|自贡)/);
   if (city) project.location = city[1];
   return project;
