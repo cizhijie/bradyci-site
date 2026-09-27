@@ -52,8 +52,8 @@ export const FOOD_THERMAL_PROPERTIES = [
     label: "鸡肉（Chicken）",
     aliases: ["鸡肉", "整鸡", "chicken"],
     freezingPointC: -2.8,
-    cpAboveKJkgK: 4.34,
-    cpBelowKJkgK: 3.32,
+    cpAboveKJkgK: 3.31,
+    cpBelowKJkgK: 1.76,
     latentHeatKJkg: 220,
     source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
     sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
@@ -109,4 +109,19 @@ export function findFoodThermalProperties(text = "") {
   return FOOD_THERMAL_PROPERTIES.find(item =>
     item.aliases.some(alias => normalized.includes(alias.toLowerCase()))
   ) || null;
+}
+
+
+export const AMBIGUOUS_FOOD_TERMS = [
+  { term: "牛肉", ask: "请说明牛肉部位/形态，例如牛西冷、牛肝、胴体等。" },
+  { term: "猪肉", ask: "请说明猪肉部位/形态，例如猪肩肉等。" },
+  { term: "鱼", ask: "请说明鱼种，例如鳕鱼、粉红鲑等。" },
+  { term: "水果", ask: "请说明具体水果品种。" },
+  { term: "蔬菜", ask: "请说明具体蔬菜品种。" }
+];
+
+export function findAmbiguousFoodTerm(text = "") {
+  const normalized = String(text).toLowerCase();
+  if (findFoodThermalProperties(normalized)) return null;
+  return AMBIGUOUS_FOOD_TERMS.find(item => normalized.includes(item.term)) || null;
 }
