@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.10";
+const AGENT_VERSION = "v1.11";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -285,6 +285,20 @@ function formatDeterministicRefrigerationResult(data) {
       + "- 传热负荷范围：" + r.transmissionLoadRangeKW.min + "–" + r.transmissionLoadRangeKW.max + " kW\n\n"
       + "该范围来自热工参数范围传播，不是安全系数、设备选型裕量或压缩机推荐范围。";
   }
+  if (data.tool === "product_load") {
+    let s = "**货物降温/冻结平均负荷：" + r.averageLoadKW + " kW**\n\n"
+      + "- 货物总热量：" + r.totalHeatKJ + " kJ\n"
+      + "- 处理时间：" + r.pullDownHours + " h";
+    if (r.stagesKJ) {
+      if (Number.isFinite(r.stagesKJ.sensibleAboveFreezing)) s += "\n- 冻结前显热：" + r.stagesKJ.sensibleAboveFreezing + " kJ";
+      if (Number.isFinite(r.stagesKJ.latent)) s += "\n- 冻结潜热：" + r.stagesKJ.latent + " kJ";
+      if (Number.isFinite(r.stagesKJ.sensibleBelowFreezing)) s += "\n- 冻结后显热：" + r.stagesKJ.sensibleBelowFreezing + " kJ";
+    }
+    if (r.propertyData) s += "\n\n**采用的食品热物性**\n- 食品：" + r.propertyData.label + "\n- 资料来源：" + r.propertyData.source;
+    return s + "\n\n这是货物负荷，不等于压缩机选型冷量。";
+  }
+  if (data.tool === "envelope_u_value") return "**理论 U 值：" + r.uValueWm2K + " W/(m²·K)**\n\n" + (r.notes || []).join("\n");
+  if (data.tool === "envelope_u_value_range") return "**理论 U 值范围：" + r.uValueRangeWm2K.min + "–" + r.uValueRangeWm2K.max + " W/(m²·K)**\n\n" + (r.notes || []).join("\n");
   return null;
 }
 
