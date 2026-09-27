@@ -70,7 +70,7 @@ label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
 
 
 export function detectDeterministicRefrigerationRequest(messages = []) {
-  const text = messages.filter(m => m?.role === "user" && typeof m.content === "string").slice(-6).map(m => m.content).join("\n");
+  const currentUserMessage = [...messages].reverse().find(m => m?.role === "user" && typeof m.content === "string");\n  const text = currentUserMessage?.content || "";
 
   const compact = text.match(/(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/);
   const dimensionText = compact ? text + " 长" + compact[1] + "米 宽" + compact[2] + "米 高" + compact[3] + "米" : text;
