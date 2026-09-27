@@ -1,3 +1,4 @@
+import { findDoorAccessScenario } from "../data/door-access-scenarios.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
@@ -125,6 +126,8 @@ export function extractColdRoomProject(text = "") {
   else if (vagueMinutes) doorParts.push("每次几分钟（具体时长待确认）");
   if (doorParts.length) project.doorUsage = { description:doorParts.join("，") };
   const doorSize = raw.match(/(?:库门|冷库门|门洞|门)[^。；，,]{0,12}(\d+(?:\.\d+)?)\s*(?:米|m)?\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/i);
+  const accessScenario = findDoorAccessScenario(raw);
+  if (accessScenario) project.accessMode = accessScenario.id;
   if (doorSize) {
     project.doorUsage = project.doorUsage || {};
     project.doorUsage.widthM = Number(doorSize[1]);
@@ -161,6 +164,7 @@ export function formatColdRoomProjectState(p = {}) {
   if (p.floor?.insulation?.material && Number.isFinite(p.floor?.insulation?.thicknessMm)) known.push("地面保温：" + p.floor.insulation.thicknessMm + " mm " + p.floor.insulation.material);
   if (p.doorUsage?.description) known.push("开门情况：" + p.doorUsage.description);
   if (Number.isFinite(p.doorUsage?.widthM) && Number.isFinite(p.doorUsage?.heightM)) known.push("库门尺寸：" + p.doorUsage.widthM + "×" + p.doorUsage.heightM + " m");
+  if (p.accessMode) known.push("进出方式：" + (p.accessMode === "vehicle" ? "叉车/托盘机械搬运" : "人员/人工搬运"));
 
   const questions = [];
   if (!p.productCategory || /待确认/.test(p.productCategory)) questions.push("具体是什么肉？入库时是鲜肉、冷藏肉，还是已经冻结的肉？");
