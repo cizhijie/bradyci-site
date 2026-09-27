@@ -85,10 +85,7 @@ export default {
         const owner = isOwner(request, env);
         if (owner) {
           const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
-          if (latestUser) {
-            const explicitSaved = await rememberExplicitInstruction(env, latestUser.content);
-            if (!explicitSaved) await rememberImportantInformation(env, latestUser.content);
-          }
+          if (latestUser) await processMemoryCandidate(env, latestUser.content);
         }
         const memories = owner ? await loadMemories(env) : [];
         const identityPrompt = owner
@@ -137,56 +134,79 @@ function safeEqual(a, b) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
-async function rememberExplicitInstruction(env, text) {
+async function processMemoryCandidate(env, text) {
   if (!env.brady_agent_memory || typeof text !== "string") return;
   const raw = text.trim();
-  const match = raw.match(/^(?:请)?(?:帮我)?记住[：:，,\s]*(.+)$/s);
-  if (!match) return false;
-  const content = match[1].trim();
-  if (!content || content.length > 1200) return false;
+  if (!raw || raw.length > 1200) return;
 
-  let category = "general";
-  if (/名字|叫我|我是|年龄|住在|来自|家庭|职业/.test(content)) category = "profile";
-  else if (/喜欢|偏好|习惯|不喜欢|希望你|回答|风格/.test(content)) category = "preference";
-  else if (/项目|网站|Agent|智能体|开发|公司|创业/.test(content)) category = "project";
-  else if (/工作|客户|销售|制冷|冷库|业务/.test(content)) category = "work";
-  else if (/学习|英语|考试|经济师|课程|练习/.test(content)) category = "learning";
+  const explicit = raw.match(/^(?:请)?(?:帮我)?记住[：:，,\s]*(.+)$/s);
+  let content = explicit ? explicit[1].trim() : raw;
+  if (!content) return;
 
-  const exists = await env.brady_agent_memory
-    .prepare("SELECT id FROM memories WHERE content = ? LIMIT 1").bind(content).first();
-  if (exists) return true;
+  if (!explicit) {
+    if (content.length < 8 || content.length > 800) return;
+    if (/^(好|好的|可以|行|开始|继续|谢谢|收到|明白|知道了|没问题)[。！!？?]*$/.test(content)) return;
+    if (/^(今天|刚才|现在|这次|临时|测试)/.test(content) && !/(以后|长期|一直|目标|计划|准备|考试)/.test(content)) return;
+  }
 
-  await env.brady_agent_memory
-    .prepare("INSERT INTO memories (category, content) VALUES (?, ?)")
-    .bind(category, content).run();
-  return true;
-}
-
-async function rememberImportantInformation(env, text) {
-  if (!env.brady_agent_memory || typeof text !== "string") return;
-  const raw = text.trim();
-  if (raw.length < 8 || raw.length > 800) return;
-  if (/^(好|好的|可以|行|开始|继续|谢谢|收到|明白|知道了|没问题)[。！!？?]*$/.test(raw)) return;
-  if (/^(今天|刚才|现在|这次|临时|测试)/.test(raw) && !/(以后|长期|一直|目标|计划)/.test(raw)) return;
-
+  let category = null;
   const rules = [
     ["profile", /(?:我叫|我的名字|叫我|我是\d+岁|我今年\d+|我住在|我来自|我的职业|我从事|我有[一二两三四五六七八九\d]+个孩子)/],
     ["preference", /(?:我喜欢|我偏好|我不喜欢|我习惯|我希望你以后|以后回答我|以后请|我更喜欢|我倾向于)/],
     ["project", /(?:我正在(?:开发|做|搭建|运营)|我目前在(?:开发|做|搭建|运营)|我的项目|我准备长期做|我的网站|我的Agent|我的智能体)/i],
     ["work", /(?:我主要做|我的工作|我负责|我做制冷|我做冷库|我的客户|我的业务)/],
-    ["learning", /(?:我正在学|我在学习|我的学习目标|我的考试|我要考|我想在\d+天|我计划学习)/]
+    ["learning", /(?:我正在学|我在学习|我的学习目标|我的考试|我要考|准备考|我想在\d+天|我计划学习|\d+月.*考试)/]
   ];
-  const found = rules.find(([, re]) => re.test(raw));
-  if (!found) return;
-  const [category] = found;
-  const content = raw.replace(/\s+/g, " ").slice(0, 800);
+  const found = rules.find(([, re]) => re.test(content));
+  category = found?.[0] || (explicit ? "general" : null);
+  if (!category) return;
 
-  const duplicate = await env.brady_agent_memory
-    .prepare("SELECT id FROM memories WHERE content = ? LIMIT 1").bind(content).first();
-  if (duplicate) return;
+  content = content.replace(/\s+/g, " ").slice(0, 800);
+
+  const rows = await env.brady_agent_memory
+    .prepare("SELECT id, category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 100").all();
+  const memories = rows.results || [];
+
+  const normalized = normalizeMemory(content);
+  if (memories.some((m) => normalizeMemory(m.content) === normalized)) return;
+
+  const topic = memoryTopic(category, content);
+  const related = topic
+    ? memories.find((m) => m.category === category && memoryTopic(m.category, m.content) === topic)
+    : null;
+
+  if (related && shouldReplaceMemory(related.content, content)) {
+    await env.brady_agent_memory
+      .prepare("UPDATE memories SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+      .bind(content, related.id).run();
+    return;
+  }
+
   await env.brady_agent_memory
     .prepare("INSERT INTO memories (category, content) VALUES (?, ?)")
     .bind(category, content).run();
+}
+
+function normalizeMemory(text) {
+  return String(text).toLowerCase().replace(/[\s，。！？、,.!?;；:："'“”‘’（）()\-]/g, "");
+}
+
+function memoryTopic(category, text) {
+  const rules = {
+    profile: [["name", /名字|我叫|叫我/], ["location", /住在|来自|常驻/], ["career", /职业|从事/], ["family", /孩子|家庭/]],
+    preference: [["english-style", /英语|英式|发音|口音/], ["answer-style", /回答|简短|详细|直接/]],
+    project: [["brady-agent", /Brady\s*Agent|Agent|智能体/i], ["website", /网站|bradyci/i]],
+    work: [["refrigeration", /制冷|冷库|冷风机|压缩机/]],
+    learning: [["economist", /经济师|工商管理/], ["english", /英语|口语|英式/]]
+  };
+  const hit = (rules[category] || []).find(([, re]) => re.test(text));
+  return hit?.[0] || null;
+}
+
+function shouldReplaceMemory(oldText, newText) {
+  const oldNorm = normalizeMemory(oldText), newNorm = normalizeMemory(newText);
+  if (oldNorm.includes(newNorm) || newNorm.includes(oldNorm)) return newText.length >= oldText.length;
+  return true;
 }
 
 async function loadMemories(env) {
