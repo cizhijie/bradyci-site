@@ -1,5 +1,6 @@
 import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
+import { findFoodThermalProperties } from "../data/food-thermal-properties.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -44,6 +45,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
   const text = messages.filter(m => m?.role === "user" && typeof m.content === "string").slice(-6).map(m => m.content).join("\n");
 
   const productIntent = /(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜)/i.test(text);
+  const food = findFoodThermalProperties(text);
   if (productIntent) {
     const args = {};
     const set = (key, patterns) => {
@@ -65,6 +67,15 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     set("cpAboveKJkgK", [/(?:冻结点以上比热|冻结前比热|cpAbove)\s*[:：=]?\s*(\d+(?:\.\d+)?)/i]);
     set("latentHeatKJkg", [/(?:冻结潜热|潜热|latentHeat)\s*[:：=]?\s*(\d+(?:\.\d+)?)/i]);
     set("cpBelowKJkgK", [/(?:冻结点以下比热|冻结后比热|cpBelow)\s*[:：=]?\s*(\d+(?:\.\d+)?)/i]);
+
+    if (food) {
+      if (!Number.isFinite(args.freezingPointC)) args.freezingPointC = food.freezingPointC;
+      if (!Number.isFinite(args.cpAboveKJkgK)) args.cpAboveKJkgK = food.cpAboveKJkgK;
+      if (!Number.isFinite(args.latentHeatKJkg)) args.latentHeatKJkg = food.latentHeatKJkg;
+      if (!Number.isFinite(args.cpBelowKJkgK)) args.cpBelowKJkgK = food.cpBelowKJkgK;
+      args.foodPropertySource = food.source;
+      args.foodPropertyLabel = food.label;
+    }
 
     const base = ["massKg","entryTempC","targetTempC","pullDownHours","cpAboveKJkgK"];
     if (!base.every(k => Number.isFinite(args[k]))) return null;
