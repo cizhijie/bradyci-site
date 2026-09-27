@@ -1,6 +1,6 @@
 import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
-import { calculateColdStorageLoad } from "./tools/cold-storage-load.js";
+import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest } from "./tools/refrigeration-agent.js";
 
@@ -78,6 +78,18 @@ export default {
         return json(result, result.ok ? 200 : 400);
       } catch (error) {
         return json({ error: error?.message || "Cold storage load calculation failed" }, 500);
+      }
+    }
+
+    if (url.pathname === "/api/tools/cold-storage-load-range") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const body = await request.json();
+        const result = calculateColdStorageLoadRange(body);
+        return json(result, result.ok ? 200 : 400);
+      } catch (error) {
+        return json({ error: error?.message || "Cold storage load range calculation failed" }, 500);
       }
     }
 
