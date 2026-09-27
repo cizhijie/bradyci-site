@@ -5,7 +5,7 @@ export const FOOD_THERMAL_PROPERTIES = [
   {
     id: "beef_sirloin_lean",
     label: "牛西冷（瘦肉）",
-    aliases: ["牛西冷", "西冷牛肉", "瘦牛西冷", "sirloin lean"],
+    aliases: ["牛西冷", "牛西冷瘦肉", "西冷牛肉", "西冷瘦肉", "瘦牛西冷", "sirloin lean"],
     freezingPointC: -1.7,
     cpAboveKJkgK: 3.53,
     cpBelowKJkgK: 2.11,
