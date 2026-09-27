@@ -96,6 +96,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
   const weather = findOutdoorDesignCondition(state.location || "");
   if (weather?.status === "reviewed") results.outdoor_design = weather;
+  if (Number.isFinite(Number(state.projectOutdoorTempC))) results.project_outdoor = { temperatureC:Number(state.projectOutdoorTempC), source:"project_requirement" };
 
   const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const floorMaterial = findInsulationMaterial(floorInsulationText);
@@ -164,14 +165,14 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   // Partial envelope calculation: walls + roof may be completed even while
   // the ground/floor boundary remains unresolved. This is deliberately NOT
   // presented as the total envelope load.
-  if (weather?.status === "reviewed" && results.envelope_thermal_data?.ok && state.dimensions && Number.isFinite(Number(state.roomTempC))) {
+  if (results.project_outdoor && results.envelope_thermal_data?.ok && state.dimensions && Number.isFinite(Number(state.roomTempC))) {
     const e = results.envelope_thermal_data;
     const uValues = e.uValueRangeWm2K
       ? [e.uValueRangeWm2K.min, e.uValueRangeWm2K.max]
       : Number.isFinite(e.uValueWm2K) ? [e.uValueWm2K, e.uValueWm2K] : [];
     if (uValues.length) {
       const L=Number(state.dimensions.lengthM), W=Number(state.dimensions.widthM), H=Number(state.dimensions.heightM);
-      const room=Number(state.roomTempC), outside=Number(weather.summerAcDryBulbC);
+      const room=Number(state.roomTempC), outside=Number(results.project_outdoor.temperatureC);
       const wallArea=2*(L*H+W*H), roofArea=L*W, dt=Math.max(0,outside-room);
       const cases=uValues.map(u=>({
         uValueWm2K:u,
@@ -214,6 +215,13 @@ export function formatReadyColdRoomCalculations(results = {}) {
     }
     if (f.source) lines.push(`• 资料来源：${f.source}`);
     lines.push("• 地面外侧温度/地温尚未有审核依据时，地面传热负荷继续保持待核定，不用室外空气温度代替。", "");
+  }
+  const po = results.project_outdoor;
+  if (po) {
+    lines.push("**项目设计室外温度**", "");
+    lines.push(`• 当前项目采用：**${po.temperatureC}℃**`);
+    lines.push("• 性质：用户/项目明确提出的设计约束，不是规范气象统计值。");
+    lines.push("• 墙体、顶板临时分项可以按此项目条件核算；设备选型环境/冷凝工况仍需单独确定。", "");
   }
   const w = results.outdoor_design;
   if (w) {
