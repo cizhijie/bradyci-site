@@ -72,7 +72,10 @@ label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
 export function detectDeterministicRefrigerationRequest(messages = []) {
   const text = messages.filter(m => m?.role === "user" && typeof m.content === "string").slice(-6).map(m => m.content).join("\n");
 
-  const compact = text.match(/(\\d+(?:\\.\\d+)?)\\s*[xX×*]\\s*(\\d+(?:\\.\\d+)?)\\s*[xX×*]\\s*(\\d+(?:\\.\\d+)?)\\s*(?:米|m)?/);\n  const dimensionText = compact ? text + " 长" + compact[1] + "米 宽" + compact[2] + "米 高" + compact[3] + "米" : text;\n\n  const uIntent = /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
+  const compact = text.match(/(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/);
+  const dimensionText = compact ? text + " 长" + compact[1] + "米 宽" + compact[2] + "米 高" + compact[3] + "米" : text;
+
+  const uIntent = /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
   if (uIntent) {
     const thickness = dimensionText.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
     const material = findInsulationMaterial(text);
