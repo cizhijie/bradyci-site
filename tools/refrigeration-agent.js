@@ -96,7 +96,18 @@ export function extractColdRoomProject(text = "") {
   else if (/楼层上|楼上|二楼|三楼|四楼/.test(raw)) floorParts.push("楼层上");
   if (/地面(?:已经|已|做了|有)?保温/.test(raw)) floorParts.push("地面已做保温");
   else if (/地面(?:没有|没做|无)保温/.test(raw)) floorParts.push("地面未做保温");
-  if (floorParts.length) project.floor = { description:[...new Set(floorParts)].join("，") };
+  const floorInsulation = raw.match(/(?:地面|地坪)[^。；，,]{0,12}(\d+(?:\.\d+)?)\s*(?:mm|毫米)?[^。；，,]{0,8}(聚氨酯|PIR|XPS|EPS|挤塑板|聚苯板)/i)
+    || raw.match(/(?:地面|地坪)[^。；，,]{0,12}(聚氨酯|PIR|XPS|EPS|挤塑板|聚苯板)[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:mm|毫米)?/i);
+  if (floorParts.length || floorInsulation) {
+    project.floor = { description:[...new Set(floorParts)].join("，") };
+    if (floorInsulation) {
+      const firstIsNumber = /^\d/.test(floorInsulation[1]);
+      project.floor.insulation = {
+        material:firstIsNumber ? floorInsulation[2] : floorInsulation[1],
+        thicknessMm:Number(firstIsNumber ? floorInsulation[1] : floorInsulation[2])
+      };
+    }
+  }
 
   const doorCount = raw.match(/(?:每天|每日|一天)[^。；，,]{0,12}开门[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:-|到|至|~|～)?\s*(\d+(?:\.\d+)?)?\s*次/i);
   const doorChinese = raw.match(/(?:每天|每日|一天)[^。；，,]{0,12}开门[^。；，,]{0,8}(七八|六七|八九|五六|十来)次/i);
@@ -128,6 +139,7 @@ export function formatColdRoomProjectState(p = {}) {
   if (Number.isFinite(p.entryTempC)) known.push("入库货温：" + p.entryTempC + "℃");
   if (Number.isFinite(p.pullDownHours)) known.push("要求时间：" + p.pullDownHours + " h");
   if (p.floor?.description) known.push("地面情况：" + p.floor.description);
+  if (p.floor?.insulation?.material && Number.isFinite(p.floor?.insulation?.thicknessMm)) known.push("地面保温：" + p.floor.insulation.thicknessMm + " mm " + p.floor.insulation.material);
   if (p.doorUsage?.description) known.push("开门情况：" + p.doorUsage.description);
 
   const questions = [];
