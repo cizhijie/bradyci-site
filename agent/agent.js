@@ -22,6 +22,7 @@ function setOwnerUI(isOwner){
   document.querySelector("#welcomeText").textContent=isOwner?"Owner 身份已验证。Brady Agent 可以读取你的私人长期记忆来协助当前对话。":"当前为访客模式。你可以正常使用 AI；Owner 私人记忆不会向访客开放。";
   document.querySelector("#modeNote").textContent=isOwner?"Owner 模式":"访客模式";
   btn.textContent=isOwner?"Owner 已登录":"Owner 登录";btn.classList.toggle("owner-active",isOwner);
+  document.querySelector("#memoryBtn").classList.toggle("hidden",!isOwner);
 }
 async function verifyStoredPin(){
   if(!ownerPin){setOwnerUI(false);return;}
@@ -57,3 +58,31 @@ form.addEventListener("submit",async e=>{
 input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
 document.querySelector("#clear").onclick=()=>location.reload();
 verifyStoredPin();
+
+const memoryPanel=document.querySelector("#memoryPanel"),memoryList=document.querySelector("#memoryList");
+function ownerHeaders(){return {"Content-Type":"application/json","X-Owner-Pin":ownerPin};}
+function memoryCategoryName(c){return ({general:"一般",profile:"个人",preference:"偏好",project:"项目",work:"工作",learning:"学习"})[c]||c;}
+async function loadMemoryManager(){
+  memoryList.innerHTML="<p class='memory-empty'>正在读取…</p>";
+  const r=await fetch("/api/memory",{headers:ownerHeaders()});
+  if(!r.ok){memoryList.innerHTML="<p class='memory-empty'>读取失败，请重新登录 Owner。</p>";return;}
+  const data=await r.json(),items=data.memories||[];
+  if(!items.length){memoryList.innerHTML="<p class='memory-empty'>还没有长期记忆。</p>";return;}
+  memoryList.innerHTML="";
+  items.forEach(m=>{
+    const row=document.createElement("div");row.className="memory-item";
+    row.innerHTML=`<span class="memory-tag">${escapeHtml(memoryCategoryName(m.category))}</span><div class="memory-content">${escapeHtml(m.content)}</div><div class="memory-actions"><button data-edit>编辑</button><button data-delete>删除</button></div>`;
+    row.querySelector("[data-delete]").onclick=async()=>{if(!confirm("删除这条长期记忆？"))return;await fetch("/api/memory?id="+m.id,{method:"DELETE",headers:ownerHeaders()});loadMemoryManager();};
+    row.querySelector("[data-edit]").onclick=async()=>{const content=prompt("修改记忆：",m.content);if(content===null||!content.trim())return;await fetch("/api/memory",{method:"PUT",headers:ownerHeaders(),body:JSON.stringify({id:m.id,category:m.category,content:content.trim()})});loadMemoryManager();};
+    memoryList.appendChild(row);
+  });
+}
+document.querySelector("#memoryBtn").onclick=()=>{memoryPanel.classList.remove("hidden");loadMemoryManager();};
+document.querySelector("#memoryClose").onclick=()=>memoryPanel.classList.add("hidden");
+memoryPanel.addEventListener("click",e=>{if(e.target===memoryPanel)memoryPanel.classList.add("hidden")});
+document.querySelector("#memoryAdd").onclick=async()=>{
+  const field=document.querySelector("#memoryInput"),content=field.value.trim();if(!content)return;
+  const category=document.querySelector("#memoryCategory").value;
+  const r=await fetch("/api/memory",{method:"POST",headers:ownerHeaders(),body:JSON.stringify({category,content})});
+  if(r.ok){field.value="";loadMemoryManager();}else alert("保存失败");
+};
