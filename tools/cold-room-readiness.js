@@ -8,6 +8,7 @@ import { calculateProductLoad } from "./product-load.js";
 import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js";
+import { calculateDoorOpenTimeFactor } from "./infiltration-load.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -101,6 +102,11 @@ export function formatColdRoomReadiness(a = {}) {
 export function calculateReadyColdRoomParts(state = {}, assessment = assessColdRoomProject(state)) {
   const results = {};
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
+
+  const d = state.doorUsage || {};
+  if ([d.openingsPerDayMin,d.openingsPerDayMax,d.minutesPerOpeningMin,d.minutesPerOpeningMax].every(x=>Number.isFinite(Number(x)))) {
+    results.door_open_time = calculateDoorOpenTimeFactor({ openingsPerDayMin:d.openingsPerDayMin, openingsPerDayMax:d.openingsPerDayMax, minutesPerOpeningMin:d.minutesPerOpeningMin, minutesPerOpeningMax:d.minutesPerOpeningMax });
+  }
 
   const weather = findOutdoorDesignCondition(state.location || "");
   if (weather?.status === "reviewed") results.outdoor_design = weather;
@@ -212,6 +218,13 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  const dot = results.door_open_time;
+  if (dot?.ok) {
+    lines.push("**开门工况已结构化**", "");
+    lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
+    lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
+    lines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
+  }
   const f = results.floor_thermal_data;
   if (f?.ok) {
     lines.push("**地面保温热工资料已自动补全**", "");
