@@ -139,5 +139,7 @@ export const AMBIGUOUS_FOOD_TERMS = [
 ];
 
 export function findAmbiguousFoodTerm(text = "") {
-  const normalized = normalizeFoodText(text);\n  if (findFoodThermalProperties(text)) return null;\n  return AMBIGUOUS_FOOD_TERMS.find(item => normalized.includes(normalizeFoodText(item.term))) || null;
+  const normalized = normalizeFoodText(text);
+  if (findFoodThermalProperties(text)) return null;
+  return AMBIGUOUS_FOOD_TERMS.find(item => normalized.includes(normalizeFoodText(item.term))) || null;
 }
