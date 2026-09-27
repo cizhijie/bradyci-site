@@ -47,6 +47,9 @@ cpAboveKJkgK, latentHeatKJkg, cpBelowKJkgK
 envelope_u_value 可用字段：
 layers:[{label, thicknessMm, lambdaWmK}], innerSurfaceConductanceWm2K, outerSurfaceConductanceWm2K
 
+envelope_u_value_range 可用字段：
+label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
+
 规则：
 1. 不得猜测 U 值、食品比热、冻结点、潜热、换气负荷或其他关键工程参数。
 2. 缺参数时正常用中文追问，不输出工具 JSON。
