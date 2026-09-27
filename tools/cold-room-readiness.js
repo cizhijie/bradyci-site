@@ -15,6 +15,7 @@ import { getDoorDimensionReference } from "../data/door-dimension-references.js"
 import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
 import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates.js";
 import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
+import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad } from "./internal-loads.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -265,6 +266,18 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       });
     }
   }
+  // Internal loads: only explicit project facts are calculated.
+  const internal=state.internalLoads || {};
+  if (Number.isFinite(Number(internal.peopleCount)) && Number.isFinite(Number(internal.peopleHoursPerDay)) && Number.isFinite(Number(state.roomTempC))) {
+    results.people_load=calculatePeopleLoad({roomTempC:Number(state.roomTempC),peopleCount:Number(internal.peopleCount),hoursPerDay:Number(internal.peopleHoursPerDay)});
+  }
+  if (Number.isFinite(Number(internal.lightingPowerKW)) && Number.isFinite(Number(internal.lightingHoursPerDay))) {
+    results.lighting_load=calculateLightingLoad({totalInputPowerKW:Number(internal.lightingPowerKW),hoursPerDay:Number(internal.lightingHoursPerDay)});
+  }
+  if (Number.isFinite(Number(internal.fanPowerKW)) && Number.isFinite(Number(internal.fanHoursPerDay))) {
+    results.fan_load=calculateElectricalInternalLoad({inputPowerKW:Number(internal.fanPowerKW),hoursPerDay:Number(internal.fanHoursPerDay)});
+  }
+
   // Partial envelope calculation: walls + roof may be completed even while
   // the ground/floor boundary remains unresolved. This is deliberately NOT
   // presented as the total envelope load.
@@ -378,6 +391,14 @@ export function formatReadyColdRoomCalculations(results = {}) {
     if (e.source) lines.push(`• 资料来源：${e.source}`);
     lines.push("• 口径：仅保温芯材理论热工值；不是厂家整板 U 值，未计表面热阻和接缝/连接件热桥。");
     lines.push("• 当前仍不据此强行计算正式围护负荷；室外设计条件和地面边界条件必须有可靠依据。", "");
+  }
+  const peopleLoad=results.people_load, lightingLoad=results.lighting_load, fanLoad=results.fan_load;
+  if (peopleLoad?.ok || lightingLoad?.ok || fanLoad?.ok) {
+    lines.push("**内部负荷已按已知项目数据计算**", "");
+    if (peopleLoad?.ok) lines.push(`• 人员：运行时 **${peopleLoad.activeLoadKW} kW**；24h平均 **${peopleLoad.average24hLoadKW} kW**（${peopleLoad.peopleCount}人，${peopleLoad.hoursPerDay}h/天）`);
+    if (lightingLoad?.ok) lines.push(`• 照明：开启时 **${lightingLoad.activeLoadKW} kW**；24h平均 **${lightingLoad.average24hLoadKW} kW**（${lightingLoad.hoursPerDay}h/天）`);
+    if (fanLoad?.ok) lines.push(`• 库内风机：运行时 **${fanLoad.activeLoadKW} kW**；24h平均 **${fanLoad.average24hLoadKW} kW**（${fanLoad.hoursPerDay}h/天）`);
+    lines.push("• 未提供的内部负荷不静默补值。", "");
   }
   const ep = results.envelope_partial;
   if (ep?.ok) {
