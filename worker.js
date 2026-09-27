@@ -2,6 +2,7 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL } from "./tools/refrigeration-agent.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -12,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.1";
+const AGENT_VERSION = "v1.2";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -126,9 +127,35 @@ export default {
         const longPrompt = split.longTerm.length ? `\n\n【Owner 长期记忆】\n${split.longTerm.map(m => `- [${m.category}] ${m.content}`).join("\n")}` : "";
         const projectPrompt = split.project.length ? `\n\n【当前项目记忆：${activeSkill?.label || "相关项目"}】\n${split.project.map(m => `- ${m.content}`).join("\n")}` : "";
         const skillPrompt = activeSkill ? `\n\n${activeSkill.prompt}` : "";
-        const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt;
+        const toolPrompt = owner && activeSkill?.id === "refrigeration" ? `\n\n${REFRIGERATION_TOOL_PROTOCOL}` : "";
+        const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
+        if (owner && activeSkill?.id === "refrigeration") {
+          const toolTurn = await callModelNonStream(env, PRIMARY_MODEL, messages, systemPrompt, 700);
+          let toolModel = PRIMARY_MODEL;
+          let toolData = toolTurn.ok ? await toolTurn.json().catch(() => null) : null;
+          if (!toolTurn.ok) {
+            const fallbackTurn = await callModelNonStream(env, FALLBACK_MODEL, messages, systemPrompt, 700);
+            toolModel = FALLBACK_MODEL;
+            toolData = fallbackTurn.ok ? await fallbackTurn.json().catch(() => null) : null;
+          }
+          const draft = toolData?.choices?.[0]?.message?.content || "";
+          const requestData = parseToolRequest(draft);
+          if (requestData) {
+            const toolResult = runRefrigerationTool({ tool: requestData.__brady_tool__, args: requestData.args });
+            const finalMessages = [...messages, { role: "assistant", content: draft }, { role: "user", content: "【后端确定性计算结果】\n" + JSON.stringify(toolResult) + "\n请依据该结果回答，不要重新心算覆盖工具结果。" }];
+            let finalResponse = await callModel(env, toolModel, finalMessages, systemPrompt, maxTokens);
+            if (!finalResponse.ok) finalResponse = await callModel(env, FALLBACK_MODEL, finalMessages, systemPrompt, maxTokens);
+            if (!finalResponse.ok) return json({ error: "计算结果解释暂时不可用，请稍后再试。" }, finalResponse.status);
+            return new Response(finalResponse.body, { status: 200, headers: {
+              "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
+              "X-Brady-Model": toolModel, "X-Brady-Role": "owner", "X-Brady-Skill": activeSkill.id, "X-Brady-Tool": requestData.__brady_tool__,
+              "X-Brady-Version": AGENT_VERSION
+            }});
+          }
+          if (draft) return sseText(draft, { model: toolModel, role: "owner", skill: activeSkill.id });
+        }
         let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt, maxTokens), usedModel = PRIMARY_MODEL;
         if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt, maxTokens); usedModel = FALLBACK_MODEL; }
         if (!response.ok) {
@@ -212,6 +239,30 @@ async function loadMemories(env) {
   if (!env.brady_agent_memory) return [];
   try { const result = await env.brady_agent_memory.prepare("SELECT category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 40").all(); return result.results || []; }
   catch { return []; }
+}
+function callModelNonStream(env, model, messages, systemPrompt, maxTokens = 700) {
+  return fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: {
+    "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json",
+    "HTTP-Referer": "https://bradyci.com", "X-Title": "Brady Agent"
+  }, body: JSON.stringify({ model, stream: false, max_tokens: maxTokens, temperature: 0.2, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
+}
+function parseToolRequest(text) {
+  if (typeof text !== "string") return null;
+  const match = text.trim().match(/^\{[\s\S]*\}$/);
+  if (!match) return null;
+  try {
+    const data = JSON.parse(match[0]);
+    return ["cold_storage_load", "product_load"].includes(data?.__brady_tool__) && data.args && typeof data.args === "object" ? data : null;
+  } catch { return null; }
+}
+function sseText(content, meta = {}) {
+  const payload = JSON.stringify({ choices: [{ delta: { content } }] });
+  const done = "data: " + payload + "\n\ndata: [DONE]\n\n";
+  return new Response(done, { status: 200, headers: {
+    "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache",
+    "X-Brady-Model": meta.model || "", "X-Brady-Role": meta.role || "", "X-Brady-Skill": meta.skill || "general",
+    "X-Brady-Version": AGENT_VERSION
+  }});
 }
 function callModel(env, model, messages, systemPrompt, maxTokens = 900) {
   return fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: {
