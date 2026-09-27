@@ -144,6 +144,21 @@ export function extractColdRoomProject(text = "") {
     project.doorUsage.openingsPerDayMax = Number(doorCount[2] || doorCount[1]);
   }
 
+  const people=raw.match(/(?:库内|里面|平时|一般)?[^。；，,]{0,10}(\\d+)\\s*(?:个人|人)(?:[^。；，,]{0,12}(?:工作|停留|作业)[^。；，,]{0,8}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h))?/i);
+  const lightingKW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\\d+(?:\\.\\d+)?)\\s*(?:kW|kw|千瓦)/i);
+  const lightingW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\\d+(?:\\.\\d+)?)\\s*(?:W|瓦)(?!\\s*\\/)/i);
+  const lightingHours=raw.match(/(?:照明|灯)[^。；，,]{0,18}(?:每天|一天|日)[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h)/i);
+  const fanKW=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,14}(?:电机|功率)?[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:kW|kw|千瓦)/i);
+  const fanHours=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,18}(?:每天|一天|日|运行)[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h)/i);
+  if (people || lightingKW || lightingW || fanKW) {
+    project.internalLoads = {};
+    if (people) { project.internalLoads.peopleCount=Number(people[1]); if (people[2]) project.internalLoads.peopleHoursPerDay=Number(people[2]); }
+    if (lightingKW || lightingW) project.internalLoads.lightingPowerKW=lightingKW ? Number(lightingKW[1]) : Number(lightingW[1])/1000;
+    if (lightingHours) project.internalLoads.lightingHoursPerDay=Number(lightingHours[1]);
+    if (fanKW) project.internalLoads.fanPowerKW=Number(fanKW[1]);
+    if (fanHours) project.internalLoads.fanHoursPerDay=Number(fanHours[1]);
+  }
+
   const city = raw.match(/(成都|重庆|贵阳|昆明|绵阳|德阳|泸州|宜宾|南充|乐山|眉山|自贡)/);
   if (city) project.location = city[1];
   return project;
@@ -165,6 +180,9 @@ export function formatColdRoomProjectState(p = {}) {
   if (p.doorUsage?.description) known.push("开门情况：" + p.doorUsage.description);
   if (Number.isFinite(p.doorUsage?.widthM) && Number.isFinite(p.doorUsage?.heightM)) known.push("库门尺寸：" + p.doorUsage.widthM + "×" + p.doorUsage.heightM + " m");
   if (p.accessMode) known.push("进出方式：" + (p.accessMode === "vehicle" ? "叉车/托盘机械搬运" : "人员/人工搬运"));
+  if (Number.isFinite(p.internalLoads?.peopleCount)) known.push("库内人员：约 " + p.internalLoads.peopleCount + " 人" + (Number.isFinite(p.internalLoads?.peopleHoursPerDay) ? "，约 "+p.internalLoads.peopleHoursPerDay+" h/天" : ""));
+  if (Number.isFinite(p.internalLoads?.lightingPowerKW)) known.push("库内照明总功率：" + p.internalLoads.lightingPowerKW + " kW" + (Number.isFinite(p.internalLoads?.lightingHoursPerDay) ? "，约 "+p.internalLoads.lightingHoursPerDay+" h/天" : ""));
+  if (Number.isFinite(p.internalLoads?.fanPowerKW)) known.push("库内风机电功率：" + p.internalLoads.fanPowerKW + " kW" + (Number.isFinite(p.internalLoads?.fanHoursPerDay) ? "，约 "+p.internalLoads.fanHoursPerDay+" h/天" : ""));
 
   const questions = [];
   if (!p.productCategory || /待确认/.test(p.productCategory)) questions.push("具体是什么肉？入库时是鲜肉、冷藏肉，还是已经冻结的肉？");
@@ -172,6 +190,9 @@ export function formatColdRoomProjectState(p = {}) {
   if (!Number.isFinite(p.pullDownHours)) questions.push("希望多长时间把这一批货降到目标货温？");
   if (!p.floor?.description) questions.push("冷库是一楼直接落地还是楼层上？地面有没有做保温？");
   if (!p.doorUsage?.description) questions.push("每天开门大概多少次、每次大约多久？");
+  if (!Number.isFinite(p.internalLoads?.peopleCount)) questions.push("平时库里大概有几个人同时作业？每天累计大约待多久？");
+  if (!Number.isFinite(p.internalLoads?.lightingPowerKW)) questions.push("库内照明知道总功率最好；不知道就说灯有多少盏、每盏大概多少瓦。");
+  if (!Number.isFinite(p.internalLoads?.fanPowerKW)) questions.push("冷风机已经确定的话，请告诉我风机电机总功率；还没选就先留空，后面按设备参数回填。");
 
   const heading = questions.length ? "**已知条件**" : "**当前项目条件已基本收集完成**";
   const follow = questions.length
