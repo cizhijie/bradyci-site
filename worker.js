@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.9";
+const AGENT_VERSION = "v1.10";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -148,15 +148,8 @@ export default {
           if (directRequest?.__brady_clarify__) return sseText(directRequest.__brady_clarify__, { model: "deterministic-router", role: "owner", skill: activeSkill.id });
           if (directRequest) {
             const directResult = runRefrigerationTool({ tool: directRequest.__brady_tool__, args: directRequest.args });
-            const directMessages = [...messages, { role: "user", content: "【后端确定性计算结果】\n" + JSON.stringify(directResult) + "\n请依据该结果简洁回答，不要重新心算覆盖工具结果。" }];
-            let directResponse = await callModel(env, PRIMARY_MODEL, directMessages, systemPrompt, maxTokens);
-            let directModel = PRIMARY_MODEL;
-            if (!directResponse.ok) { directResponse = await callModel(env, FALLBACK_MODEL, directMessages, systemPrompt, maxTokens); directModel = FALLBACK_MODEL; }
-            if (!directResponse.ok) return json({ error: "计算结果解释暂时不可用，请稍后再试。" }, directResponse.status);
-            return new Response(directResponse.body, { status: 200, headers: {
-              "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
-              "X-Brady-Model": directModel, "X-Brady-Role": "owner", "X-Brady-Skill": activeSkill.id, "X-Brady-Tool": directRequest.__brady_tool__, "X-Brady-Version": AGENT_VERSION
-            }});
+            const fastText = formatDeterministicRefrigerationResult(directResult);
+            if (fastText) return sseText(fastText, { model: "deterministic", role: "owner", skill: activeSkill.id, tool: directRequest.__brady_tool__ });
           }
           const toolTurn = await callModelNonStream(env, PRIMARY_MODEL, messages, systemPrompt, 700);
           let toolModel = PRIMARY_MODEL;
@@ -272,6 +265,29 @@ function callModelNonStream(env, model, messages, systemPrompt, maxTokens = 700)
     "HTTP-Referer": "https://bradyci.com", "X-Title": "Brady Agent"
   }, body: JSON.stringify({ model, stream: false, max_tokens: maxTokens, temperature: 0.2, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
 }
+function formatDeterministicRefrigerationResult(data) {
+  const r = data?.result;
+  if (!r) return null;
+  if (!r.ok) return r.message || r.error || (r.missing?.length ? "还缺参数：" + r.missing.join("、") : null);
+  if (data.tool === "cold_storage_load") {
+    const g=r.geometry||{}, e=r.envelope||{};
+    return "**围护结构传热负荷：" + r.totalKW + " kW**\n\n"
+      + "- 库容：" + g.volumeM3 + " m³\n"
+      + "- 墙面：" + g.wallAreaM2 + " m²，负荷 " + e.walls?.loadKW + " kW\n"
+      + "- 顶板：" + g.roofAreaM2 + " m²，负荷 " + e.roof?.loadKW + " kW\n"
+      + "- 地面：" + g.floorAreaM2 + " m²，负荷 " + e.floor?.loadKW + " kW\n"
+      + "- 安全系数：" + r.safetyFactor + "\n\n"
+      + "以上为围护结构及已明确输入项目的确定性计算结果；未提供的货物、换气、人员、照明、风机、化霜等负荷未计入。";
+  }
+  if (data.tool === "cold_storage_load_range") {
+    return "**围护结构负荷范围：" + r.totalLoadRangeKW.min + "–" + r.totalLoadRangeKW.max + " kW**\n\n"
+      + "- U值范围：" + r.uValueRangeWm2K.min.toFixed(3) + "–" + r.uValueRangeWm2K.max.toFixed(3) + " W/(m²·K)\n"
+      + "- 传热负荷范围：" + r.transmissionLoadRangeKW.min + "–" + r.transmissionLoadRangeKW.max + " kW\n\n"
+      + "该范围来自热工参数范围传播，不是安全系数、设备选型裕量或压缩机推荐范围。";
+  }
+  return null;
+}
+
 function parseToolRequest(text) {
   if (typeof text !== "string") return null;
   const match = text.trim().match(/^\{[\s\S]*\}$/);
