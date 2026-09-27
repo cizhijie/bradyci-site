@@ -32,6 +32,8 @@ export const REFRIGERATION_TOOL_PROTOCOL = `
 {"__brady_tool__":"product_load","args":{...}}
 或
 {"__brady_tool__":"envelope_u_value","args":{...}}
+或
+{"__brady_tool__":"envelope_u_value_range","args":{...}}
 
 cold_storage_load 可用字段：
 lengthM, widthM, heightM, roomTempC, ambientTempC, uValueWm2K,
