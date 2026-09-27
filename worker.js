@@ -4,6 +4,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
+const AGENT_VERSION = "v0.5";
 
 export default {
   async fetch(request, env) {
@@ -175,7 +176,10 @@ async function processMemoryCandidate(env, text) {
     ? memories.find((m) => m.category === category && memoryTopic(m.category, m.content) === topic)
     : null;
 
-  if (related && shouldReplaceMemory(related.content, content)) {
+  // v0.5: same topic + same kind of fact is updated; goals and progress are kept separately.
+  if (related) {
+    const similarity = memorySimilarity(related.content, content);
+    if (similarity >= 0.82) return;
     await env.brady_agent_memory
       .prepare("UPDATE memories SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
       .bind(content, related.id).run();
@@ -193,20 +197,43 @@ function normalizeMemory(text) {
 
 function memoryTopic(category, text) {
   const rules = {
-    profile: [["name", /名字|我叫|叫我/], ["location", /住在|来自|常驻/], ["career", /职业|从事/], ["family", /孩子|家庭/]],
-    preference: [["english-style", /英语|英式|发音|口音/], ["answer-style", /回答|简短|详细|直接/]],
-    project: [["brady-agent", /Brady\s*Agent|Agent|智能体/i], ["website", /网站|bradyci/i]],
+    profile: [
+      ["name", /名字|我叫|叫我/], ["location", /住在|来自|常驻/],
+      ["career", /职业|从事/], ["family", /孩子|家庭/]
+    ],
+    preference: [
+      ["english-style", /英语|英式|发音|口音/],
+      ["answer-style", /回答|简短|详细|直接/]
+    ],
+    project: [
+      ["brady-agent", /Brady\s*Agent|Agent|智能体/i],
+      ["website", /网站|bradyci/i]
+    ],
     work: [["refrigeration", /制冷|冷库|冷风机|压缩机/]],
-    learning: [["economist", /经济师|工商管理/], ["english", /英语|口语|英式/]]
+    learning: [
+      ["economist-progress", /(?:经济师|工商管理).*(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟)|(?:第[一二三四五六七八九十\d]+章|学完|学到|进度|刷题|错题|模拟).*(?:经济师|工商管理)/],
+      ["economist-goal", /经济师|工商管理/],
+      ["english-progress", /英语.*(?:学到|进度|练习了|完成)|(?:学到|进度|练习了|完成).*英语/],
+      ["english-goal", /英语|口语|英式/]
+    ]
   };
   const hit = (rules[category] || []).find(([, re]) => re.test(text));
   return hit?.[0] || null;
 }
 
-function shouldReplaceMemory(oldText, newText) {
-  const oldNorm = normalizeMemory(oldText), newNorm = normalizeMemory(newText);
-  if (oldNorm.includes(newNorm) || newNorm.includes(oldNorm)) return newText.length >= oldText.length;
-  return true;
+function memorySimilarity(a, b) {
+  const x = memoryTokens(a), y = memoryTokens(b);
+  if (!x.size || !y.size) return 0;
+  let common = 0;
+  for (const token of x) if (y.has(token)) common++;
+  return common / Math.max(x.size, y.size);
+}
+
+function memoryTokens(text) {
+  const s = normalizeMemory(text);
+  const out = new Set();
+  for (let i = 0; i < s.length - 1; i++) out.add(s.slice(i, i + 2));
+  return out;
 }
 
 async function loadMemories(env) {
