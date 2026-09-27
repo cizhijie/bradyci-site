@@ -77,6 +77,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
       if (!Number.isFinite(args.cpBelowKJkgK)) args.cpBelowKJkgK = food.cpBelowKJkgK;
       args.foodPropertySource = food.source;
       args.foodPropertyLabel = food.label;
+      args.foodPropertySourceUrl = food.sourceUrl;
     }
 
     const base = ["massKg","entryTempC","targetTempC","pullDownHours","cpAboveKJkgK"];
