@@ -286,15 +286,15 @@ function formatDeterministicRefrigerationResult(data) {
       + "该范围来自热工参数范围传播，不是安全系数、设备选型裕量或压缩机推荐范围。";
   }
   if (data.tool === "product_load") {
+    const en=r.energyKJ||{}, inp=r.inputs||{};
     let s = "**货物降温/冻结平均负荷：" + r.averageLoadKW + " kW**\n\n"
-      + "- 货物总热量：" + r.totalHeatKJ + " kJ\n"
-      + "- 处理时间：" + r.pullDownHours + " h";
-    if (r.stagesKJ) {
-      if (Number.isFinite(r.stagesKJ.sensibleAboveFreezing)) s += "\n- 冻结前显热：" + r.stagesKJ.sensibleAboveFreezing + " kJ";
-      if (Number.isFinite(r.stagesKJ.latent)) s += "\n- 冻结潜热：" + r.stagesKJ.latent + " kJ";
-      if (Number.isFinite(r.stagesKJ.sensibleBelowFreezing)) s += "\n- 冻结后显热：" + r.stagesKJ.sensibleBelowFreezing + " kJ";
-    }
-    if (r.propertyData) s += "\n\n**采用的食品热物性**\n- 食品：" + r.propertyData.label + "\n- 资料来源：" + r.propertyData.source;
+      + "- 货物质量：" + inp.massKg + " kg\n"
+      + "- 入库温度：" + inp.entryTempC + "℃\n"
+      + "- 目标温度：" + inp.targetTempC + "℃\n"
+      + "- 处理时间：" + inp.pullDownHours + " h\n"
+      + "- 总热量：" + en.total + " kJ";
+    if (r.freezing) s += "\n- 冻结前显热：" + en.sensibleAbove + " kJ\n- 冻结潜热：" + en.latent + " kJ\n- 冻结后显热：" + en.sensibleBelow + " kJ";
+    if (r.propertyData) s += "\n\n**采用的食品热物性**\n- 食品：" + r.propertyData.label + "\n- 冻结点：" + inp.freezingPointC + "℃\n- 冻结点以上比热：" + inp.cpAboveKJkgK + " kJ/(kg·K)\n- 冻结潜热：" + inp.latentHeatKJkg + " kJ/kg\n- 冻结点以下比热：" + inp.cpBelowKJkgK + " kJ/(kg·K)\n- 资料来源：" + r.propertyData.source;
     return s + "\n\n这是货物负荷，不等于压缩机选型冷量。";
   }
   if (data.tool === "envelope_u_value") return "**理论 U 值：" + r.uValueWm2K + " W/(m²·K)**\n\n" + (r.notes || []).join("\n");
