@@ -35,6 +35,73 @@ export const FOOD_THERMAL_PROPERTIES = [
     source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
     sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
   }
+  ,
+  {
+    id: "pork_shoulder_whole_lean",
+    label: "猪肩肉（整块瘦肉）",
+    aliases: ["猪肩肉", "猪肩瘦肉", "pork shoulder lean"],
+    freezingPointC: -2.2,
+    cpAboveKJkgK: 3.59,
+    cpBelowKJkgK: 2.20,
+    latentHeatKJkg: 243,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  },
+  {
+    id: "chicken",
+    label: "鸡肉（Chicken）",
+    aliases: ["鸡肉", "整鸡", "chicken"],
+    freezingPointC: -2.8,
+    cpAboveKJkgK: 4.34,
+    cpBelowKJkgK: 3.32,
+    latentHeatKJkg: 220,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  },
+  {
+    id: "salmon_pink",
+    label: "粉红鲑（Pink salmon）",
+    aliases: ["粉红鲑", "pink salmon"],
+    freezingPointC: -2.2,
+    cpAboveKJkgK: 3.68,
+    cpBelowKJkgK: 2.17,
+    latentHeatKJkg: 255,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  },
+  {
+    id: "cod_whole",
+    label: "鳕鱼（Cod，整鱼）",
+    aliases: ["鳕鱼", "cod"],
+    freezingPointC: -2.2,
+    cpAboveKJkgK: 3.78,
+    cpBelowKJkgK: 2.14,
+    latentHeatKJkg: 271,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  },
+  {
+    id: "apple_fresh",
+    label: "鲜苹果",
+    aliases: ["鲜苹果", "新鲜苹果", "fresh apple", "fresh apples"],
+    freezingPointC: -1.1,
+    cpAboveKJkgK: 3.81,
+    cpBelowKJkgK: 1.98,
+    latentHeatKJkg: 280,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  },
+  {
+    id: "strawberry",
+    label: "草莓",
+    aliases: ["草莓", "strawberry", "strawberries"],
+    freezingPointC: -0.8,
+    cpAboveKJkgK: 4.00,
+    cpBelowKJkgK: 1.84,
+    latentHeatKJkg: 306,
+    source: "2026 ASHRAE Handbook—Refrigeration, Chapter 19, Table 3 (SI)",
+    sourceUrl: "https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"
+  }
 ];
 
 export function findFoodThermalProperties(text = "") {
