@@ -63,7 +63,7 @@ export function calculateProductLoad(input = {}) {
       massKg, entryTempC, targetTempC, pullDownHours,
       freezingPointC, cpAboveKJkgK, latentHeatKJkg, cpBelowKJkgK
     },
-    propertyData: input.foodPropertySource ? { label: input.foodPropertyLabel || null, source: input.foodPropertySource } : null,
+    propertyData: input.foodPropertySource ? { label: input.foodPropertyLabel || null, source: input.foodPropertySource, sourceUrl: input.foodPropertySourceUrl || null } : null,
     energyKJ: {
       sensibleAbove: round(partsKJ.sensibleAbove, 1),
       latent: round(partsKJ.latent, 1),
