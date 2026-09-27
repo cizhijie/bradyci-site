@@ -2,6 +2,7 @@
   "name": "bradyci-site",
   "compatibility_date": "2026-09-26",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "html_handling": "none"
   }
 }
