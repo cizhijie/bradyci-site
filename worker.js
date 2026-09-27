@@ -14,7 +14,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.18";
+const AGENT_VERSION = "v1.19";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -167,8 +167,7 @@ export default {
           const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|入库|货温|小时|一楼|落地|楼层|地面|保温|开门|次|分钟)/i.test(currentText);
           if (startsIntake || isProjectFollowup) {
             const patch = extractColdRoomProject(currentText);
-            if (/一楼|落地|楼层|地面|保温/.test(currentText) && !patch.insulation) patch.floor = { description: currentText };
-            if (/开门|每次|分钟/.test(currentText)) patch.doorUsage = { description: currentText };
+            // floor and doorUsage are parsed into concise structured fields by extractColdRoomProject().
             coldRoomState = mergeColdRoomProjectState(coldRoomState || {}, patch);
             await saveColdRoomProjectState(env, coldRoomState);
             return sseText(formatColdRoomProjectState(coldRoomState), { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
