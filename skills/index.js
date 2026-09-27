@@ -1,6 +1,8 @@
 import { economistSkill } from "./economist.js";
+import { refrigerationSkill } from "./refrigeration.js";
 
 export const SKILLS = [
+  refrigerationSkill,
   economistSkill
 ];
 
