@@ -96,24 +96,37 @@ export function extractColdRoomProject(text = "") {
   return project;
 }
 
-export function formatColdRoomIntake(text = "") {
-  if (!/(冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(text) || !/(怎么配|怎么选|方案|看看|配置)/i.test(text)) return null;
-  const p = extractColdRoomProject(text);
+export function formatColdRoomProjectState(p = {}) {
   const known = [];
   if (p.location) known.push("地点：" + p.location);
-  if (p.dimensions) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");
+  if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");
   if (Number.isFinite(p.roomTempC)) known.push("目标库温：" + p.roomTempC + "℃");
-  if (p.insulation) known.push("保温：" + p.insulation.thicknessMm + " mm " + p.insulation.material + "板");
+  if (p.insulation?.material && Number.isFinite(p.insulation?.thicknessMm)) known.push("保温：" + p.insulation.thicknessMm + " mm " + p.insulation.material + "板");
   if (p.productCategory) known.push("货物：" + p.productCategory);
   if (Number.isFinite(p.dailyInboundKg)) known.push("日进货量：约 " + (p.dailyInboundKg/1000) + " 吨");
+  if (Number.isFinite(p.entryTempC)) known.push("入库货温：" + p.entryTempC + "℃");
+  if (Number.isFinite(p.pullDownHours)) known.push("要求时间：" + p.pullDownHours + " h");
+  if (p.floor?.description) known.push("地面情况：" + p.floor.description);
+  if (p.doorUsage?.description) known.push("开门情况：" + p.doorUsage.description);
+
   const questions = [];
   if (!p.productCategory || /待确认/.test(p.productCategory)) questions.push("具体是什么肉？入库时是鲜肉、冷藏肉，还是已经冻结的肉？");
   if (!Number.isFinite(p.entryTempC)) questions.push("货物入库时大约多少℃？");
   if (!Number.isFinite(p.pullDownHours)) questions.push("希望多长时间把这一批货降到目标货温？");
-  questions.push("冷库是一楼直接落地还是楼层上？地面有没有做保温？");
-  questions.push("每天开门大概多少次、每次大约多久？");
-  const q = questions.slice(0,5);
-  return "**已知条件**\n" + known.map(x=>"• "+x).join("\n") + "\n\n**还需要确认**\n" + q.map((x,i)=>(i+1)+". "+x).join("\n") + "\n\nU值、导热系数、食品比热/潜热等专业参数不用你提供；有审核资料的由 Brady Agent 后端资料层处理，没有可靠资料的我会明确标注待复核。";
+  if (!p.floor?.description) questions.push("冷库是一楼直接落地还是楼层上？地面有没有做保温？");
+  if (!p.doorUsage?.description) questions.push("每天开门大概多少次、每次大约多久？");
+
+  const heading = questions.length ? "**已知条件**" : "**当前项目条件已基本收集完成**";
+  const follow = questions.length
+    ? "\n\n**还需要确认**\n" + questions.slice(0,5).map((x,i)=>(i+1)+". "+x).join("\n")
+    : "\n\n关键客户信息已经基本齐全，下一步可以进入工程资料补全和分项负荷核算。";
+  return heading + "\n" + known.map(x=>"• "+x).join("\n") + follow + "\n\nU值、导热系数、食品比热/潜热等专业参数不用你提供；有审核资料的由 Brady Agent 后端资料层处理，没有可靠资料的我会明确标注待复核。";
+}
+
+export function formatColdRoomIntake(text = "", existingState = null) {
+  if (!/(冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(text) || !/(怎么配|怎么选|方案|看看|配置)/i.test(text)) return null;
+  const p = { ...(existingState || {}), ...extractColdRoomProject(text) };
+  return formatColdRoomProjectState(p);
 }
 
 export function detectDeterministicRefrigerationRequest(messages = []) {
