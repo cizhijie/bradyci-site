@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.6";
+const AGENT_VERSION = "v1.7";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -133,6 +133,7 @@ export default {
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (owner && activeSkill?.id === "refrigeration") {
           const directRequest = detectDeterministicRefrigerationRequest(messages);
+          if (directRequest?.__brady_clarify__) return sseText(directRequest.__brady_clarify__, { model: "deterministic-router", role: "owner", skill: activeSkill.id });
           if (directRequest) {
             const directResult = runRefrigerationTool({ tool: directRequest.__brady_tool__, args: directRequest.args });
             const directMessages = [...messages, { role: "user", content: "【后端确定性计算结果】\n" + JSON.stringify(directResult) + "\n请依据该结果简洁回答，不要重新心算覆盖工具结果。" }];
