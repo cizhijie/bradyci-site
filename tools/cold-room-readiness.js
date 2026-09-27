@@ -203,7 +203,9 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     }
   }
 
-  const floorBoundaryRule=getFloorBoundaryRule(state);\n  if (floorBoundaryRule) results.floor_boundary_rule=floorBoundaryRule;\n\n  const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
+  const floorBoundaryRule=getFloorBoundaryRule(state);
+  if (floorBoundaryRule) results.floor_boundary_rule=floorBoundaryRule;
+  const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const floorMaterial = findInsulationMaterial(floorInsulationText);
   const floorThicknessMm = Number(state.floor?.insulation?.thicknessMm);
   if (floorMaterial && Number.isFinite(floorThicknessMm) && floorThicknessMm > 0) {
