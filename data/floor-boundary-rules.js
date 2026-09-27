@@ -17,6 +17,21 @@ export const FLOOR_BOUNDARY_RULES = {
   }
 };
 
+export const GENERIC_FLOOR_BOUNDARY_ESTIMATES = {
+  warmClimateAnnualMeanC:{
+    value:21.1,
+    source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads, Table 5",
+    confidence:"low",
+    applicability:"generic warm-climate quick estimate only; not Chengdu station ground temperature",
+    rule:"May be used only in estimate mode when location-specific annual mean ground temperature is unavailable, and must be labeled generic."
+  }
+};
+
+export function getGenericFloorBoundaryEstimate(state={}){
+  const rule=getFloorBoundaryRule(state);
+  return rule===FLOOR_BOUNDARY_RULES.freezerOnGround ? GENERIC_FLOOR_BOUNDARY_ESTIMATES.warmClimateAnnualMeanC : null;
+}
+
 export function getFloorBoundaryRule(state={}){
   const desc=String(state.floor?.description||"");
   if(/一楼落地|落地库|地面/.test(desc) && Number(state.roomTempC)<0) return FLOOR_BOUNDARY_RULES.freezerOnGround;
