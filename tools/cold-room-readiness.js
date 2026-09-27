@@ -359,7 +359,8 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       note:"墙+顶+地快速估算；墙顶采用芯材理论U范围，地面采用通用暖区年平均地温回退值。"
     };
   }
-  const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((s,x)=>s+x.averageKW,0);\n  const env=results.envelope_total_estimate?.ok?results.envelope_total_estimate.loadRangeKW:null;
+  const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((sum,x)=>sum+x.averageKW,0);
+  const env=results.envelope_total_estimate?.ok?results.envelope_total_estimate.loadRangeKW:null;
   const inf=results.infiltration_load_estimate?.ok?results.infiltration_load_estimate.averageLoadRangeKW:null;
   results.load_summary={
     ok:avgParts.length>0,
