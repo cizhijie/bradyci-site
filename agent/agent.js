@@ -45,11 +45,11 @@ form.addEventListener("submit",async e=>{
     const headers={"Content-Type":"application/json"};if(ownerPin)headers["X-Owner-Pin"]=ownerPin;
     const r=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages})});
     if(!r.ok){const data=await r.json().catch(()=>({}));throw new Error(data.error||"请求失败");}
-    if(!r.body)throw new Error("浏览器不支持流式响应");bubble.textContent="";
+    const toolUsed=r.headers.get("X-Brady-Tool")||"";if(!r.body)throw new Error("浏览器不支持流式响应");bubble.textContent="";
     const reader=r.body.getReader(),decoder=new TextDecoder();let buffer="";
     while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const lines=buffer.split("\n");buffer=lines.pop()||"";
       for(const raw of lines){const line=raw.trim();if(!line.startsWith("data:"))continue;const payload=line.slice(5).trim();if(!payload||payload==="[DONE]")continue;
-        try{const data=JSON.parse(payload),delta=data?.choices?.[0]?.delta?.content;if(typeof delta==="string"&&delta){reply+=delta;bubble.innerHTML=renderMarkdown(reply);chat.scrollTop=chat.scrollHeight;}}catch{}
+        try{const data=JSON.parse(payload),delta=data?.choices?.[0]?.delta?.content;if(typeof delta==="string"&&delta){reply+=delta;bubble.innerHTML=(toolUsed?"<p><strong>⚙ 已调用确定性计算工具："+escapeHtml(toolUsed)+"</strong></p>":"")+renderMarkdown(reply);chat.scrollTop=chat.scrollHeight;}}catch{}
       }
     }
     if(!reply)throw new Error("模型没有返回内容");messages.push({role:"assistant",content:reply});
