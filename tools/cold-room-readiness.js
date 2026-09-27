@@ -13,6 +13,8 @@ import { resolveEngineeringMode } from "../lib/engineering-mode.js";
 import { getColdRoomEstimateDefaults } from "../data/cold-room-estimate-defaults.js";
 import { getDoorDimensionReference } from "../data/door-dimension-references.js";
 import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
+import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates.js";
+import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -159,6 +161,46 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   if (weather?.status === "reviewed") results.outdoor_design = weather;
   if (Number.isFinite(Number(state.projectOutdoorTempC))) results.project_outdoor = { temperatureC:Number(state.projectOutdoorTempC), source:"project_requirement" };
 
+  // Quick-estimate doorway infiltration range. This is intentionally range-based:
+  // project dry-bulb stays a project requirement; outdoor RH comes from a separately
+  // labeled observational estimate and is never presented as a coincident design value.
+  if (results.engineering_mode.id === "estimate" && results.project_outdoor && results.door_open_time?.ok) {
+    const moist = findOutdoorMoistAirEstimate(state.location || "");
+    const dim = Number.isFinite(Number(d.widthM)) && Number.isFinite(Number(d.heightM))
+      ? {widthM:[Number(d.widthM),Number(d.widthM)],heightM:[Number(d.heightM),Number(d.heightM)],estimated:false}
+      : results.door_dimension_estimate
+        ? {widthM:results.door_dimension_estimate.widthM,heightM:results.door_dimension_estimate.heightM,estimated:true}
+        : null;
+    if (moist && dim) {
+      const roomRh=reviewedDoorDefaults.coldRoomRhPct.preferred;
+      const outside=results.project_outdoor.temperatureC;
+      const room=Number(state.roomTempC);
+      const df=recommendedDoorwayFlowFactor(outside-room);
+      const cases=[];
+      for (const widthM of dim.widthM) for (const heightM of dim.heightM)
+        for (const outdoorRhPct of moist.summerHighTempRhRangePct)
+          for (const openTimeFactor of [results.door_open_time.minFraction,results.door_open_time.maxFraction]) {
+            const r=calculateDoorInfiltrationLoad({
+              roomTempC:room,roomRhPct:roomRh,outdoorTempC:outside,outdoorRhPct,
+              widthM,heightM,openTimeFactor,doorwayFlowFactor:df,protectiveEffectiveness:0
+            });
+            if (r.ok) cases.push({...r,widthM,heightM,outdoorRhPct,openTimeFactor});
+          }
+      if (cases.length) {
+        const loads=cases.map(x=>x.averageLoadKW).sort((a,b)=>a-b);
+        results.infiltration_load_estimate={
+          ok:true,method:"ASHRAE-Gosney-Olama-range",
+          averageLoadRangeKW:{min:round3(loads[0]),max:round3(loads[loads.length-1])},
+          projectOutdoorTempC:outside,outdoorRhRangePct:moist.summerHighTempRhRangePct,
+          roomRhPct:roomRh,doorwayFlowFactor:df,protectiveEffectiveness:0,
+          doorDimensionsEstimated:dim.estimated,moistAirConfidence:moist.confidence,
+          source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads",
+          note:"快速估算范围；室外RH为独立观测宽范围，不代表与项目高温干球同时发生。正式核算需同时气象条件/实测条件。"
+        };
+      }
+    }
+  }
+
   const floorInsulationText = [state.floor?.insulation?.material, state.floor?.insulation?.thicknessMm ? state.floor.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const floorMaterial = findInsulationMaterial(floorInsulationText);
   const floorThicknessMm = Number(state.floor?.insulation?.thicknessMm);
@@ -284,7 +326,17 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
     lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
     if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：" + dot.assumption.label + "；依据：" + (dot.assumption.source || dot.assumption.basis || "快速估算规则") + "；不是客户实测值。");
-    lines.push("• 这只是开门时间工况，不是渗透冷负荷。空气交换量和焓差公式尚未锁定前，不把它换算成kW。", "");
+    lines.push("• 开门时间工况将与门洞、湿空气状态及已审核的ASHRAE门洞渗透方法组合；满足快速估算条件时，下方会给出kW范围。", "");
+  }
+  const il = results.infiltration_load_estimate;
+  if (il?.ok) {
+    lines.push("**开门渗透负荷快速估算**", "");
+    lines.push(`• 24小时平均渗透负荷范围：**${il.averageLoadRangeKW.min}–${il.averageLoadRangeKW.max} kW**`);
+    lines.push(`• 项目室外高温：${il.projectOutdoorTempC}℃；室外RH估算范围：${il.outdoorRhRangePct[0]}%–${il.outdoorRhRangePct[1]}%`);
+    lines.push(`• 库内RH计算参考：${il.roomRhPct}%；门洞流动因子 Df=${il.doorwayFlowFactor}；防护效率折减 E=${il.protectiveEffectiveness}`);
+    if (il.doorDimensionsEstimated) lines.push("• ⚠ 门洞尺寸采用场景快速估算范围，不是现场实测。");
+    lines.push("• ⚠ 这是快速估算，不是正式设计值；室外湿度为独立观测宽范围，并非与该高温干球的规范同时气象条件。");
+    lines.push(`• 方法：${il.method}；来源：${il.source}`, "");
   }
   const f = results.floor_thermal_data;
   if (f?.ok) {
