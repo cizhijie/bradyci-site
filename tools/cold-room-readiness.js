@@ -21,6 +21,7 @@ import { calculateRequiredCoolingCapacity, assessEquipmentSelectionReadiness } f
 import { deriveEvaporatingTemperature, deriveCondensingTemperature, assessRefrigerationConditionInputs } from "./refrigeration-design-conditions.js";
 import { getEvaporatorTDDefault, getAirCooledCondensingApproachDefault } from "../data/refrigeration-design-defaults.js";
 import { assessHeatRejectionCandidates } from "./heat-rejection-strategy.js";
+import { assessCompressorArchitectureCandidates } from "./compressor-architecture.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -391,6 +392,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
     results.condition_readiness=assessRefrigerationConditionInputs(state);
     results.heat_rejection_strategy=assessHeatRejectionCandidates(state);
+    results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
     if (results.engineering_mode.id === "estimate") {
       const tdDefault=getEvaporatorTDDefault(state.roomTempC);
       if (!Number.isFinite(Number(state.evaporatingTempC)) && !Number.isFinite(Number(state.evaporatorTDK)) && tdDefault) {
