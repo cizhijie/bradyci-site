@@ -303,7 +303,7 @@ function sseText(content, meta = {}) {
   return new Response(done, { status: 200, headers: {
     "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache",
     "X-Brady-Model": meta.model || "", "X-Brady-Role": meta.role || "", "X-Brady-Skill": meta.skill || "general",
-    "X-Brady-Version": AGENT_VERSION
+    "X-Brady-Tool": meta.tool || "", "X-Brady-Version": AGENT_VERSION
   }});
 }
 function callModel(env, model, messages, systemPrompt, maxTokens = 900) {
