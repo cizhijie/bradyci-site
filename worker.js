@@ -2,9 +2,24 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 你可能会收到“Owner 私人长期记忆”作为额外上下文。只有已通过 Owner 身份验证时才会提供这些记忆。只把它们当作 Owner 此前明确保存的信息使用；若与 Owner 当前说法冲突，以当前说法为准。不要向未验证访客泄露 Owner 私人记忆，也不要声称记得未提供的信息。`;
 
+const SKILLS = {
+  economist: {
+    label: "中级经济师学习",
+    detect: /中级经济师|经济师|工商管理|经济基础|继续.*学习|继续.*复习|刷题|错题|模拟卷/,
+    prompt: `【当前 Skill：中级经济师学习】
+你现在作为阿杰的中级经济师学习助手工作。
+1. 优先读取长期记忆中的考试目标、专业、当前学习进度和学习偏好，不重复询问已经知道的信息。
+2. 如果用户说“继续学习/继续复习”但没有指定章节，就依据记忆中的最新进度继续；若记忆不足，再简短询问。
+3. 教学以理解、主动回忆、间隔复习和做题检验为主；避免一次塞入过多内容。
+4. 用户没有提供教材原文时，不要声称回答来自其教材；如涉及教材具体章节、原句或题目，应请用户提供材料后再严格按材料学习。
+5. 学习进度发生明确变化时，正常回答即可，长期记忆系统会独立处理进度更新。
+6. 不要在回答里反复解释你正在调用 Skill，直接进入学习任务。`
+  }
+};
+
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v0.5";
+const AGENT_VERSION = "v0.6";
 
 export default {
   async fetch(request, env) {
@@ -84,18 +99,19 @@ export default {
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
 
         const owner = isOwner(request, env);
-        if (owner) {
-          const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
-          if (latestUser) await processMemoryCandidate(env, latestUser.content);
-        }
+        const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
+        if (owner && latestUser) await processMemoryCandidate(env, latestUser.content);
+
         const memories = owner ? await loadMemories(env) : [];
+        const activeSkill = latestUser ? routeSkill(latestUser.content, memories) : null;
         const identityPrompt = owner
           ? "\n\n【当前身份】已验证 Owner。当前聊天者就是阿杰本人，可以使用下面的私人长期记忆来帮助他。"
           : "\n\n【当前身份】未验证访客。不要假定聊天者是阿杰，不得读取、透露或猜测阿杰的私人资料。";
         const memoryPrompt = memories.length
           ? `\n\n【Owner 私人长期记忆】\n${memories.map((m) => `- [${m.category}] ${m.content}`).join("\n")}`
           : "";
-        const systemPrompt = SYSTEM_PROMPT + identityPrompt + memoryPrompt;
+        const skillPrompt = activeSkill ? `\n\n${activeSkill.prompt}` : "";
+        const systemPrompt = SYSTEM_PROMPT + identityPrompt + memoryPrompt + skillPrompt;
 
         let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt);
         let usedModel = PRIMARY_MODEL;
@@ -114,7 +130,8 @@ export default {
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
             "X-Brady-Model": usedModel,
-            "X-Brady-Role": owner ? "owner" : "visitor"
+            "X-Brady-Role": owner ? "owner" : "visitor",
+            "X-Brady-Skill": activeSkill?.id || "general"
           }
         });
       } catch (error) {
@@ -124,6 +141,21 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+
+function routeSkill(text, memories = []) {
+  const raw = String(text || "");
+  for (const [id, skill] of Object.entries(SKILLS)) {
+    if (skill.detect.test(raw)) return { id, ...skill };
+  }
+  // Owner can say a short continuation such as “继续学习”; route from saved study context.
+  if (/^(继续|开始|复习|学习|接着来|继续吧)[。！!？?\s]*$/.test(raw)) {
+    const hasEconomistContext = memories.some((m) =>
+      m.category === "learning" && /中级经济师|经济师|工商管理/.test(m.content)
+    );
+    if (hasEconomistContext) return { id: "economist", ...SKILLS.economist };
+  }
+  return null;
+}
 
 function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
@@ -176,7 +208,6 @@ async function processMemoryCandidate(env, text) {
     ? memories.find((m) => m.category === category && memoryTopic(m.category, m.content) === topic)
     : null;
 
-  // v0.5: same topic + same kind of fact is updated; goals and progress are kept separately.
   if (related) {
     const similarity = memorySimilarity(related.content, content);
     if (similarity >= 0.82) return;
