@@ -1,6 +1,6 @@
 import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateProductLoad } from "./product-load.js";
-import { findFoodThermalProperties } from "../data/food-thermal-properties.js";
+import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -46,7 +46,9 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
 
   const productIntent = /(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜)/i.test(text);
   const food = findFoodThermalProperties(text);
+  const ambiguousFood = findAmbiguousFoodTerm(text);
   if (productIntent) {
+    if (!food && ambiguousFood) return { __brady_clarify__: ambiguousFood.ask };
     const args = {};
     const set = (key, patterns) => {
       for (const re of patterns) {
