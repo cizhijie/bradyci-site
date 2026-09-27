@@ -72,9 +72,9 @@ label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
 export function detectDeterministicRefrigerationRequest(messages = []) {
   const text = messages.filter(m => m?.role === "user" && typeof m.content === "string").slice(-6).map(m => m.content).join("\n");
 
-  const uIntent = /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
+  const compact = dimensionText.match(/(\\d+(?:\\.\\d+)?)\\s*[xX×*]\\s*(\\d+(?:\\.\\d+)?)\\s*[xX×*]\\s*(\\d+(?:\\.\\d+)?)\\s*(?:米|m)?/);\n  const dimensionText = compact ? text + " 长" + compact[1] + "米 宽" + compact[2] + "米 高" + compact[3] + "米" : text;\n\n  const uIntent = /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
   if (uIntent) {
-    const thickness = text.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
+    const thickness = dimensionText.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
     const material = findInsulationMaterial(text);
     const panel = VERIFIED_PANEL_PRODUCTS.find(p => text.toLowerCase().includes(p.manufacturer.toLowerCase()) || text.toLowerCase().includes(p.product.toLowerCase()));
     if (panel && thickness) {
@@ -92,7 +92,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
 
   const coldLoadIntent = /(?:冷库|围护|传热).*(?:负荷|冷量|计算|核算)|(?:负荷|冷量).*(?:冷库|围护)/i.test(text);
   if (coldLoadIntent) {
-    const commonThickness = text.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)\s*(?:厚)?\s*(?:聚氨酯|PIR|XPS|EPS|保温)/i) || text.match(/(?:聚氨酯|PIR|XPS|EPS|保温)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
+    const commonThickness = dimensionText.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)\s*(?:厚)?\s*(?:聚氨酯|PIR|XPS|EPS|保温)/i) || dimensionText.match(/(?:聚氨酯|PIR|XPS|EPS|保温)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
     const commonMaterial = findInsulationMaterial(text);
     if (commonThickness && commonMaterial && Number.isFinite(commonMaterial.lambda)) {
       const theoreticalU = commonMaterial.lambda / (Number(commonThickness[1]) / 1000);
@@ -107,7 +107,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
         const x = Number(commonThickness[1]) / 1000;
         const uMin = commonMaterial.lambdaMin / x, uMax = commonMaterial.lambdaMax / x;
         const dims = {};
-        const grab = (key,re) => { const m=text.match(re); if(m) dims[key]=Number(m[1]); };
+        const grab = (key,re) => { const m=dimensionText.match(re); if(m) dims[key]=Number(m[1]); };
         grab("lengthM",/(?:长|长度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
         grab("widthM",/(?:宽|宽度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
         grab("heightM",/(?:高|高度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
@@ -129,7 +129,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     const args = {};
     const set = (key, patterns) => {
       for (const re of patterns) {
-        const m = text.match(re);
+        const m = dimensionText.match(re);
         if (m) { args[key] = Number(m[1]); return; }
       }
     };
@@ -137,7 +137,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
       /(?:货物|货品|食品|入库量|重量|质量)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:kg|公斤|千克)/i,
       /(\d+(?:\.\d+)?)\s*(?:kg|公斤|千克)\s*(?:货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产)?/i
     ]);
-    const ton = text.match(/(?:货物|货品|食品|入库量|重量|质量)?[^\d]{0,8}(\d+(?:\.\d+)?)\s*吨/i);
+    const ton = dimensionText.match(/(?:货物|货品|食品|入库量|重量|质量)?[^\d]{0,8}(\d+(?:\.\d+)?)\s*吨/i);
     if (!Number.isFinite(args.massKg) && ton) args.massKg = Number(ton[1]) * 1000;
     set("entryTempC", [/(?:入库温度|进货温度|初始温度|入库货温)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i]);
     set("targetTempC", [/(?:目标(?:中心)?温度|目标货温|中心温度|降到|冻到|冷却到)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)/i]);
@@ -166,7 +166,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
 
   if (!/(算|计算|核算).*(冷库|围护|传热|负荷)|(冷库|围护|传热|负荷).*(算|计算|核算)/i.test(text)) return null;
   const args = {};
-  const set = (key, re) => { const m = text.match(re); if (m) args[key] = Number(m[1]); };
+  const set = (key, re) => { const m = dimensionText.match(re); if (m) args[key] = Number(m[1]); };
   set("lengthM", /(?:长|长度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
   set("widthM", /(?:宽|宽度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
   set("heightM", /(?:高|高度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:米|m)\b/i);
