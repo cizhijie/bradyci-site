@@ -10,7 +10,9 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v0.8";
+const AGENT_VERSION = "v0.9";
+const VISITOR_MAX_INPUT_CHARS = 1200;
+const VISITOR_MAX_TOKENS = 600;
 
 export default {
   async fetch(request, env) {
@@ -74,6 +76,9 @@ export default {
         const owner = isOwner(request, env);
         const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
         if (!owner) {
+          if (!latestUser || latestUser.content.length > VISITOR_MAX_INPUT_CHARS) {
+            return json({ error: `访客单次输入最多 ${VISITOR_MAX_INPUT_CHARS} 个字符。` }, 413);
+          }
           const limit = await checkVisitorLimit(request, env);
           if (!limit.ok) {
             const message = limit.reason === "minute"
@@ -87,18 +92,19 @@ export default {
         if (owner && latestUser) await processMemoryCandidate(env, latestUser.content);
 
         const memories = owner ? await loadMemories(env) : [];
-        const activeSkill = latestUser ? routeSkill(latestUser.content, memories) : null;
+        const activeSkill = owner && latestUser ? routeSkill(latestUser.content, memories) : null;
         const split = splitMemories(memories, activeSkill);
         const identityPrompt = owner
           ? "\n\n【当前身份】已验证 Owner。当前聊天者就是阿杰本人，可以使用下面的私人记忆帮助他。"
-          : "\n\n【当前身份】未验证访客。不要假定聊天者是阿杰，不得读取、透露或猜测阿杰的私人资料。";
+          : "\n\n【当前身份】未验证访客。不要假定聊天者是阿杰，不得读取、透露或猜测阿杰的私人资料。访客模式仅提供 Brady Agent 的轻量体验，不调用 Owner 私人 Skill、私人记忆或高成本工具。回答保持简洁，不进行长篇写作、批量生成或复杂高成本任务。";
         const longPrompt = split.longTerm.length ? `\n\n【Owner 长期记忆】\n${split.longTerm.map(m => `- [${m.category}] ${m.content}`).join("\n")}` : "";
         const projectPrompt = split.project.length ? `\n\n【当前项目记忆：${activeSkill?.label || "相关项目"}】\n${split.project.map(m => `- ${m.content}`).join("\n")}` : "";
         const skillPrompt = activeSkill ? `\n\n${activeSkill.prompt}` : "";
         const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt;
 
-        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt), usedModel = PRIMARY_MODEL;
-        if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt); usedModel = FALLBACK_MODEL; }
+        const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
+        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt, maxTokens), usedModel = PRIMARY_MODEL;
+        if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt, maxTokens); usedModel = FALLBACK_MODEL; }
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           return json({ error: data?.error?.message || "免费模型暂时不可用，请稍后再试。" }, response.status);
@@ -181,10 +187,10 @@ async function loadMemories(env) {
   try { const result = await env.brady_agent_memory.prepare("SELECT category, content FROM memories ORDER BY updated_at DESC, id DESC LIMIT 40").all(); return result.results || []; }
   catch { return []; }
 }
-function callModel(env, model, messages, systemPrompt) {
+function callModel(env, model, messages, systemPrompt, maxTokens = 900) {
   return fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: {
     "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json",
     "HTTP-Referer": "https://bradyci.com", "X-Title": "Brady Agent"
-  }, body: JSON.stringify({ model, stream: true, max_tokens: 900, temperature: 0.6, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
+  }, body: JSON.stringify({ model, stream: true, max_tokens: maxTokens, temperature: 0.6, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
 }
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8" } }); }
