@@ -74,7 +74,7 @@ export function calculateProductLoad(input = {}) {
       freezing
         ? "冻结负荷已拆分为冻结前显热、冻结潜热、冻结后显热。"
         : "当前目标温度未跨越所提供的冻结点，按显热降温计算。",
-      "本工具不内置或猜测具体食品热物性；比热、冻结点和潜热应来自可靠资料或明确的工程输入。",
+      input.foodPropertySource\n        ? `本次食品热物性采用：${input.foodPropertyLabel || "已审核食品记录"}；来源：${input.foodPropertySource}。`\n        : "本次热物性由用户明确提供；工具未自行猜测食品参数。",
       "这里得到的是货物在指定降温时间内的平均负荷，不等同于压缩机型号或名义匹数。"
     ]
   };
