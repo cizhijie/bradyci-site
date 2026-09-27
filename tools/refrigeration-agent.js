@@ -125,7 +125,7 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     }
   }
 
-  const productIntent = /(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛肉|猪肉|羊肉|鱼|水产|水果|蔬菜)/i.test(text);
+  const productIntent = /(货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产|水果|蔬菜)/i.test(text);
   const food = findFoodThermalProperties(text);
   const ambiguousFood = findAmbiguousFoodTerm(text);
   if (productIntent) {
