@@ -52,12 +52,20 @@ export function assessColdRoomProject(state = {}) {
     blocked.push({ id:"product_load", reason:reasons.join("；"), sourceReady:!!food });
   }
 
-  // Infiltration: do not calculate from vague door frequency alone.
-  if (state.doorUsage?.description) {
-    blocked.push({ id:"infiltration_load", reason:"已有开门频率，但缺门洞尺寸及明确的单次开门持续时间；不能据“几分钟”伪造精确渗透负荷。", sourceReady:false });
-    customerQuestions.push("请补充冷库门大约宽×高，以及每次开门通常约几分钟（给一个大概数字即可）。");
+  // Infiltration: doorway facts are captured deterministically, but the heat/mass
+  // transfer method also needs outdoor moisture state and a reviewed engineering method.
+  const door = state.doorUsage || {};
+  const hasDoorSize = Number.isFinite(Number(door.widthM)) && Number.isFinite(Number(door.heightM));
+  const hasDoorDuration = Number.isFinite(Number(door.minutesPerOpeningMin));
+  const hasDoorCount = Number.isFinite(Number(door.openingsPerDayMin));
+  if (hasDoorSize && hasDoorDuration && hasDoorCount) {
+    blocked.push({ id:"infiltration_load", reason:"门洞尺寸、次数和持续时间已齐；还需室外空气含湿状态及审核后的开门渗透计算方法，暂不伪造负荷。", sourceReady:false });
+    customerQuestions.push("开门数据已齐。室外湿度等气象参数不要求客户估算，将由审核资料层补全；在公式和参数来源锁定前不输出假精确渗透负荷。");
   } else {
-    blocked.push({ id:"infiltration_load", reason:"缺开门使用情况和门洞尺寸。", sourceReady:false });
+    blocked.push({ id:"infiltration_load", reason:"开门渗透基础信息未齐。", sourceReady:false });
+    if (!hasDoorSize) customerQuestions.push("请补充冷库门大约宽×高，例如“库门1.5×2.2米”。");
+    if (!hasDoorCount) customerQuestions.push("请补充每天大约开门多少次。");
+    if (!hasDoorDuration) customerQuestions.push("请把“每次几分钟”尽量改成一个范围，例如“每次2–3分钟”。");
   }
 
   blocked.push({ id:"internal_loads", reason:"人员、照明、冷风机等内部负荷尚未进入确定性核算；没有明确数据时不自动计入。", sourceReady:false });
