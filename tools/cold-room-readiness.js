@@ -73,7 +73,8 @@ export function assessColdRoomProject(state = {}) {
     customerQuestions.push("开门数据已齐。室外湿度等气象参数不要求客户估算，将由审核资料层补全；在公式和参数来源锁定前不输出假精确渗透负荷。");
   } else {
     blocked.push({ id:"infiltration_load", reason:"开门渗透基础信息未齐。", sourceReady:false });
-    if (!hasDoorSize) customerQuestions.push("请补充冷库门大约宽×高，例如“库门1.5×2.2米”。");
+    if (!hasDoorSize && state.accessMode) customerQuestions.push("已知道进出方式为“" + (state.accessMode === "vehicle" ? "叉车/托盘机械搬运" : "人员/人工搬运") + "”。如果记得库门大概宽×高请补充；不知道也可以，快速估算模式会继续按场景处理并明确标注假设。");
+    else if (!hasDoorSize) customerQuestions.push("库门尺寸如果知道，请补充大约宽×高；如果不知道，只需说明主要是人员搬运、手推车还是叉车进出。");
     if (!hasDoorCount) customerQuestions.push("请补充每天大约开门多少次。");
     if (!hasDoorDuration) customerQuestions.push("请把“每次几分钟”尽量改成一个范围，例如“每次2–3分钟”。");
   }
