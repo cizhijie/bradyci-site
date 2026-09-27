@@ -75,7 +75,8 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
   const compact = text.match(/(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/);
   const dimensionText = compact ? text + " 长" + compact[1] + "米 宽" + compact[2] + "米 高" + compact[3] + "米" : text;
 
-  const loadContext = /(?:冷库|围护|传热).*(?:负荷|冷量|核算)|(?:负荷|冷量|核算).*(?:冷库|围护|传热)/i.test(text);\n  const uIntent = !loadContext && /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
+  const loadContext = /(?:冷库|围护|传热).*(?:负荷|冷量|核算)|(?:负荷|冷量|核算).*(?:冷库|围护|传热)/i.test(text);
+  const uIntent = !loadContext && /(?:算|计算|估算|求|看看)?.{0,12}(?:u值|U值|传热系数)|(?:u值|U值|传热系数).{0,12}(?:算|计算|多少|多大)/i.test(text);
   if (uIntent) {
     const thickness = dimensionText.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)/i);
     const material = findInsulationMaterial(text);
