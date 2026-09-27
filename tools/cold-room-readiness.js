@@ -20,6 +20,7 @@ import { getFloorBoundaryRule, getGenericFloorBoundaryEstimate } from "../data/f
 import { calculateRequiredCoolingCapacity, assessEquipmentSelectionReadiness } from "./cooling-capacity-bridge.js";
 import { deriveEvaporatingTemperature, deriveCondensingTemperature, assessRefrigerationConditionInputs } from "./refrigeration-design-conditions.js";
 import { getEvaporatorTDDefault, getAirCooledCondensingApproachDefault } from "../data/refrigeration-design-defaults.js";
+import { assessHeatRejectionCandidates } from "./heat-rejection-strategy.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -389,6 +390,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     });
     results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
     results.condition_readiness=assessRefrigerationConditionInputs(state);
+    results.heat_rejection_strategy=assessHeatRejectionCandidates(state);
     if (results.engineering_mode.id === "estimate") {
       const tdDefault=getEvaporatorTDDefault(state.roomTempC);
       if (!Number.isFinite(Number(state.evaporatingTempC)) && !Number.isFinite(Number(state.evaporatorTDK)) && tdDefault) {
