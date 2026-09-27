@@ -11,6 +11,7 @@ import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js
 import { calculateDoorOpenTimeFactor } from "./infiltration-load.js";
 import { resolveEngineeringMode } from "../lib/engineering-mode.js";
 import { getColdRoomEstimateDefaults } from "../data/cold-room-estimate-defaults.js";
+import { getDoorDimensionReference } from "../data/door-dimension-references.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -117,6 +118,15 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
 
   const d = state.doorUsage || {};
+  const doorRef = getDoorDimensionReference(state.accessMode || "");
+  if (results.engineering_mode.id === "estimate" && doorRef && !(Number.isFinite(Number(d.widthM)) && Number.isFinite(Number(d.heightM)))) {
+    results.door_dimension_estimate = {
+      ...doorRef.quickEstimateRange,
+      label:doorRef.label,
+      confidence:doorRef.confidence,
+      rule:doorRef.rule
+    };
+  }
   const defaults = getColdRoomEstimateDefaults();
   let minMinutes=d.minutesPerOpeningMin, maxMinutes=d.minutesPerOpeningMax;
   let durationEstimated=false;
@@ -243,6 +253,15 @@ export function formatReadyColdRoomCalculations(results = {}) {
   if (results.engineering_mode) {
     lines.push("**核算模式：" + results.engineering_mode.label + "**", "");
     if (results.engineering_mode.id === "estimate") lines.push("• 当前允许使用审核后的工程默认值/范围继续初算；所有估算项必须单独标注，不能冒充客户实测或正式选型数据。", "");
+  }
+  const dde = results.door_dimension_estimate;
+  if (dde) {
+    lines.push("**库门尺寸快速估算范围**", "");
+    lines.push(`• 场景：${dde.label}`);
+    lines.push(`• 门宽暂按：**${dde.widthM[0]}–${dde.widthM[1]} m**`);
+    lines.push(`• 门高暂按：**${dde.heightM[0]}–${dde.heightM[1]} m**`);
+    lines.push(`• 可信度：${dde.confidence === "medium" ? "中" : "低"}`);
+    lines.push("• 这是厂家产品尺寸范围整理后的快速估算区间，不是现场实测门洞，也不是国家统一标准；正式核算前应确认实际尺寸。", "");
   }
   const dot = results.door_open_time;
   if (dot?.ok) {
