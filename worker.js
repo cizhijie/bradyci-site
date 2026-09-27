@@ -4,7 +4,7 @@ import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
-import { assessColdRoomProject, formatColdRoomReadiness } from "./tools/cold-room-readiness.js";
+import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -15,7 +15,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.20";
+const AGENT_VERSION = "v1.21";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -172,9 +172,13 @@ export default {
             coldRoomState = mergeColdRoomProjectState(coldRoomState || {}, patch);
             await saveColdRoomProjectState(env, coldRoomState);
             const readiness = assessColdRoomProject(coldRoomState);
+            const readyResults = calculateReadyColdRoomParts(coldRoomState, readiness);
+            const calculatedText = formatReadyColdRoomCalculations(readyResults);
             const intakeReply = formatColdRoomProjectState(coldRoomState) + "\
 \
-" + formatColdRoomReadiness(readiness);
+" + formatColdRoomReadiness(readiness) + (calculatedText ? "\
+\
+" + calculatedText : "");
             return sseText(intakeReply, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
           }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
