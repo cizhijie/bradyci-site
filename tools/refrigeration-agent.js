@@ -144,12 +144,12 @@ export function extractColdRoomProject(text = "") {
     project.doorUsage.openingsPerDayMax = Number(doorCount[2] || doorCount[1]);
   }
 
-  const people=raw.match(/(?:库内|里面|平时|一般)?[^。；，,]{0,10}(\\d+)\\s*(?:个人|人)(?:[^。；，,]{0,12}(?:工作|停留|作业)[^。；，,]{0,8}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h))?/i);
-  const lightingKW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\\d+(?:\\.\\d+)?)\\s*(?:kW|kw|千瓦)/i);
-  const lightingW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\\d+(?:\\.\\d+)?)\\s*(?:W|瓦)(?!\\s*\\/)/i);
-  const lightingHours=raw.match(/(?:照明|灯)[^。；，,]{0,18}(?:每天|一天|日)[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h)/i);
-  const fanKW=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,14}(?:电机|功率)?[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:kW|kw|千瓦)/i);
-  const fanHours=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,18}(?:每天|一天|日|运行)[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(?:小时|h)/i);
+  const people=raw.match(/(?:库内|里面|平时|一般)?[^。；，,]{0,10}(\d+)\s*(?:个人|人)(?:[^。；，,]{0,12}(?:工作|停留|作业)[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:小时|h))?/i);
+  const lightingKW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i);
+  const lightingW=raw.match(/(?:照明|灯)[^。；，,]{0,12}(\d+(?:\.\d+)?)\s*(?:W|瓦)(?!\s*\/)/i);
+  const lightingHours=raw.match(/(?:照明|灯)[^。；，,]{0,18}(?:每天|一天|日)[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
+  const fanKW=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,14}(?:电机|功率)?[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i);
+  const fanHours=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,18}(?:每天|一天|日|运行)[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
   if (people || lightingKW || lightingW || fanKW) {
     project.internalLoads = {};
     if (people) { project.internalLoads.peopleCount=Number(people[1]); if (people[2]) project.internalLoads.peopleHoursPerDay=Number(people[2]); }
