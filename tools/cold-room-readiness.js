@@ -4,6 +4,7 @@
 
 import { findInsulationMaterial } from "../data/insulation-properties.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
+import { calculateProductLoad } from "./product-load.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -74,5 +75,51 @@ export function formatColdRoomReadiness(a = {}) {
     a.customerQuestions.forEach((x,i)=>lines.push((i+1)+". "+x));
   }
   lines.push("", "不会要求客户提供 U 值、导热系数、食品比热或潜热；这些应由审核资料层补全并保留来源。");
+  return lines.join("\n");
+}
+
+
+export function calculateReadyColdRoomParts(state = {}, assessment = assessColdRoomProject(state)) {
+  const results = {};
+  const readyIds = new Set((assessment.ready || []).map(x => x.id));
+
+  if (readyIds.has("product_load")) {
+    const food = findFoodThermalProperties(state.productCategory || "");
+    if (food) {
+      results.product_load = calculateProductLoad({
+        massKg: Number(state.dailyInboundKg),
+        entryTempC: Number(state.entryTempC),
+        targetTempC: Number(state.roomTempC),
+        pullDownHours: Number(state.pullDownHours),
+        freezingPointC: food.freezingPointC,
+        cpAboveKJkgK: food.cpAboveKJkgK,
+        latentHeatKJkg: food.latentHeatKJkg,
+        cpBelowKJkgK: food.cpBelowKJkgK,
+        foodPropertyLabel: food.label,
+        foodPropertySource: food.source,
+        foodPropertySourceUrl: food.sourceUrl
+      });
+    }
+  }
+  return results;
+}
+
+export function formatReadyColdRoomCalculations(results = {}) {
+  const lines = [];
+  const p = results.product_load;
+  if (p?.ok) {
+    lines.push("**已自动完成可计算分项**", "");
+    lines.push("⚙ 确定性计算：product_load");
+    lines.push(`• 货物降温/冻结平均负荷：**${p.averageLoadKW} kW**`);
+    lines.push(`• 总热量：${p.energyKJ.total} kJ`);
+    if (p.freezing) {
+      lines.push(`• 冻结前显热：${p.energyKJ.sensibleAbove} kJ`);
+      lines.push(`• 冻结潜热：${p.energyKJ.latent} kJ`);
+      lines.push(`• 冻结后显热：${p.energyKJ.sensibleBelow} kJ`);
+    }
+    if (p.propertyData?.label) lines.push(`• 食品热物性：${p.propertyData.label}`);
+    if (p.propertyData?.source) lines.push(`• 资料来源：${p.propertyData.source}`);
+    lines.push("", "这里是货物分项平均负荷，不是冷库总负荷，也不能直接当作压缩机选型冷量。");
+  }
   return lines.join("\n");
 }
