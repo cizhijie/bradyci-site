@@ -76,6 +76,8 @@ export function extractColdRoomProject(text = "") {
   if (compact) project.dimensions = { lengthM:Number(compact[1]), widthM:Number(compact[2]), heightM:Number(compact[3]) };
   const room = raw.match(/(?:库温|库内温度|目标库温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
   if (room) project.roomTempC = Number(room[1]);
+  const projectOutdoor = raw.match(/(?:室外|环境|外界|夏天|夏季|最热(?:的时候)?)[^。；，,]{0,14}(?:按|大概|约|有|到|达到|温度)?[^0-9-]{0,5}(-?[0-9]+(?:\.[0-9]+)?)\s*(?:℃|度)/i);
+  if (projectOutdoor) project.projectOutdoorTempC = Number(projectOutdoor[1]);
   const thickness = raw.match(/(\d+(?:\.\d+)?)\s*(?:mm|毫米)?\s*(?:厚)?\s*(聚氨酯|PIR|XPS|EPS)板?/i) || raw.match(/(聚氨酯|PIR|XPS|EPS)板?[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:mm|毫米)?/i);
   if (thickness) {
     const firstIsNumber = /^\d/.test(thickness[1]);
@@ -133,6 +135,7 @@ export function formatColdRoomProjectState(p = {}) {
   if (p.location) known.push("地点：" + p.location);
   if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");
   if (Number.isFinite(p.roomTempC)) known.push("目标库温：" + p.roomTempC + "℃");
+  if (Number.isFinite(p.projectOutdoorTempC)) known.push("项目设计室外温度：" + p.projectOutdoorTempC + "℃（项目约束，不等同于规范气象参考值）");
   if (p.insulation?.material && Number.isFinite(p.insulation?.thicknessMm)) known.push("保温：" + p.insulation.thicknessMm + " mm " + p.insulation.material + "板");
   if (p.productCategory) known.push("货物：" + p.productCategory);
   if (Number.isFinite(p.dailyInboundKg)) known.push("日进货量：约 " + (p.dailyInboundKg/1000) + " 吨");
