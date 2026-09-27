@@ -15,7 +15,7 @@ import { getDoorDimensionReference } from "../data/door-dimension-references.js"
 import { getReviewedDoorDefaults } from "../data/reviewed-door-defaults.js";
 import { findOutdoorMoistAirEstimate } from "../data/outdoor-moist-air-estimates.js";
 import { calculateDoorInfiltrationLoad, recommendedDoorwayFlowFactor } from "./door-infiltration-estimate.js";
-import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad } from "./internal-loads.js";
+import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternalLoad, calculateElectricDefrostLoad } from "./internal-loads.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -277,6 +277,13 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   if (Number.isFinite(Number(internal.fanPowerKW)) && Number.isFinite(Number(internal.fanHoursPerDay))) {
     results.fan_load=calculateElectricalInternalLoad({inputPowerKW:Number(internal.fanPowerKW),hoursPerDay:Number(internal.fanHoursPerDay)});
   }
+  if ([internal.defrostHeaterPowerKW,internal.defrostsPerDay,internal.minutesPerDefrost].every(x=>Number.isFinite(Number(x)))) {
+    results.defrost_energy=calculateElectricDefrostLoad({
+      heaterPowerKW:Number(internal.defrostHeaterPowerKW),
+      defrostsPerDay:Number(internal.defrostsPerDay),
+      minutesPerDefrost:Number(internal.minutesPerDefrost)
+    });
+  }
 
   // Partial envelope calculation: walls + roof may be completed even while
   // the ground/floor boundary remains unresolved. This is deliberately NOT
@@ -314,6 +321,35 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       };
     }
   }
+
+  // Load-summary framework: combine only comparable 24 h average loads.
+  // Defrost supplied energy and unresolved floor load stay outside the subtotal.
+  const avgParts=[];
+  const addAvg=(id,label,value,kind="calculated")=>{ if(Number.isFinite(Number(value))) avgParts.push({id,label,averageKW:round3(value),kind}); };
+  if (results.product_load?.ok) addAvg("product","货物",results.product_load.averageLoadKW);
+  if (results.infiltration_load_estimate?.ok) {
+    addAvg("infiltration_min","开门渗透下限",results.infiltration_load_estimate.averageLoadRangeKW.min,"estimate");
+    addAvg("infiltration_max","开门渗透上限",results.infiltration_load_estimate.averageLoadRangeKW.max,"estimate");
+  }
+  if (results.people_load?.ok) addAvg("people","人员",results.people_load.average24hLoadKW);
+  if (results.lighting_load?.ok) addAvg("lighting","照明",results.lighting_load.average24hLoadKW);
+  if (results.fan_load?.ok) addAvg("fan","库内风机",results.fan_load.average24hLoadKW);
+  const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((s,x)=>s+x.averageKW,0);
+  const inf=results.infiltration_load_estimate?.ok?results.infiltration_load_estimate.averageLoadRangeKW:null;
+  results.load_summary={
+    ok:avgParts.length>0,
+    averageSubtotalRangeKW:{
+      min:round3(fixed+(inf?.min||0)),
+      max:round3(fixed+(inf?.max||0))
+    },
+    included:avgParts,
+    excluded:[
+      {id:"envelope",reason:"墙顶目前为临时分项，地面边界未完成，暂不并入总计"},
+      {id:"defrost",reason:results.defrost_energy?.ok?"已知每日输入能量，但尚未转换成可与24h平均负荷直接相加的制冷负荷":"化霜数据未齐"},
+      {id:"selection_margin",reason:"选型裕量/运行时间系数不属于基础热负荷，后续单独处理"}
+    ],
+    provisional:true
+  };
 
   return results;
 }
@@ -408,6 +444,21 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push(`• 墙体+顶板合计：**${ep.wallsRoofRangeKW.min}–${ep.wallsRoofRangeKW.max} kW**`);
     lines.push(`• 当前温差：${ep.outsideTempC}℃ - (${ep.roomTempC}℃) = ${ep.deltaTK} K`);
     lines.push("• 状态：临时分项结果。地面负荷尚未计入；当前U值又是芯材理论范围，所以不能把这个数当作完整围护负荷或最终设计冷量。", "");
+  }
+  const de=results.defrost_energy;
+  if (de?.ok) {
+    lines.push("**化霜输入能量已计算**", "");
+    lines.push(`• 电化霜功率：${de.heaterPowerKW} kW；每日化霜：${de.dailyDefrostHours} h`);
+    lines.push(`• 每日输入电热能：**${de.suppliedEnergyKWhPerDay} kWh/天**`);
+    lines.push("• 当前不把这项直接当成24h平均制冷负荷相加，避免把化霜输入能量与实际化霜制冷负荷混为一谈。", "");
+  }
+  const ls=results.load_summary;
+  if (ls?.ok) {
+    lines.push("**当前冷库负荷汇总框架**", "");
+    lines.push(`• 已完成且口径可直接相加的24h平均负荷小计：**${ls.averageSubtotalRangeKW.min}–${ls.averageSubtotalRangeKW.max} kW**`);
+    lines.push("• 当前小计只包含已经完成的货物、开门渗透、人员、照明、风机等可比口径分项。");
+    lines.push("• 暂未并入：完整围护结构负荷、化霜实际制冷负荷、选型裕量/运行时间系数。");
+    lines.push("• 因此这个数字还不是最终冷库总负荷，更不能直接拿来定压缩机匹数。", "");
   }
   const p = results.product_load;
   if (p?.ok) {
