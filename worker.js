@@ -64,6 +64,10 @@ export default {
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
 
         const owner = isOwner(request, env);
+        if (owner) {
+          const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
+          if (latestUser) await rememberExplicitInstruction(env, latestUser.content);
+        }
         const memories = owner ? await loadMemories(env) : [];
         const identityPrompt = owner
           ? "\n\n【当前身份】已验证 Owner。当前聊天者就是阿杰本人，可以使用下面的私人长期记忆来帮助他。"
@@ -111,6 +115,30 @@ function safeEqual(a, b) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+async function rememberExplicitInstruction(env, text) {
+  if (!env.brady_agent_memory || typeof text !== "string") return;
+  const raw = text.trim();
+  const match = raw.match(/^(?:请)?(?:帮我)?记住[：:，,\s]*(.+)$/s);
+  if (!match) return;
+  const content = match[1].trim();
+  if (!content || content.length > 1200) return;
+
+  let category = "general";
+  if (/名字|叫我|我是|年龄|住在|来自|家庭|职业/.test(content)) category = "profile";
+  else if (/喜欢|偏好|习惯|不喜欢|希望你|回答|风格/.test(content)) category = "preference";
+  else if (/项目|网站|Agent|智能体|开发|公司|创业/.test(content)) category = "project";
+  else if (/工作|客户|销售|制冷|冷库|业务/.test(content)) category = "work";
+  else if (/学习|英语|考试|经济师|课程|练习/.test(content)) category = "learning";
+
+  const exists = await env.brady_agent_memory
+    .prepare("SELECT id FROM memories WHERE content = ? LIMIT 1").bind(content).first();
+  if (exists) return;
+
+  await env.brady_agent_memory
+    .prepare("INSERT INTO memories (category, content) VALUES (?, ?)")
+    .bind(category, content).run();
+}
+
 async function loadMemories(env) {
   if (!env.brady_agent_memory) return [];
   try {
