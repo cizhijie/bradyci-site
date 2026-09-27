@@ -2,7 +2,7 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
-import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest } from "./tools/refrigeration-agent.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, formatColdRoomIntake } from "./tools/refrigeration-agent.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.14";
+const AGENT_VERSION = "v1.15";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -144,6 +144,8 @@ export default {
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (owner && activeSkill?.id === "refrigeration") {
+          const intakeText = latestUser ? formatColdRoomIntake(latestUser.content) : null;
+          if (intakeText) return sseText(intakeText, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
           const directRequest = detectDeterministicRefrigerationRequest(messages);
           if (directRequest?.__brady_clarify__) return sseText(directRequest.__brady_clarify__, { model: "deterministic-router", role: "owner", skill: activeSkill.id });
           if (directRequest) {
