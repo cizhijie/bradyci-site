@@ -138,7 +138,8 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
       }
     };
     set("massKg", [
-      /(?:货物|货品|食品|入库量|重量|质量)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:kg|公斤|千克)/i,\n      /(\d+(?:\.\d+)?)\s*(?:kg|公斤|千克)\s*(?:货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产)?/i
+      /(?:货物|货品|食品|入库量|重量|质量)[^\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(?:kg|公斤|千克)/i,
+      /(\\d+(?:\\.\\d+)?)\\s*(?:kg|公斤|千克)\\s*(?:货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产)?/i
     ]);
     const ton = dimensionText.match(/(?:货物|货品|食品|入库量|重量|质量)?[^\d]{0,8}(\d+(?:\.\d+)?)\s*吨/i) || dimensionText.match(/(\d+(?:\.\d+)?)\s*吨\s*(?:牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|货物|食品)?/i);
     if (!Number.isFinite(args.massKg) && ton) args.massKg = Number(ton[1]) * 1000;
