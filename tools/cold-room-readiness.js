@@ -348,6 +348,17 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   if (results.people_load?.ok) addAvg("people","人员",results.people_load.average24hLoadKW);
   if (results.lighting_load?.ok) addAvg("lighting","照明",results.lighting_load.average24hLoadKW);
   if (results.fan_load?.ok) addAvg("fan","库内风机",results.fan_load.average24hLoadKW);
+  if (results.envelope_partial?.ok && results.floor_load_estimate?.ok) {
+    results.envelope_total_estimate={
+      ok:true,
+      loadRangeKW:{
+        min:round3(results.envelope_partial.wallsRoofRangeKW.min+results.floor_load_estimate.loadRangeKW.min),
+        max:round3(results.envelope_partial.wallsRoofRangeKW.max+results.floor_load_estimate.loadRangeKW.max)
+      },
+      provisional:true,
+      note:"墙+顶+地快速估算；墙顶采用芯材理论U范围，地面采用通用暖区年平均地温回退值。"
+    };
+  }
   const fixed=avgParts.filter(x=>!/^infiltration_/.test(x.id)).reduce((s,x)=>s+x.averageKW,0);
   const inf=results.infiltration_load_estimate?.ok?results.infiltration_load_estimate.averageLoadRangeKW:null;
   results.load_summary={
