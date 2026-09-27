@@ -24,11 +24,11 @@ export function assessColdRoomProject(state = {}) {
   const insulation = findInsulationMaterial(insulationText);
   if (hasGeometry && hasRoomTemp && insulation && Number.isFinite(Number(state.insulation?.thicknessMm))) {
     const weather = findOutdoorDesignCondition(state.location || "");
-    if (weather?.status === "reviewed") {
-      blocked.push({ id:"envelope_load", reason:"室外设计温度已由审核气象资料层补全；目前仅缺地面外侧边界温度/地温及地面保温构造，不能静默猜测。", sourceReady:true });
+    if (Number.isFinite(Number(state.projectOutdoorTempC))) {
+      blocked.push({ id:"envelope_load", reason:"项目设计室外温度已明确；墙体和顶板可先行核算，目前完整围护负荷仍缺地面外侧边界温度/地温及地面保温构造。", sourceReady:true });
     } else {
       blocked.push({ id:"envelope_load", reason:"还缺已审核的室外设计温度，以及地面外侧边界温度/地温；这些边界条件不能由系统静默猜测。", sourceReady:true });
-      customerQuestions.push("项目当地夏季室外设计温度若不清楚，可以只确认城市；后续由工程资料层查取并标明来源。");
+      customerQuestions.push("请确认项目希望按多少℃的室外高温仍能正常运行；例如现场要求“按38℃考虑”。规范气象值只作参考，不自动替代项目设计温度。");
     }
     if (!state.floor?.insulation?.material || !Number.isFinite(Number(state.floor?.insulation?.thicknessMm))) {
       customerQuestions.push("地面已确认做保温，请补充地面保温材料和厚度，例如“100mm XPS挤塑板”；不需要提供 U 值或导热系数。");
@@ -230,7 +230,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push(`• 对应湿球温度：${w.summerAcWetBulbC}℃`);
     lines.push(`• 统计口径：${w.dryBulbDefinition}`);
     lines.push(`• 规范口径：${w.standard}`);
-    lines.push("• 注意：该温度用于当前围护结构夏季室外空气边界参考；不自动作为压缩机/冷凝器选型的冷凝环境条件。", "");
+    lines.push("• 注意：这是规范气象参考值，不自动作为项目围护负荷计算温度，也不自动作为压缩机/冷凝器选型工况。", "");
   }
   const e = results.envelope_thermal_data;
   if (e?.ok) {
