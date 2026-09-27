@@ -19,6 +19,7 @@ import { calculatePeopleLoad, calculateLightingLoad, calculateElectricalInternal
 import { getFloorBoundaryRule, getGenericFloorBoundaryEstimate } from "../data/floor-boundary-rules.js";
 import { calculateRequiredCoolingCapacity, assessEquipmentSelectionReadiness } from "./cooling-capacity-bridge.js";
 import { deriveEvaporatingTemperature, deriveCondensingTemperature, assessRefrigerationConditionInputs } from "./refrigeration-design-conditions.js";
+import { getEvaporatorTDDefault, getAirCooledCondensingApproachDefault } from "../data/refrigeration-design-defaults.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -388,6 +389,24 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     });
     results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
     results.condition_readiness=assessRefrigerationConditionInputs(state);
+    if (results.engineering_mode.id === "estimate") {
+      const tdDefault=getEvaporatorTDDefault(state.roomTempC);
+      if (!Number.isFinite(Number(state.evaporatingTempC)) && !Number.isFinite(Number(state.evaporatorTDK)) && tdDefault) {
+        results.evaporating_condition_estimate={
+          ok:true,roomTempC:Number(state.roomTempC),tdRangeK:tdDefault.rangeK,
+          evaporatingTempRangeC:{min:Number(state.roomTempC)-tdDefault.rangeK[1],max:Number(state.roomTempC)-tdDefault.rangeK[0]},
+          confidence:tdDefault.confidence,source:tdDefault.source,note:tdDefault.note
+        };
+      }
+      if (/风冷|air/i.test(String(state.heatRejectionType||"")) && !Number.isFinite(Number(state.condensingTempC)) && !Number.isFinite(Number(state.condenserApproachK)) && Number.isFinite(Number(state.projectOutdoorTempC))) {
+        const ca=getAirCooledCondensingApproachDefault();
+        results.condensing_condition_estimate={
+          ok:true,designAmbientTempC:Number(state.projectOutdoorTempC),approachRangeK:ca.rangeK,
+          condensingTempRangeC:{min:Number(state.projectOutdoorTempC)+ca.rangeK[0],max:Number(state.projectOutdoorTempC)+ca.rangeK[1]},
+          confidence:ca.confidence,source:ca.source,note:ca.note
+        };
+      }
+    }
     if (Number.isFinite(Number(state.evaporatingTempC))) {
       results.evaporating_condition={ok:true,evaporatingTempC:Number(state.evaporatingTempC),source:"project_or_explicit_input"};
     } else if (Number.isFinite(Number(state.evaporatorTDK))) {
