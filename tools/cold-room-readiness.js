@@ -6,6 +6,7 @@ import { findInsulationMaterial } from "../data/insulation-properties.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 import { calculateProductLoad } from "./product-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
+import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -21,8 +22,13 @@ export function assessColdRoomProject(state = {}) {
   const insulationText = [state.insulation?.material, state.insulation?.thicknessMm ? state.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
   const insulation = findInsulationMaterial(insulationText);
   if (hasGeometry && hasRoomTemp && insulation && Number.isFinite(Number(state.insulation?.thicknessMm))) {
-    blocked.push({ id:"envelope_load", reason:"还缺室外设计温度，以及地面外侧边界温度/地温；这些边界条件不能由系统静默猜测。", sourceReady:true });
-    customerQuestions.push("项目当地夏季室外设计温度若不清楚，可以只确认城市；后续应由工程资料层查取并标明来源。");
+    const weather = findOutdoorDesignCondition(state.location || "");
+    if (weather?.status === "reviewed") {
+      blocked.push({ id:"envelope_load", reason:"室外设计温度已由审核气象资料层补全；目前仅缺地面外侧边界温度/地温及地面保温构造，不能静默猜测。", sourceReady:true });
+    } else {
+      blocked.push({ id:"envelope_load", reason:"还缺已审核的室外设计温度，以及地面外侧边界温度/地温；这些边界条件不能由系统静默猜测。", sourceReady:true });
+      customerQuestions.push("项目当地夏季室外设计温度若不清楚，可以只确认城市；后续由工程资料层查取并标明来源。");
+    }
     customerQuestions.push("地面虽然已确认做保温，但还需要明确地面构造/保温材料厚度；地温或地面外侧边界条件应由工程资料层确定并标明来源。");
   } else {
     blocked.push({ id:"envelope_load", reason:"围护结构基础信息尚不完整。", sourceReady:false });
@@ -84,6 +90,9 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   const results = {};
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
 
+  const weather = findOutdoorDesignCondition(state.location || "");
+  if (weather?.status === "reviewed") results.outdoor_design = weather;
+
   // Thermal-property enrichment is allowed before a full envelope load is ready.
   // It is explicitly kept separate from whole-panel U and from boundary temperatures.
   const insulationText = [state.insulation?.material, state.insulation?.thicknessMm ? state.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
@@ -131,6 +140,15 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  const w = results.outdoor_design;
+  if (w) {
+    lines.push("**室外设计气象条件已自动补全**", "");
+    lines.push(`• ${w.city}夏季空调室外计算干球温度：**${w.summerAcDryBulbC}℃**`);
+    lines.push(`• 对应湿球温度：${w.summerAcWetBulbC}℃`);
+    lines.push(`• 统计口径：${w.dryBulbDefinition}`);
+    lines.push(`• 规范口径：${w.standard}`);
+    lines.push("• 注意：该温度用于当前围护结构夏季室外空气边界参考；不自动作为压缩机/冷凝器选型的冷凝环境条件。", "");
+  }
   const e = results.envelope_thermal_data;
   if (e?.ok) {
     lines.push("**围护热工资料已自动补全**", "");
