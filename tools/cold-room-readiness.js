@@ -228,6 +228,16 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     }
   }
 
+  // Quick-estimate floor transmission; low-confidence generic boundary only.
+  if (results.floor_boundary_estimate && results.floor_thermal_data?.ok && state.dimensions && Number.isFinite(Number(state.roomTempC))) {
+    const e=results.floor_thermal_data;
+    const u=e.uValueRangeWm2K ? [e.uValueRangeWm2K.min,e.uValueRangeWm2K.max] : Number.isFinite(e.uValueWm2K) ? [e.uValueWm2K,e.uValueWm2K] : [];
+    if (u.length) {
+      const area=Number(state.dimensions.lengthM)*Number(state.dimensions.widthM);
+      const dt=Math.max(0,Number(results.floor_boundary_estimate.value)-Number(state.roomTempC));
+      results.floor_load_estimate={ok:true,method:"simple-UAdT-floor-estimate",boundaryTempC:Number(results.floor_boundary_estimate.value),areaM2:area,deltaTK:dt,loadRangeKW:{min:round3(u[0]*area*dt/1000),max:round3(u[u.length-1]*area*dt/1000)},confidence:results.floor_boundary_estimate.confidence,source:results.floor_boundary_estimate.source,provisional:true,note:"通用暖区年平均地温回退值，仅用于快速估算；不是成都站点地温，也不是严格板-地传热模型。"};
+    }
+  }
   // Thermal-property enrichment is allowed before a full envelope load is ready.
   // It is explicitly kept separate from whole-panel U and from boundary temperatures.
   const insulationText = [state.insulation?.material, state.insulation?.thicknessMm ? state.insulation.thicknessMm + "mm" : ""].filter(Boolean).join(" ");
