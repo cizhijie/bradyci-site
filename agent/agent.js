@@ -30,14 +30,47 @@ document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{input.value
 form.addEventListener("submit",async e=>{
   e.preventDefault();const t=input.value.trim();if(!t||send.disabled)return;
   add(t,"user");messages.push({role:"user",content:t});input.value="";send.disabled=true;
-  const waiting=add("正在思考…","assistant");
+  const bubble=add("正在连接…","assistant");
+  let reply="";
   try{
     const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages})});
-    const data=await r.json();waiting.remove();
-    if(!r.ok) throw new Error(data.error||"请求失败");
-    add(data.reply,"assistant");messages.push({role:"assistant",content:data.reply});
-  }catch(err){waiting.innerHTML=renderMarkdown("暂时无法连接 AI："+err.message)}
-  finally{send.disabled=false;input.focus()}
+    if(!r.ok){
+      const data=await r.json().catch(()=>({}));
+      throw new Error(data.error||"请求失败");
+    }
+    if(!r.body) throw new Error("浏览器不支持流式响应");
+    bubble.textContent="";
+    const reader=r.body.getReader(),decoder=new TextDecoder();
+    let buffer="";
+    while(true){
+      const {value,done}=await reader.read();
+      if(done) break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split("\n");
+      buffer=lines.pop()||"";
+      for(const raw of lines){
+        const line=raw.trim();
+        if(!line.startsWith("data:")) continue;
+        const payload=line.slice(5).trim();
+        if(!payload||payload==="[DONE]") continue;
+        try{
+          const data=JSON.parse(payload);
+          const delta=data?.choices?.[0]?.delta?.content;
+          if(typeof delta==="string"&&delta){
+            reply+=delta;
+            bubble.innerHTML=renderMarkdown(reply);
+            chat.scrollTop=chat.scrollHeight;
+          }
+        }catch{}
+      }
+    }
+    if(!reply) throw new Error("模型没有返回内容");
+    messages.push({role:"assistant",content:reply});
+  }catch(err){
+    bubble.innerHTML=renderMarkdown("暂时无法连接 AI："+err.message);
+  }finally{
+    send.disabled=false;input.focus();
+  }
 });
 input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
 document.querySelector("#clear").onclick=()=>location.reload();
