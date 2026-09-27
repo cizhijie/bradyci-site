@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.7";
+const AGENT_VERSION = "v1.8";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -266,7 +266,7 @@ function parseToolRequest(text) {
   if (!match) return null;
   try {
     const data = JSON.parse(match[0]);
-    return ["cold_storage_load", "product_load"].includes(data?.__brady_tool__) && data.args && typeof data.args === "object" ? data : null;
+    return ["cold_storage_load", "product_load", "envelope_u_value", "envelope_u_value_range"].includes(data?.__brady_tool__) && data.args && typeof data.args === "object" ? data : null;
   } catch { return null; }
 }
 function sseText(content, meta = {}) {
