@@ -150,13 +150,20 @@ export function extractColdRoomProject(text = "") {
   const lightingHours=raw.match(/(?:照明|灯)[^。；，,]{0,18}(?:每天|一天|日)[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
   const fanKW=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,14}(?:电机|功率)?[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i);
   const fanHours=raw.match(/(?:冷风机|蒸发器风机|风机)[^。；，,]{0,18}(?:每天|一天|日|运行)[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
-  if (people || lightingKW || lightingW || fanKW) {
+
+  const defrostPower=raw.match(/(?:电化霜|化霜加热|化霜)[^。；，,]{0,16}(?:功率)?[^\d]{0,5}(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i);
+  const defrostCount=raw.match(/(?:每天|每日|一天)[^。；，,]{0,12}(?:化霜)[^\d]{0,5}(\d+(?:\.\d+)?)\s*次/i);
+  const defrostMinutes=raw.match(/(?:每次|单次)[^。；，,]{0,8}(?:化霜)?[^\d]{0,5}(\d+(?:\.\d+)?)\s*分钟/i);
+  if (people || lightingKW || lightingW || fanKW || defrostPower || defrostCount || defrostMinutes) {
     project.internalLoads = {};
     if (people) { project.internalLoads.peopleCount=Number(people[1]); if (people[2]) project.internalLoads.peopleHoursPerDay=Number(people[2]); }
     if (lightingKW || lightingW) project.internalLoads.lightingPowerKW=lightingKW ? Number(lightingKW[1]) : Number(lightingW[1])/1000;
     if (lightingHours) project.internalLoads.lightingHoursPerDay=Number(lightingHours[1]);
     if (fanKW) project.internalLoads.fanPowerKW=Number(fanKW[1]);
     if (fanHours) project.internalLoads.fanHoursPerDay=Number(fanHours[1]);
+    if (defrostPower) project.internalLoads.defrostHeaterPowerKW=Number(defrostPower[1]);
+    if (defrostCount) project.internalLoads.defrostsPerDay=Number(defrostCount[1]);
+    if (defrostMinutes) project.internalLoads.minutesPerDefrost=Number(defrostMinutes[1]);
   }
 
   const city = raw.match(/(成都|重庆|贵阳|昆明|绵阳|德阳|泸州|宜宾|南充|乐山|眉山|自贡)/);
@@ -183,6 +190,7 @@ export function formatColdRoomProjectState(p = {}) {
   if (Number.isFinite(p.internalLoads?.peopleCount)) known.push("库内人员：约 " + p.internalLoads.peopleCount + " 人" + (Number.isFinite(p.internalLoads?.peopleHoursPerDay) ? "，约 "+p.internalLoads.peopleHoursPerDay+" h/天" : ""));
   if (Number.isFinite(p.internalLoads?.lightingPowerKW)) known.push("库内照明总功率：" + p.internalLoads.lightingPowerKW + " kW" + (Number.isFinite(p.internalLoads?.lightingHoursPerDay) ? "，约 "+p.internalLoads.lightingHoursPerDay+" h/天" : ""));
   if (Number.isFinite(p.internalLoads?.fanPowerKW)) known.push("库内风机电功率：" + p.internalLoads.fanPowerKW + " kW" + (Number.isFinite(p.internalLoads?.fanHoursPerDay) ? "，约 "+p.internalLoads.fanHoursPerDay+" h/天" : ""));
+  if (Number.isFinite(p.internalLoads?.defrostHeaterPowerKW)) known.push("电化霜加热功率：" + p.internalLoads.defrostHeaterPowerKW + " kW" + (Number.isFinite(p.internalLoads?.defrostsPerDay) ? "，"+p.internalLoads.defrostsPerDay+"次/天" : "") + (Number.isFinite(p.internalLoads?.minutesPerDefrost) ? "，"+p.internalLoads.minutesPerDefrost+"分钟/次" : ""));
 
   const questions = [];
   if (!p.productCategory || /待确认/.test(p.productCategory)) questions.push("具体是什么肉？入库时是鲜肉、冷藏肉，还是已经冻结的肉？");
