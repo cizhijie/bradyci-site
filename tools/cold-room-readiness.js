@@ -9,11 +9,13 @@ import { calculateColdStorageLoad } from "./cold-storage-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findOutdoorDesignCondition } from "../data/outdoor-design-conditions.js";
 import { calculateDoorOpenTimeFactor } from "./infiltration-load.js";
+import { resolveEngineeringMode } from "../lib/engineering-mode.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
   const blocked = [];
   const customerQuestions = [];
+  const mode = resolveEngineeringMode(state);
 
   const dims = state.dimensions;
   const hasGeometry = !!(dims?.lengthM && dims?.widthM && dims?.heightM);
@@ -76,12 +78,14 @@ export function assessColdRoomProject(state = {}) {
     blocked,
     customerQuestions:[...new Set(customerQuestions)],
     canStartAnyCalculation:ready.length > 0,
-    canCalculateTotal:false
+    canCalculateTotal:false,
+    engineeringMode:mode
   };
 }
 
 export function formatColdRoomReadiness(a = {}) {
   const lines = ["**下一步核算状态**"];
+  if (a.engineeringMode) lines.push("", "**当前模式：" + a.engineeringMode.label + "**", a.engineeringMode.rule);
   if (a.ready?.length) {
     lines.push("", "**现在可以计算**");
     for (const x of a.ready) lines.push("• " + x.id + (x.label ? "：" + x.label : ""));
@@ -101,6 +105,7 @@ export function formatColdRoomReadiness(a = {}) {
 
 export function calculateReadyColdRoomParts(state = {}, assessment = assessColdRoomProject(state)) {
   const results = {};
+  results.engineering_mode = resolveEngineeringMode(state);
   const readyIds = new Set((assessment.ready || []).map(x => x.id));
 
   const d = state.doorUsage || {};
@@ -218,6 +223,10 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  if (results.engineering_mode) {
+    lines.push("**核算模式：" + results.engineering_mode.label + "**", "");
+    if (results.engineering_mode.id === "estimate") lines.push("• 当前允许使用审核后的工程默认值/范围继续初算；所有估算项必须单独标注，不能冒充客户实测或正式选型数据。", "");
+  }
   const dot = results.door_open_time;
   if (dot?.ok) {
     lines.push("**开门工况已结构化**", "");
