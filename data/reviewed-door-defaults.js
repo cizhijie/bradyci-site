@@ -15,6 +15,19 @@ export const REVIEWED_DOOR_DEFAULTS = {
     confidence:"high",
     note:"high-speed door typical open-close time; ASHRAE notes it can be as low as 3 s"
   },
+  doorwayFlowFactor:{
+    lowDeltaT:{maxDeltaK:11,value:1.1},
+    highDeltaT:{minDeltaK:11,value:0.8},
+    source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads",
+    confidence:"high",
+    note:"cyclically operated doors: Df=1.1 below 11 K temperature differential; Df=0.8 at higher differentials"
+  },
+  noProtectiveDevice:{
+    effectiveness:0,
+    source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads",
+    confidence:"high",
+    note:"wide-open doorway with no protective device"
+  },
   coldRoomRhPct:{
     preferred:90,comparisonRange:[80,100],
     source:"ASHRAE Handbook—Refrigeration, Refrigerated-Facility Loads",
