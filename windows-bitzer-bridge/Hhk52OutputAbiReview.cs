@@ -9,6 +9,9 @@ internal static class Hhk52OutputAbiReview
         {
             "O_Q1" or "O_Q2" or "O_P1" or "O_P2" or "O_E1" or "O_E2" or
             "O_M1" or "O_M2" or "O_TH1" or "O_TH2" => "Double (Hhk52DesignData)",
+            "O_T1" or "O_T2" => "ANSI char[30]",
+            "O_Hint1" or "O_Hint2" => "Int32 (Long)",
+            "O_Err" => "ANSI char[20]",
             _ => string.Empty
         });
 
