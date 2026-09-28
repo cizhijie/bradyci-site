@@ -235,9 +235,9 @@ export function detectManufacturerSelectionRequest(messages = []) {
 export function formatManufacturerSelectionResult(result={}) {
   if(!result.ok) return "厂家性能数据库查询失败："+(result.error||"未知错误");
   if(result.noExactData) return `当前 Verified 厂家性能库中没有 ${result.refrigerant||"该制冷剂"} 在该精确 Te/Tc 工况的可用性能点，因此暂不能报具体型号。不会用排量换算制冷量，也不会静默插值或外推。需要补入对应官方性能表或 BITZER SOFTWARE 可追溯数据后再选型。`;
-  const c=result.capacityCandidates||[];
+  const c=result.capacityCandidates||[];\n  const finalCandidates=result.finalCandidates||[];
   if(!c.length) return `已找到该精确工况的 Verified 性能点，但现有记录均低于所需 ${result.requiredCoolingCapacityKW} kW，暂不能给出满足冷量的型号。`;
-  const lines=c.slice(0,8).map(x=>`• ${x.model}：${x.coolingCapacityKW} kW${Number.isFinite(Number(x.inputPowerKW))?", 输入功率 "+x.inputPowerKW+" kW":""}；来源 ${x.sourceVersion||x.documentId} / ${x.sourcePage}`);
+  const lines=c.slice(0,8).map(x=>`• ${x.model}：${x.coolingCapacityKW} kW${Number.isFinite(Number(x.inputPowerKW))?", 输入功率 "+x.inputPowerKW+" kW":""}；来源 ${x.sourceVersion||x.documentId} / ${x.sourcePage}`);\n  if(finalCandidates.length){\n    const finals=finalCandidates.slice(0,8).map(x=>`• ${x.model}：${x.coolingCapacityKW} kW`).join("\\n");\n    return `已通过 Verified 性能数据和已审核官方 Application Limits 双重校验的最终候选：\\n${finals}\\n\\n仍需核对电机版本、电气条件、控制方式和系统架构后才能形成完整设备配置。`;\n  }
   return `按 Verified 厂家数据，在精确制冷剂 / Te / Tc 条件下找到 ${c.length} 个冷量候选：\n${lines.join("\n")}\n\n以上只是冷量候选，不等于最终型号确认；在官方运行范围/application limits 尚未通过审核校验前，禁止标记为最终可选型号；之后还需核对电机版本、电气条件和系统架构。`;
 }
 
