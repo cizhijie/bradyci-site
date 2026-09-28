@@ -5,7 +5,7 @@ namespace Brady.BitzerBridge;
 // Official HHK52 CopyDesign declaration:
 // O_T1/O_T2 are caller-owned ANSI buffers of 30 chars;
 // O_Err is caller-owned ANSI buffer of 20 chars;
-// O_Hint1/O_Hint2 and all size arguments are 32-bit Long values.\n// Official declaration includes I_Flags, I_Serie, then I_Mode.
+// O_Hint1/O_Hint2 and all size arguments are 32-bit Long values.\n// Official HHK52 declaration includes I_Flags, I_Serie, then I_Mode.
 internal static class Hhk52CopyDesignAbi
 {
     internal const int TypeBufferChars = 30;
