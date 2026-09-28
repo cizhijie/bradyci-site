@@ -15,7 +15,9 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     lowNoiseRequired:state.lowNoiseRequired ?? null,
     maintenancePreference:state.maintenancePreference || null,
     processMode:state.processMode || null,
-    dailyInboundKg:Number.isFinite(Number(state.dailyInboundKg)) ? Number(state.dailyInboundKg) : null,\n    refrigerationRunHoursPerDay:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) ? Number(state.refrigerationRunHoursPerDay) : null,\n    roomCount:Number.isFinite(Number(state.roomCount)) ? Number(state.roomCount) : null
+    dailyInboundKg:Number.isFinite(Number(state.dailyInboundKg)) ? Number(state.dailyInboundKg) : null,
+    refrigerationRunHoursPerDay:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) ? Number(state.refrigerationRunHoursPerDay) : null,
+    roomCount:Number.isFinite(Number(state.roomCount)) ? Number(state.roomCount) : null
   };
 
   const candidates=[
@@ -52,7 +54,11 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     frozenStorage:state.processMode==="frozen_storage",
     chilledStorage:state.processMode==="chilled_storage",
     variableLoad:state.partLoadImportant===true,
-    redundancyRequired:state.redundancyRequired===true
+    redundancyRequired:state.redundancyRequired===true,
+    longDailyRuntime:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) && Number(state.refrigerationRunHoursPerDay)>=18,
+    multiRoom:Number.isFinite(Number(state.roomCount)) && Number(state.roomCount)>1,
+    capacityKnown:Number.isFinite(Number(capacity?.max)),
+    capacityMaxKW:Number.isFinite(Number(capacity?.max)) ? Number(capacity.max) : null
   };
 
   // These are engineering preference signals, not hard kW cutoffs.
@@ -71,6 +77,15 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     }
     if(item.architecture==="screw" && projectSignals.freezingProcess){
       preference="compare"; reasons.push("冻结加工可进入螺杆方案比较，但是否优先取决于实际负荷规模和连续运行需求");
+    }
+    if(item.architecture==="screw" && projectSignals.longDailyRuntime && projectSignals.capacityKnown){
+      reasons.push("项目日运行时间较长，螺杆方案应纳入长期运行和部分负荷经济性比较");
+    }
+    if(item.architecture==="parallel-rack" && projectSignals.multiRoom){
+      preference="preferred"; reasons.push("多库项目具备集中供冷和分级调节的比较价值");
+    }
+    if(item.architecture==="scroll" && projectSignals.freezingProcess){
+      reasons.push("若用于冻结加工，必须重点核对低温运行范围、低温配置及并联级数，不默认作为首选");
     }
     if(!reasons.length) reasons.push("当前项目条件不足以把该方案排在其他架构之前");
     return {...item,preference,reasons};
