@@ -9,5 +9,11 @@ export function runHeatTransferCorrelationRegression(){
  check(!wrongSize.canCalculateH,"must reject geometry-size extrapolation");
  const ok=matchHeatTransferCorrelation({productGroup:"citrus",medium:"air",geometry:"bulk_spherical_fruit",diameterMm:80,airVelocityMs:1});
  check(ok.canCalculateH&&ok.correlation.id==="ashrae-citrus-baird-gaffney-1976","reviewed in-range correlation should match");
- return {ok:true,checks:4};
+ const patty=matchHeatTransferCorrelation({productGroup:"beef_patties",medium:"air",geometry:"slab",packaging:"unpacked",characteristicThicknessMm:15,airVelocityMs:4,mediumTempC:-30});
+ check(patty.canCalculateH&&patty.correlation.id==="ashrae-beef-patties-becker-fricke-2004","reviewed beef-patty case should match");
+ const generic=matchHeatTransferCorrelation({productGroup:"beef_patties",medium:"air",geometry:"slab",packaging:"carton",characteristicThicknessMm:15,airVelocityMs:4,mediumTempC:-30});
+ check(!generic.canCalculateH,"packaged beef must not use unpacked-patty correlation");
+ const warm=matchHeatTransferCorrelation({productGroup:"beef_patties",medium:"air",geometry:"slab",packaging:"unpacked",characteristicThicknessMm:15,airVelocityMs:4,mediumTempC:-20});
+ check(!warm.canCalculateH,"temperature extrapolation must be blocked");
+ return {ok:true,checks:7};
 }
