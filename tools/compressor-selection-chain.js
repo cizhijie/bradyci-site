@@ -1,13 +1,39 @@
 import { gateCapacityCandidateByEnvelope, evaluateReviewedEnvelopePoint } from "../lib/manufacturer-operating-envelope.js";
 
-// Deterministic chain: exact verified capacity -> reviewed application limit -> final candidate.
+const norm=v=>String(v??"").trim().toLowerCase();
+const architectureAliases={
+  scroll:["scroll"],
+  "semi-hermetic-reciprocating":["semi-hermetic-reciprocating","reciprocating","piston"],
+  screw:["screw"]
+};
+function architectureMatches(candidate,allowed=[]){
+  if(!allowed.length) return true;
+  const c=norm(candidate.architecture||candidate.compressorType);
+  return allowed.some(a=>(architectureAliases[norm(a)]||[norm(a)]).includes(c));
+}
+
+// Deterministic chain: exact verified capacity -> architecture gate -> reviewed application limit -> final candidate.
 // No LLM inference, no interpolation, no displacement conversion.
-export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvelopePoints=[]){
+export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvelopePoints=[], options={}){
   const capacityCandidates=Array.isArray(performanceResult.capacityCandidates)?performanceResult.capacityCandidates:[];
+  const allowedArchitectures=Array.isArray(options.allowedArchitectures)?options.allowedArchitectures.filter(Boolean):[];
   if(!capacityCandidates.length){
-    return {ok:true,status:performanceResult.count>0?"verified_points_below_required":"no_exact_verified_performance",finalCandidates:[],provisionalCandidates:[]};
+    return {ok:true,status:performanceResult.count>0?"verified_points_below_required":"no_exact_verified_performance",finalCandidates:[],provisionalCandidates:[],architectureRejected:[]};
   }
-  const evaluations=capacityCandidates.map(candidate=>{
+
+  const architectureRejected=[];
+  const architectureEligible=[];
+  for(const candidate of capacityCandidates){
+    if(architectureMatches(candidate,allowedArchitectures)) architectureEligible.push(candidate);
+    else architectureRejected.push({
+      candidate,
+      status:"architecture_mismatch",
+      finalSelectable:false,
+      note:"Verified capacity is insufficient for selection because this compressor architecture is not allowed by the project architecture decision."
+    });
+  }
+
+  const evaluations=architectureEligible.map(candidate=>{
     const matches=reviewedEnvelopePoints.filter(e=>
       e.reviewStatus==="reviewed" &&
       String(e.manufacturer||"").toUpperCase()===String(candidate.manufacturer||"").toUpperCase() &&
@@ -22,6 +48,7 @@ export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvel
     return evaluateReviewedEnvelopePoint(candidate,matches[0]);
   });
   const finalCandidates=evaluations.filter(x=>x.finalSelectable).map(x=>x.candidate);
-  const provisionalCandidates=evaluations.filter(x=>!x.finalSelectable);
-  return {ok:true,status:finalCandidates.length?"application_limit_verified":"application_limit_verification_required",finalCandidates,provisionalCandidates,evaluations};
+  const provisionalCandidates=[...architectureRejected,...evaluations.filter(x=>!x.finalSelectable)];
+  const status=finalCandidates.length?"application_limit_verified":architectureRejected.length&&!architectureEligible.length?"architecture_mismatch":"application_limit_verification_required";
+  return {ok:true,status,allowedArchitectures,architectureRejected,finalCandidates,provisionalCandidates,evaluations};
 }
