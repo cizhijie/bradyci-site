@@ -13,7 +13,9 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     redundancyRequired:state.redundancyRequired ?? null,
     partLoadImportant:state.partLoadImportant ?? null,
     lowNoiseRequired:state.lowNoiseRequired ?? null,
-    maintenancePreference:state.maintenancePreference || null
+    maintenancePreference:state.maintenancePreference || null,
+    processMode:state.processMode || null,
+    dailyInboundKg:Number.isFinite(Number(state.dailyInboundKg)) ? Number(state.dailyInboundKg) : null
   };
 
   const candidates=[
@@ -43,6 +45,8 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     }
   ];
 
+  const recommendationFactors=["项目实际设计冷量与运行工况","冷藏、冷冻储存或冻结加工","负荷波动与部分负荷运行","是否需要多机分级和故障冗余","维修便利性与备件条件","初投资、控制复杂度及长期运行需求"];
+
   const customerQuestions=[];
   if(state.redundancyRequired==null) customerQuestions.push("这个库如果一台压缩机停机，能不能接受停库？还是希望多机互为备用？");
   if(state.partLoadImportant==null) customerQuestions.push("每天货量和负荷变化大不大？是长期接近满负荷，还是经常只有一部分负荷？");
@@ -51,6 +55,7 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
   return {
     facts,
     candidates,
+    recommendationFactors,
     customerQuestions,
     readyForSpecificModel:false,
     rule:"本层只形成压缩机/机组架构候选。具体型号必须在制冷剂、Te、Tc、设计冷量明确后，用厂家性能表/选型软件验证。"
