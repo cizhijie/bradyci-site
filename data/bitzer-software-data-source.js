@@ -1,14 +1,18 @@
 // BITZER SOFTWARE machine-readable data source contract.
-// Official references confirm performance tables and compressor polynomial CSV output.
-// Keep version identity because refrigerant-property-library updates can change calculated results.
+// Official BITZER references confirm performance tables and compressor polynomial output.
+// Keep software version identity because refrigerant-property-library updates can change results.
 
 export const BITZER_SOFTWARE_DATA_SOURCE={
   manufacturer:"BITZER",
   sourceType:"official-selection-software",
-  productFamily:"ECOLINE",
-  architecture:"semi-hermetic-reciprocating",
-  preferredAcquisition:["compressor-polynomial-csv","performance-table"],
+  currentObservedVersion:"7.1.11.2",
   officialSoftwareUrl:"https://www.bitzer.de/websoftware2",
+  productFamilies:[
+    {family:"ECOLINE",architecture:"semi-hermetic-reciprocating",enabled:true},
+    {family:"ORBIT",architecture:"scroll",enabled:true},
+    {family:"CS/HS",architecture:"screw",enabled:true}
+  ],
+  preferredAcquisition:["compressor-polynomial-csv","performance-table"],
   traceabilityRequired:[
     "softwareVersion","model","refrigerant","ratingConvention",
     "polynomialConvention","validityRange","exportFileName"
