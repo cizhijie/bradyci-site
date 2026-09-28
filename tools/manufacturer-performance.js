@@ -75,3 +75,27 @@ export function buildManufacturerSelectionRequest(project={}){
     rule:"Specific model selection requires traceable manufacturer performance data at the project rating condition."
   };
 }
+
+
+export function buildArchitectureAwareManufacturerPlan(selectionRequest={},architectureResult={}){
+  const request=selectionRequest?.request;
+  if(!selectionRequest?.ready||!request) return {ok:false,blocked:true,reason:"运行工况尚未满足厂家查询条件",queries:[]};
+  const assessed=Array.isArray(architectureResult?.architectureAssessment)?architectureResult.architectureAssessment:[];
+  const preferred=assessed.filter(x=>x.preference==="preferred").map(x=>x.architecture);
+  const fallback=assessed.filter(x=>x.preference!=="preferred").map(x=>x.architecture);
+  return {
+    ok:true,
+    request,
+    preferredArchitectures:preferred,
+    fallbackArchitectures:fallback,
+    queries:[...preferred,...fallback].map(architecture=>({
+      architecture,
+      refrigerant:request.refrigerant,
+      evaporatingTempC:request.evaporatingTempC,
+      condensingTempC:request.condensingTempC,
+      requiredCoolingCapacityKW:request.requiredCoolingCapacityKW,
+      rule:"只查询该架构下有可追溯厂家性能点且满足当前精确工况的数据；不得由排量、匹数或相邻工况反推。"
+    })),
+    rule:"先按项目确定压缩机架构优先级，再在对应架构的厂家数据中查询具体型号；没有已验证厂家数据时保持待选，不跨架构猜型号。"
+  };
+}
