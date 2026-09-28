@@ -3,6 +3,7 @@ const suites=[
 ["product-geometry-inference","./product-geometry-inference-regression.js","runProductGeometryInferenceRegression"],
 ["core-freezing-protocol-geometry","./core-freezing-protocol-geometry-regression.js","runCoreFreezingProtocolGeometryRegression"],
 ["core-freezing-direct-router","./core-freezing-direct-router-regression.js","runCoreFreezingDirectRouterRegression"],
+["core-freezing-fail-closed-e2e","./core-freezing-fail-closed-e2e-regression.js","runCoreFreezingFailClosedE2ERegression"],
  ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
