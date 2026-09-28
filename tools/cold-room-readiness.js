@@ -558,6 +558,15 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push("• 尚未计入的项目会继续单独列出，例如完整围护结构、化霜影响和设备选型余量。");
     lines.push("• 这个小计不是最终设计冷量；待主要分项齐全后，再形成设备所需制冷量范围。", "");
   }
+  const dc=results.design_capacity;
+  if(dc?.ok){
+    lines.push("**设备所需制冷量**", "");
+    lines.push(`• 当前负荷折算后的设备制冷量范围：**${dc.requiredCapacityRangeKW.min}–${dc.requiredCapacityRangeKW.max} kW**`);
+    if(dc.refrigerationRunHoursPerDay!==24) lines.push(`• 按每天约 ${dc.refrigerationRunHoursPerDay} 小时有效制冷运行时间折算。`);
+    if(dc.reserveFactor>1) lines.push(`• 已按明确的设备余量系数 ${dc.reserveFactor} 计入。`);
+    else lines.push("• 当前未额外叠加通用“安全系数”；设备余量应结合实际运行时间、化霜和项目工况单独确定。");
+    lines.push("• 这是设备能力需求范围，不等同于压缩机名义匹数。具体型号还要按制冷剂和实际蒸发/冷凝工况核对厂家性能数据。", "");
+  }
   const p = results.product_load;
   if (p?.ok) {
     lines.push("**货物负荷**", "");
