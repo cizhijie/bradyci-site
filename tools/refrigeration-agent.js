@@ -192,20 +192,23 @@ export function formatColdRoomProjectState(p = {}) {
   if (Number.isFinite(p.internalLoads?.fanPowerKW)) known.push("库内风机电功率：" + p.internalLoads.fanPowerKW + " kW" + (Number.isFinite(p.internalLoads?.fanHoursPerDay) ? "，约 "+p.internalLoads.fanHoursPerDay+" h/天" : ""));
   if (Number.isFinite(p.internalLoads?.defrostHeaterPowerKW)) known.push("电化霜加热功率：" + p.internalLoads.defrostHeaterPowerKW + " kW" + (Number.isFinite(p.internalLoads?.defrostsPerDay) ? "，"+p.internalLoads.defrostsPerDay+"次/天" : "") + (Number.isFinite(p.internalLoads?.minutesPerDefrost) ? "，"+p.internalLoads.minutesPerDefrost+"分钟/次" : ""));
 
-  const questions = [];
-  if (!p.productCategory || /待确认/.test(p.productCategory)) questions.push("具体是什么肉？入库时是鲜肉、冷藏肉，还是已经冻结的肉？");
-  if (!Number.isFinite(p.entryTempC)) questions.push("货物入库时大约多少℃？");
-  if (!Number.isFinite(p.pullDownHours)) questions.push("希望多长时间把这一批货降到目标货温？");
-  if (!p.floor?.description) questions.push("冷库是一楼直接落地还是楼层上？地面有没有做保温？");
-  if (!p.doorUsage?.description) questions.push("每天开门大概多少次、每次大约多久？");
-  if (!Number.isFinite(p.internalLoads?.peopleCount)) questions.push("平时库里大概有几个人同时作业？每天累计大约待多久？");
-  if (!Number.isFinite(p.internalLoads?.lightingPowerKW)) questions.push("库内照明知道总功率最好；不知道就说灯有多少盏、每盏大概多少瓦。");
-  if (!Number.isFinite(p.internalLoads?.fanPowerKW)) questions.push("冷风机已经确定的话，请告诉我风机电机总功率；还没选就先留空，后面按设备参数回填。");
+  const criticalQuestions = [];
+  const optionalUnknowns = [];
+  if (!p.productCategory || /待确认/.test(p.productCategory)) criticalQuestions.push("请先确认具体货物和入库状态（例如鲜品、冷藏品或已冻结品）。");
+  if (!Number.isFinite(p.entryTempC)) criticalQuestions.push("货物入库时大约多少℃？不知道精确值可以给范围。");
+  if (!Number.isFinite(p.pullDownHours)) criticalQuestions.push("希望这一批货在多少小时内降到目标货温？");
+  if (!p.insulation?.material || !Number.isFinite(p.insulation?.thicknessMm)) criticalQuestions.push("库板是什么保温材料、厚度大约多少？例如 100 mm 聚氨酯板。");
+  if (!p.floor?.description) optionalUnknowns.push("地面构造/保温");
+  if (!p.doorUsage?.description) optionalUnknowns.push("开门频率和时长");
+  if (!Number.isFinite(p.internalLoads?.peopleCount)) optionalUnknowns.push("库内人员");
+  if (!Number.isFinite(p.internalLoads?.lightingPowerKW)) optionalUnknowns.push("照明");
+  if (!Number.isFinite(p.internalLoads?.fanPowerKW)) optionalUnknowns.push("冷风机风机功率");
+  const questions = criticalQuestions.slice(0,3);
 
   const heading = questions.length ? "**已知条件**" : "**当前项目条件已基本收集完成**";
   const follow = questions.length
-    ? "\n\n**还需要确认**\n" + questions.slice(0,5).map((x,i)=>(i+1)+". "+x).join("\n")
-    : "\n\n关键客户信息已经基本齐全，下一步可以进入工程资料补全和分项负荷核算。";
+    ? "\n\n**先确认这 " + questions.length + " 项关键数据**\n" + questions.map((x,i)=>(i+1)+". "+x).join("\n") + (optionalUnknowns.length ? "\n\n其余如" + optionalUnknowns.join("、") + "，如果客户不知道，可以进入快速估算模式，由系统采用有来源、有范围的工程假设并明确标注，不阻塞前期估算。" : "")
+    : "\n\n关键客户信息已经基本齐全，可以进入分项负荷核算；次要信息缺失时优先给出带假设标记的估算范围。";
   return heading + "\n" + known.map(x=>"• "+x).join("\n") + follow + "\n\nU值、导热系数、食品比热/潜热等专业参数不用你提供；有审核资料的由 Brady Agent 后端资料层处理，没有可靠资料的我会明确标注待复核。";
 }
 
