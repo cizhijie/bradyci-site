@@ -74,12 +74,17 @@ export function extractColdRoomProject(text = "") {
   const raw = String(text || "");
   const project = {};
   const compact = raw.match(/(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/);
-  if (compact) project.dimensions = { lengthM:Number(compact[1]), widthM:Number(compact[2]), heightM:Number(compact[3]) };
+  if (compact) {
+    project.dimensions = { lengthM:Number(compact[1]), widthM:Number(compact[2]), heightM:Number(compact[3]) };
+    project.floorAreaM2 = project.dimensions.lengthM * project.dimensions.widthM;
+    project.heightM = project.dimensions.heightM;
+    project.volumeM3 = project.floorAreaM2 * project.heightM;
+  }
   const area = raw.match(/(?:面积|大概|约)?\s*(\d+(?:\.\d+)?)\s*(?:平方米|平米|㎡)/i);
   const heightOnly = raw.match(/(?:高|高度|层高)\s*(?:约|大概)?\s*(\d+(?:\.\d+)?)\s*(?:米|m)/i);
-  if (area) project.floorAreaM2 = Number(area[1]);
-  if (heightOnly) project.heightM = Number(heightOnly[1]);
-  if (Number.isFinite(project.floorAreaM2) && Number.isFinite(project.heightM)) project.volumeM3 = project.floorAreaM2 * project.heightM;
+  if (!compact && area) project.floorAreaM2 = Number(area[1]);
+  if (!compact && heightOnly) project.heightM = Number(heightOnly[1]);
+  if (!compact && Number.isFinite(project.floorAreaM2) && Number.isFinite(project.heightM)) project.volumeM3 = project.floorAreaM2 * project.heightM;
   const room = raw.match(/(?:库温|库内温度|目标库温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
   if (room) project.roomTempC = Number(room[1]);
   const projectOutdoor = raw.match(/(?:室外|环境|外界|夏天|夏季|最热(?:的时候)?)[^。；，,]{0,14}(?:按|大概|约|有|到|达到|温度)?[^0-9-]{0,5}(-?[0-9]+(?:\.[0-9]+)?)\s*(?:℃|度)/i);
@@ -148,6 +153,12 @@ export function extractColdRoomProject(text = "") {
     project.doorUsage = project.doorUsage || {};
     project.doorUsage.openingsPerDayMin = Number(doorCount[1]);
     project.doorUsage.openingsPerDayMax = Number(doorCount[2] || doorCount[1]);
+  } else if (doorChinese) {
+    const numericRanges = {"七八":[7,8],"六七":[6,7],"八九":[8,9],"五六":[5,6],"十来":[10,10]};
+    const range = numericRanges[doorChinese[1]];
+    project.doorUsage = project.doorUsage || {};
+    project.doorUsage.openingsPerDayMin = range[0];
+    project.doorUsage.openingsPerDayMax = range[1];
   }
 
   const people=raw.match(/(?:库内|里面|平时|一般)?[^。；，,]{0,10}(\d+)\s*(?:个人|人)(?:[^。；，,]{0,12}(?:工作|停留|作业)[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*(?:小时|h))?/i);
