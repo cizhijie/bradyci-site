@@ -177,10 +177,11 @@ export function mapBitzerPolynomialCsv(parsed={}){
   const invalidPhysicalRangeRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>x.rowData.evaporatingMinC < -80 || x.rowData.evaporatingMaxC > 40 || x.rowData.condensingMinC < -20 || x.rowData.condensingMaxC > 100);
   if(invalidPhysicalRangeRows.length) return {ok:false,error:"implausible_polynomial_validity_range_requires_review",rows:invalidPhysicalRangeRows.map(x=>x.row),detected};
   if(invalidCoefficientRows.length) return {ok:false,error:"invalid_polynomial_coefficients",rows:invalidCoefficientRows.map(x=>x.row),detected};
-  const identityKeys=rows.map(row=>[row.model,row.refrigerant,row.quantity,row.polynomialStandard].map(v=>String(v).trim().toUpperCase()).join("|"));
+  const normalizedRows=rows.map(row=>({...row,model:row.model.trim(),refrigerant:row.refrigerant.trim().toUpperCase(),quantity:row.quantity.trim(),polynomialStandard:row.polynomialStandard.trim()}));
+  const identityKeys=normalizedRows.map(row=>[row.model,row.refrigerant,row.quantity,row.polynomialStandard].map(v=>String(v).trim().toUpperCase()).join("|"));
   const duplicateRows=identityKeys.map((key,index)=>identityKeys.indexOf(key)!==index?index+2:null).filter(Number.isFinite);
   if(duplicateRows.length) return {ok:false,error:"duplicate_polynomial_identity_requires_review",rows:duplicateRows,detected};
-  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
+  return {ok:true,rows:normalizedRows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
 
 export function inspectBitzerPolynomialCsv(csvText="",metadata={}){
