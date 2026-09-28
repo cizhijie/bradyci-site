@@ -1,6 +1,7 @@
 // BITZER ECOLINE family metadata registry.
 // Official catalogue metadata is for candidate identification only; never use displacement as cooling capacity.
-const variants=(displacementM3h50Hz,models)=>models.map(model=>({model,displacementM3h50Hz}));
+const canonicalModel=model=>String(model).replace("(Y)","Y");
+const variants=(displacementM3h50Hz,models)=>models.map(model=>({model,canonicalModel:canonicalModel(model),displacementM3h50Hz}));
 
 export const BITZER_ECOLINE_CATALOGUE={
   manufacturer:"BITZER",family:"ECOLINE",compressorType:"semi-hermetic reciprocating",
@@ -34,6 +35,6 @@ export const BITZER_ECOLINE_CATALOGUE={
   ],
   selectionSource:"BITZER SOFTWARE",
   cataloguePolicy:{displacementIsNotCoolingCapacity:true,performanceRowsRequireExactOperatingPoint:true,performanceRowsRequireReviewedSource:true},
-  performanceKey:["model","refrigerant","evaporatingTempC","condensingTempC","coolingCapacityKW"],
+  performanceKey:["canonicalModel","refrigerant","evaporatingTempC","condensingTempC","coolingCapacityKW"],
   rule:"Exact cooling capacity must come from verified BITZER performance data at the project refrigerant, Te, Tc and rating condition. No silent interpolation or extrapolation."
 };
