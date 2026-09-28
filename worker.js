@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.40";
+const AGENT_VERSION = "v2.41";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -348,12 +348,13 @@ export default {
             if(p.floor?.description)known.push(p.floor.description);
             if(p.doorUsage?.description)known.push(p.doorUsage.description);
             const freezing = /(?:速冻|冻结)/i.test(visitorText) || /(?:冻肉|冻结)/i.test(p.productCategory||"") || (Number.isFinite(p.roomTempC)&&p.roomTempC<=-18);
+            const unknown=new Set(p.unknownFields||[]);
             const missing=[];
-            if(!Number.isFinite(p.entryTempC))missing.push("货物入库时大约多少℃？");
+            if(!Number.isFinite(p.entryTempC)&&!unknown.has("entryTempC"))missing.push("货物入库时大约多少℃？");
             if(freezing&&!Number.isFinite(p.pullDownHours))missing.push("如果是速冻/冻结项目，要求货物多少小时达到目标温度？");
-            if(!p.insulation?.material||!Number.isFinite(p.insulation?.thicknessMm))missing.push("库板是什么材料、厚度多少？");
-            if(!p.floor?.description)missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
-            if(!p.doorUsage?.description)missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
+            if((!p.insulation?.material||!Number.isFinite(p.insulation?.thicknessMm))&&!unknown.has("insulation"))missing.push("库板是什么材料、厚度多少？");
+            if(!p.floor?.description&&!unknown.has("floor"))missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
+            if(!p.doorUsage?.description&&!unknown.has("doorUsage"))missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
             const quick = quickEstimateColdRoom(p);
             let quickText = "";
             if(quick.ok){
