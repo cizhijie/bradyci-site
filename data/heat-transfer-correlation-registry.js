@@ -19,6 +19,12 @@ export const HEAT_TRANSFER_CORRELATIONS=[
   source:{organization:"ASHRAE",edition:2026,chapter:19,chapterTitle:"Thermal Properties of Foods",reference:"Fedorov et al. (1972)",url:"https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"},
   evidence:{reportedH_Wm2K:[10.0,21.8],note:"ASHRAE reports carcass reference points; no Nu-Re-Pr correlation is given."},
   safeguards:["Reference-only record. Do not interpolate h from the two reported carcass points.","Do not apply to beef blocks, patties, cartons, or generic beef.","Do not use for automatic core-freezing calculations."]}
+ ,{id:"ashrae-meat-slab-h-reference",reviewStatus:"source_identified",implementationStatus:"reference_points_not_approved_for_interpolation",
+  productGroup:"meat",medium:"air",geometry:"slab",
+  applicability:{characteristicThicknessMm:[23,23],velocityMs:[0.56,3.7]},
+  source:{organization:"ASHRAE-derived secondary table",reference:"Surface heat transfer coefficients for food products cooled by air; adapted from ASHRAE Handbook of Fundamentals, Ch.30 Table 10"},
+  evidence:{reportedPoints:[{velocityMs:0.56,hWm2K:10.6},{velocityMs:1.4,hWm2K:20.0},{velocityMs:3.7,hWm2K:35.0}],heatTransferMechanisms:["forced_convection","radiation","evaporation"]},
+  safeguards:["Source identified through an ASHRAE-derived secondary table; keep non-reviewed until the primary ASHRAE table is independently verified.","Do not interpolate or extrapolate the three h points.","Do not apply to 40-mm beef blocks, packaged meat, or arbitrary meat geometry.","Do not use for automatic core-freezing calculations."]}
  ,{id:"becker-fricke-2004-forced-air-foods",reviewStatus:"source_identified",implementationStatus:"equations_not_transcribed",
   productGroup:"food",medium:"air",geometry:"multiple",
   source:{authors:"Becker & Fricke",journal:"International Journal of Refrigeration",year:2004,volume:"27(5)",pages:"540-551",doi:"10.1016/j.ijrefrig.2004.02.006"},
