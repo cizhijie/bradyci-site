@@ -1,19 +1,15 @@
-// P/R coefficient evidence gate for modified-Plank/Cleland-Earle methods.
-// Exact coefficient equations must be transcribed from a reviewed source before activation.
-export const FREEZING_PR_METHODS=[
- {id:"cleland-earle-modified-plank-pr",reviewStatus:"source_identified",implementationStatus:"blocked_pending_exact_equations",
-  appliesTo:["infinite_slab","infinite_cylinder","sphere","rectangular_brick"],
-  requiredDimensionless:["Bi","Pk","Ste"],
-  requiredGeometry:["shape","D"],
-  rectangularBrickExtra:["beta1","beta2"],
-  source:{organization:"ASHRAE",chapter:"Cooling and Freezing Times of Foods"},
-  safeguards:["No coefficient interpolation from memory.","No unit conversion hidden inside P/R equations.","Reject values outside the published validity ranges."]}
-];
-export function assessPRCoefficientReadiness(input={}){
- const method=FREEZING_PR_METHODS[0];
- const missing=[...method.requiredDimensionless,...method.requiredGeometry].filter(k=>input[k]===undefined||input[k]===null||input[k]==="");
- if(input.shape==="rectangular_brick") for(const k of method.rectangularBrickExtra) if(input[k]===undefined||input[k]===null||input[k]==="") missing.push(k);
- if(missing.length)return {ready:false,status:"missing_pr_inputs",missing:[...new Set(missing)]};
- if(method.implementationStatus!=="implemented_reviewed")return {ready:false,status:"exact_pr_equations_not_yet_reviewed",methodId:method.id};
- return {ready:true,status:"pr_ready",methodId:method.id};
+// Reviewed Cleland-Earle modified-Plank P/R coefficients for simple shapes.
+// Equations transcribed against ASHRAE Handbook—Refrigeration table; brick remains blocked
+// because the table's brick expression is image-rendered and has not yet been independently transcribed.
+const pos=(v,n)=>{const x=Number(v);if(!Number.isFinite(x)||x<=0)throw new Error(n+"_must_be_positive");return x};
+export function clelandEarlePR(input={}){
+ const shape=String(input.shape||"").trim(),Bi=pos(input.Bi,"Bi"),Pk=Number(input.Pk),Ste=pos(input.Ste,"Ste");
+ if(!Number.isFinite(Pk)||Pk<0)throw new Error("Pk_must_be_nonnegative");
+ if(shape==="rectangular_brick") return {ok:false,status:"brick_exact_equations_pending_review"};
+ let P,R;
+ if(shape==="infinite_slab"){P=.5072+.2018*Pk+Ste*(.3224*Pk+.0105/Bi+.0681);R=.1684+Ste*(.2740*Pk-.0135);}
+ else if(shape==="infinite_cylinder"){P=.3751+.0999*Pk+Ste*(.4008*Pk+.0710/Bi-.5865);R=.0133+Ste*(.0415*Pk-.3957);}
+ else if(shape==="sphere"){P=.1084+.0924*Pk+Ste*(.231*Pk-.3114/Bi+.6739);R=.0784+Ste*(.0386*Pk-.1694);}
+ else return {ok:false,status:"unsupported_shape"};
+ return {ok:true,status:"reviewed_pr_calculated",shape,P,R};
 }
