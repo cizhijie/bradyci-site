@@ -6,6 +6,7 @@ import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-t
 import { findInsulationMaterial, VERIFIED_PANEL_PRODUCTS } from "../data/insulation-properties.js";
 import { calculateProductPullDownTime } from "./product-pulldown-time.js";
 import { reviewedBrickCoreFreezingMethod } from "./reviewed-brick-core-freezing.js";
+import { resolveReviewedSurfaceH } from "./reviewed-surface-h-resolver.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -23,7 +24,13 @@ export function runRefrigerationTool(input = {}) {
     return { tool: input.tool, result: calculateEnvelopeUValue(input.args || {}) };
   }
   if (input.tool === "product_core_freezing_time") {
-    return { tool: input.tool, result: calculateProductPullDownTime({...(input.args||{}), targetBasis:"product_core", reviewedMethod:reviewedBrickCoreFreezingMethod}) };
+    const args={...(input.args||{})};
+    if(!(Number.isFinite(Number(args.hWm2K))&&Number(args.hWm2K)>0)){
+      const h=resolveReviewedSurfaceH(args);
+      if(h.ok){args.hWm2K=h.hWm2K;args.hReviewStatus="reviewed";args.hSource=typeof h.source==="string"?h.source:JSON.stringify(h.source);args.heatTransferMethod=h.correlationId||"reviewed_supplied_h";args.heatTransferSource=args.hSource;}
+      else return {tool:input.tool,result:{ok:false,status:"surface_heat_transfer_unresolved",heatTransfer:h}};
+    }
+    return { tool: input.tool, result: calculateProductPullDownTime({...args, targetBasis:"product_core", reviewedMethod:reviewedBrickCoreFreezingMethod}) };
   }
   if (input.tool === "envelope_u_value_range") {
     return { tool: input.tool, result: calculateEnvelopeUValueRange(input.args || {}) };
