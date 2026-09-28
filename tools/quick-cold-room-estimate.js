@@ -29,7 +29,8 @@ export function quickEstimateColdRoom(input={}) {
   ];
   const pf=productFactors.find(x=>x.re.test(product));
   if(pf){factorMin*=pf.min;factorMax*=pf.max;}
-  const estimatedFields=[];\n  if(pf) estimatedFields.push(pf.note);
+  const estimatedFields=[];
+  if(pf) estimatedFields.push(pf.note);
   const unknown=new Set(Array.isArray(input.unknownFields)?input.unknownFields:[]);
   if(unknown.has("entryTempC")) estimatedFields.push("入库货温未知：快速估算未单独计算货物显热，仅保留储存库经验区间");
   if(unknown.has("insulation")) {factorMin*=1.05;factorMax*=1.15;estimatedFields.push("库板保温未知：扩大围护负荷不确定性");}
