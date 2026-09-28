@@ -6,11 +6,11 @@ export const BITZER_SOURCE_REGISTRY = {
   preferredSelectionSource: {
     documentId: "bitzer-software",
     title: "BITZER SOFTWARE",
-    documentType: "selection-software-export",
+    documentType: "selection-software-export", version: "7.1.11.2",
     sourceRef: "https://www.bitzer.de/us/us/tools-archive/software/software/content_321.jsp",
     language: "multi",
     reviewStatus: "reviewed",
-    capabilities: ["reciprocating","screw","scroll","condensing-units","performance-tables","application-limits","technical-data","documentation"],
+    capabilities: ["reciprocating","screw","scroll","condensing-units","performance-tables","polynomial-output","application-limits","technical-data","documentation"],
     note: "Official BITZER configuration software is the preferred source for project operating-point selection and traceable performance output."
   },
   reviewedDocuments: [
