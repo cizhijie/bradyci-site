@@ -16,6 +16,8 @@ export function runRealProjectE2ERegression(){
  });
  check(beef.results.product_load?.ok,"beef freezer must calculate product load from reviewed food data");
  check(beef.results.design_capacity?.ok,"beef freezer estimate must produce a capacity range when calculable parts exist");
+ check(beef.results.product_load.averageLoadKW < beef.results.design_capacity.requiredCapacityRangeKW.max,"equipment capacity must exceed product-only average load");
+ check(beef.results.design_capacity.requiredCapacityRangeKW.max < 500,"beef fixture must catch runaway/double-counted capacity");
  check(beef.text.startsWith("**初步方案结论**"),"beef freezer must be answer-first");
  check(!/推荐.{0,20}(?:型号|[A-Z]{2,}\d{2,})/.test(beef.text),"estimate must not hallucinate an exact compressor model");
 
@@ -26,6 +28,8 @@ export function runRealProjectE2ERegression(){
  });
  check(tofu.assessment.engineeringMode.id==="estimate","tofu case must stay usable in estimate mode");
  check(tofu.text.includes("快速估算"),"tofu answer must disclose estimate status");
+ check(tofu.results.design_capacity?.requiredCapacityRangeKW?.max > 0,"tofu estimate must produce a positive equipment capacity");
+ check(tofu.results.design_capacity.requiredCapacityRangeKW.max < 100,"small tofu room fixture must catch runaway estimate");
 
  const guizhou=run({
   engineeringMode:"estimate",location:"贵州",dimensions:{lengthM:4,widthM:5.1,heightM:4.1},
@@ -37,5 +41,5 @@ export function runRealProjectE2ERegression(){
  check(!guizhou.results.selection_readiness?.readyForManufacturerSelection,"missing refrigerant/official conditions must block formal model selection");
  check(!/75\s*匹|100\s*匹/.test(guizhou.text),"system must not preserve an old horsepower debate as a new conclusion");
 
- return {ok:true,cases:["beef_freezer","tofu_room","guizhou_freezer"],checks:10};
+ return {ok:true,cases:["beef_freezer","tofu_room","guizhou_freezer"],checks:16};
 }
