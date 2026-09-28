@@ -32,7 +32,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.83";
+const AGENT_VERSION = "v2.84";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -503,14 +503,13 @@ export default {
           if (requestData) {
             const toolResult = runRefrigerationTool({ tool: requestData.__brady_tool__, args: requestData.args });
             const finalMessages = [...messages, { role: "assistant", content: draft }, { role: "user", content: "【后端确定性计算结果】\n" + JSON.stringify(toolResult) + "\n请依据该结果回答，不要重新心算覆盖工具结果。" }];
-            let finalResponse = await callModel(env, toolModel, finalMessages, systemPrompt, maxTokens);
-            if (!finalResponse.ok) finalResponse = await callModel(env, FALLBACK_MODEL, finalMessages, systemPrompt, maxTokens);
+            let finalResponse = await callModelNonStream(env, toolModel, finalMessages, systemPrompt, maxTokens);
+            if (!finalResponse.ok) { toolModel = FALLBACK_MODEL; finalResponse = await callModelNonStream(env, FALLBACK_MODEL, finalMessages, systemPrompt, maxTokens); }
             if (!finalResponse.ok) return json({ error: "计算结果解释暂时不可用，请稍后再试。" }, finalResponse.status);
-            return new Response(finalResponse.body, { status: 200, headers: {
-              "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
-              "X-Brady-Model": toolModel, "X-Brady-Role": "owner", "X-Brady-Skill": activeSkill.id, "X-Brady-Tool": requestData.__brady_tool__,
-              "X-Brady-Version": AGENT_VERSION
-            }});
+            const finalData = await finalResponse.json().catch(() => null);
+            const finalText = cleanFinalAnswer(finalData?.choices?.[0]?.message?.content || "");
+            if (!finalText) return sseText("计算已完成，但结果解释生成失败。请重试一次。", { model:toolModel, role:"owner", skill:activeSkill.id, tool:requestData.__brady_tool__ });
+            return sseText(finalText, { model:toolModel, role:"owner", skill:activeSkill.id, tool:requestData.__brady_tool__ });
           }
           if (draft) return sseText(cleanFinalAnswer(draft), { model: toolModel, role: "owner", skill: activeSkill.id });
         }
