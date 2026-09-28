@@ -27,7 +27,13 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.10";
+const AGENT_VERSION = "v2.11";
+const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
+
+function runtimeReadiness(env){
+  const missing=REQUIRED_RUNTIME_BINDINGS.filter(name=>!env[name]);
+  return {ok:missing.length===0,version:AGENT_VERSION,missing};
+}
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -35,7 +41,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/api/owner/login") {
+    if (url.pathname === "/api/health") {\n      if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);\n      const readiness=runtimeReadiness(env);\n      return json(readiness,readiness.ok?200:503);\n    }\n\n    if (url.pathname === "/api/owner/login") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!env.OWNER_PIN) return json({ error: "OWNER_PIN is not configured" }, 500);
       const body = await request.json().catch(() => ({}));
