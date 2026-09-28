@@ -37,7 +37,8 @@ export function quickEstimateColdRoom(input={}) {
   }
   const loadMin=volume*band.wM3[0]*factorMin/1000, loadMax=volume*band.wM3[1]*factorMax/1000;
   return {ok:true,method:"reviewed-engineering-quick-estimate-v3",category:band.label,referenceDuty:band.referenceDuty,volumeM3:r(volume),
-    refrigerationLoadKW:{min:r(loadMin),max:r(loadMax)},referenceCompressorHP:null,estimatedFields,\n    assumptions:["用于不超过 "+MAX_QUICK_VOLUME_M3+" m³ 的小型储存冷库前期沟通/报价参考","按常规使用强度的工程区间估算","小库按表面积/体积比更高进行附加修正","当前版本不再用固定 hp/kW 系数把负荷强行换算成压缩机匹数"],
+    refrigerationLoadKW:{min:r(loadMin),max:r(loadMax)},referenceCompressorHP:null,estimatedFields,
+    assumptions:["用于不超过 "+MAX_QUICK_VOLUME_M3+" m³ 的小型储存冷库前期沟通/报价参考","按常规使用强度的工程区间估算","小库按表面积/体积比更高进行附加修正","当前版本不再用固定 hp/kW 系数把负荷强行换算成压缩机匹数"],
     warnings:["若存在大量高温货物集中入库、速冻/冻结、频繁长时间开门等情况，应转正式负荷核算","压缩机匹数/型号需结合制冷剂、Te、Tc和可追溯厂家性能数据；后续可增加经审核的工况匹数参考表"]
   };
 }
