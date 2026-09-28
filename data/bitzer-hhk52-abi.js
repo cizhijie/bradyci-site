@@ -20,6 +20,13 @@ export const BITZER_HHK52_ABI={
   },
   returnType:"LongInt"
  },
+ flagValues:{
+  ipUnits:1,capacityGiven:2,superheatInput:4,usefulSuperheat:8,subcoolingInput:16,
+  meanTemperatures:128,tandemOnly:512,expandedApplicationLimits:16384,ecostarMode:131072
+ },
+ operatingModes:{automatic:0,suctionGasCooling:1,varicoolDirectSuction:2,cic:3,booster:4,transcritical:5,refrigerantInjection:6},
+ calculationModes:{compressor:0,heatPump:1},
+ seriesCO2:{subcriticalSL:0,transcriticalEcoline:1,subcriticalME:2,transcriticalEcolinePlus:4},
  thresholds:{
   exportName:"Thresholds",
   purpose:"application_or_calculation_condensing_temperature_limits",
