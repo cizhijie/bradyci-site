@@ -11,6 +11,7 @@ internal static class Hhk52InputAbiReview
     internal const int InternalFrequencyInverter = 1;
     internal const int ExternalFrequencyInverter = 2;
     internal const int OperatingModeAutomatic = 0;
+    internal const int ReservedMaxOutputVoltage = 0;
 
     internal const int FlagIpUnits = 1;
     internal const int FlagCapacityGiven = 2;
@@ -19,6 +20,13 @@ internal static class Hhk52InputAbiReview
     internal const int FlagSubcoolingGiven = 16;
     internal const int FlagTandemOnly = 512;
 
+    // BITZER manual control inputs:
+    // I_FCF = selected inverter frequency in Hz (Double).
+    // I_FCV = inverter supply voltage in V.
+    // I_FCOF = inverter supply frequency in Hz.
+    // I_FCMV = reserved; pass 0.
+    // I_OP = operating mode; 0 is automatic selection (standard).
+    //
     // BITZER manual: I_CR is the compressor capacity-control step in percent.
     // Documented discrete steps include 100/83/75/66/50/33/25/17;
     // stepless control uses 10..100. Do not choose a default here.
