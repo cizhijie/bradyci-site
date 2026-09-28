@@ -2,7 +2,7 @@ const chat=document.querySelector("#chat"),input=document.querySelector("#input"
 const messages=[];
 const MAX_CHAT_MESSAGES=12;
 let ownerPin=sessionStorage.getItem("bradyOwnerPin")||"";
-let projectId=crypto.randomUUID();
+let projectId=(globalThis.crypto?.randomUUID?.()||("p-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
 function renderMarkdown(text){
@@ -54,7 +54,16 @@ form.addEventListener("submit",async e=>{
     const headers={"Content-Type":"application/json"};if(ownerPin)headers["X-Owner-Pin"]=ownerPin;
     const r=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:messages.slice(-MAX_CHAT_MESSAGES),projectId})});
     if(!r.ok){const data=await r.json().catch(()=>({}));throw new Error(data.error||"请求失败");}
-    const toolUsed=r.headers.get("X-Brady-Tool")||"";if(!r.body)throw new Error("浏览器不支持流式响应");bubble.textContent="";
+    const toolUsed=r.headers.get("X-Brady-Tool")||"";
+    const contentType=r.headers.get("content-type")||"";
+    if(!r.body||!r.body.getReader){
+      const text=await r.text();
+      if(!text)throw new Error("服务器没有返回内容");
+      bubble.innerHTML=renderMarkdown(text);reply=text;
+      messages.push({role:"assistant",content:reply});
+      return;
+    }
+    bubble.textContent="";
     const reader=r.body.getReader(),decoder=new TextDecoder();let buffer="";
     while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const lines=buffer.split("\n");buffer=lines.pop()||"";
       for(const raw of lines){const line=raw.trim();if(!line.startsWith("data:"))continue;const payload=line.slice(5).trim();if(!payload||payload==="[DONE]")continue;
@@ -76,7 +85,7 @@ document.querySelector("#clear").onclick=async()=>{
   messages.length=0;
   if(ownerPin){
     await fetch("/api/project/cold-room/reset",{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Pin":ownerPin},body:JSON.stringify({projectId})}).catch(()=>{});
-    projectId=crypto.randomUUID();
+    projectId=(globalThis.crypto?.randomUUID?.()||("p-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
   }
   location.reload();
 };
