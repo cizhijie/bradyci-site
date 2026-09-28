@@ -13,6 +13,12 @@ export const HEAT_TRANSFER_CORRELATIONS=[
   applicability:{diameterMm:[70,107],velocityMs:[0.025,2.1]},
   source:{organization:"ASHRAE",chapter:"Methods of Precooling Fruits, Vegetables, and Cut Flowers",reference:"Baird and Gaffney (1976)"},
   prohibitedUses:["meat","generic_food","outside_velocity_range","outside_geometry_range"]}
+ ,{id:"ashrae-beef-carcass-fedorov-1972",reviewStatus:"reviewed_reference_only",implementationStatus:"no_nu_re_pr_correlation",
+  productGroup:"beef_carcass",medium:"air",geometry:"carcass",
+  applicability:{mediumTempC:[-19.5,-19.5],velocityMs:[0.3,1.8]},
+  source:{organization:"ASHRAE",edition:2026,chapter:19,chapterTitle:"Thermal Properties of Foods",reference:"Fedorov et al. (1972)",url:"https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"},
+  evidence:{reportedH_Wm2K:[10.0,21.8],note:"ASHRAE reports carcass reference points; no Nu-Re-Pr correlation is given."},
+  safeguards:["Reference-only record. Do not interpolate h from the two reported carcass points.","Do not apply to beef blocks, patties, cartons, or generic beef.","Do not use for automatic core-freezing calculations."]}
  ,{id:"becker-fricke-2004-forced-air-foods",reviewStatus:"source_identified",implementationStatus:"equations_not_transcribed",
   productGroup:"food",medium:"air",geometry:"multiple",
   source:{authors:"Becker & Fricke",journal:"International Journal of Refrigeration",year:2004,volume:"27(5)",pages:"540-551",doi:"10.1016/j.ijrefrig.2004.02.006"},
