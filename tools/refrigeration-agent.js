@@ -180,7 +180,10 @@ export function extractColdRoomProject(text = "") {
 export function formatColdRoomProjectState(p = {}) {
   const known = [];
   if (p.location) known.push("地点：" + p.location);
-  if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");\n  if (Number.isFinite(p.floorAreaM2)) known.push("库房面积：约 " + p.floorAreaM2 + " m²");\n  if (Number.isFinite(p.heightM)) known.push("库房高度：" + p.heightM + " m");\n  if (Number.isFinite(p.volumeM3)) known.push("估算容积：约 " + Math.round(p.volumeM3*10)/10 + " m³");
+  if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");
+  if (Number.isFinite(p.floorAreaM2)) known.push("库房面积：约 " + p.floorAreaM2 + " m²");
+  if (Number.isFinite(p.heightM)) known.push("库房高度：" + p.heightM + " m");
+  if (Number.isFinite(p.volumeM3)) known.push("估算容积：约 " + Math.round(p.volumeM3*10)/10 + " m³");
   if (Number.isFinite(p.roomTempC)) known.push("目标库温：" + p.roomTempC + "℃");
   if (Number.isFinite(p.projectOutdoorTempC)) known.push("项目设计室外温度：" + p.projectOutdoorTempC + "℃（项目约束，不等同于规范气象参考值）");
   if (p.insulation?.material && Number.isFinite(p.insulation?.thicknessMm)) known.push("保温：" + p.insulation.thicknessMm + " mm " + p.insulation.material + "板");
