@@ -171,6 +171,10 @@ export function mapBitzerPolynomialCsv(parsed={}){
   });
   const invalidDomainRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>[x.rowData.evaporatingMinC,x.rowData.evaporatingMaxC,x.rowData.condensingMinC,x.rowData.condensingMaxC].some(v=>!Number.isFinite(v)) || x.rowData.evaporatingMinC>x.rowData.evaporatingMaxC || x.rowData.condensingMinC>x.rowData.condensingMaxC);
   if(invalidDomainRows.length) return {ok:false,error:"invalid_polynomial_validity_range",rows:invalidDomainRows.map(x=>x.row),detected};
+  const invalidIdentityRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>!x.rowData.model||!x.rowData.refrigerant||!x.rowData.quantity||!x.rowData.polynomialStandard);
+  if(invalidIdentityRows.length) return {ok:false,error:"required_row_identity_values_missing",rows:invalidIdentityRows.map(x=>x.row),detected};
+  const invalidCoefficientRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>x.rowData.coefficients.length!==10||x.rowData.coefficients.some(v=>!Number.isFinite(v)));
+  if(invalidCoefficientRows.length) return {ok:false,error:"invalid_polynomial_coefficients",rows:invalidCoefficientRows.map(x=>x.row),detected};
   return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
 
