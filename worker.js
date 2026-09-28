@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.39";
+const AGENT_VERSION = "v2.40";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -326,11 +326,13 @@ export default {
           const visitorText = latestUser.content || "";
           const visitorColdRoom = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(visitorText) &&
             /(?:怎么配|怎么选|方案|配置|选型|负荷|计算|核算|做一个|建一个)/i.test(visitorText);
-          let visitorState = await loadColdRoomProjectState(env, projectId);
+          const visitorStartsNewProject = /(?:另一个|新的|新项目|重新做|重新算|换一个).{0,8}(?:冷库|项目)|(?:冷库|项目).{0,8}(?:另一个|新的|新项目|重新|换一个)/i.test(visitorText);
+          if(visitorStartsNewProject) await clearColdRoomProjectState(env,projectId);
+          let visitorState = visitorStartsNewProject ? null : await loadColdRoomProjectState(env, projectId);
           const visitorFollowup = !!visitorState && /(?:入库|货温|聚氨酯|PIR|XPS|EPS|一楼|楼上|地面|保温|开门|次|分钟|人工|叉车|速冻|冻结|小时|不知道)/i.test(visitorText);
           if (visitorColdRoom || visitorFollowup) {
             const patch = extractColdRoomProject(visitorText);
-            if (visitorColdRoom) visitorState = {};
+            if (visitorColdRoom && !visitorState) visitorState = {};
             visitorState = mergeColdRoomProjectState(visitorState || {}, patch);
             await saveColdRoomProjectState(env, visitorState, projectId);
             const p = visitorState, known=[];
