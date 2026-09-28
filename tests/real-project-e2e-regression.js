@@ -24,7 +24,7 @@ export function runRealProjectE2ERegression(){
 
  const tofu=run({
   engineeringMode:"estimate",location:"成都",dimensions:{lengthM:10,widthM:10,heightM:2.6},
-  roomTempC:-3,productCategory:"豆腐",dailyInboundKg:2000,entryTempC:20,productTargetTempC:-3,
+  roomTempC:-3,productCategory:"豆腐",dailyInboundKg:2000,entryTempC:20,productTargetTempC:-3,pullDownHours:24,pullDownTargetBasis:"product_average",
   processMode:"chilled_storage",insulation:{material:"聚氨酯",thicknessMm:100},projectOutdoorTempC:39
  });
  check(tofu.assessment.engineeringMode.id==="estimate","tofu case must stay usable in estimate mode");
