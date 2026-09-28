@@ -9,6 +9,8 @@ import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.
 import { saveReviewedManufacturerDocument, promoteAndSavePerformancePoint } from "./lib/manufacturer-performance-write.js";
 import { stagePerformanceExtractionRow, listStagedPerformanceRows, reviewStagedPerformanceRow } from "./lib/manufacturer-performance-staging.js";
 import { promoteReviewedStagingRow } from "./lib/manufacturer-staging-promotion.js";
+import { normalizeBitzerPerformanceRow } from "./tools/bitzer-import.js";
+import { BITZER_SOURCE_REGISTRY } from "./data/bitzer-source-registry.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -19,7 +21,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.59";
+const AGENT_VERSION = "v1.60";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -73,6 +75,23 @@ export default {
         return json({ ok: true });
       }
       return json({ error: "Method not allowed" }, 405);
+    }
+
+    if (url.pathname === "/api/manufacturer/bitzer/source") {
+      if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      return json({ ok: true, source: BITZER_SOURCE_REGISTRY });
+    }
+
+    if (url.pathname === "/api/manufacturer/bitzer/stage") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const normalized = normalizeBitzerPerformanceRow(await request.json().catch(() => ({})));
+        if (!normalized.ok) return json(normalized, 400);
+        const result = await stagePerformanceExtractionRow(env, normalized.row);
+        return json({ ...result, ratingContext: normalized.ratingContext, warning: normalized.warning }, result.ok ? 200 : 400);
+      } catch (error) { return json({ error: error?.message || "BITZER staging failed" }, 500); }
     }
 
     if (url.pathname === "/api/manufacturer/staging") {
