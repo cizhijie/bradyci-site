@@ -16,7 +16,7 @@ export function runRealProjectE2ERegression(){
  });
  check(beef.results.product_load?.ok,"beef freezer must calculate product load from reviewed food data");
  check(beef.results.design_capacity?.ok,"beef freezer estimate must produce a capacity range when calculable parts exist");
- const beefProductEquivalentKW=beef.results.product_load.totalEnergyKWh/20;
+ const beefProductEquivalentKW=(beef.results.product_load.energyKJ.total/3600)/20;
  check(beefProductEquivalentKW < beef.results.design_capacity.requiredCapacityRangeKW.max,"equipment capacity must exceed product daily-energy equivalent at the stated 20 h/day runtime");
  check(beef.results.design_capacity.requiredCapacityRangeKW.max < 500,"beef fixture must catch runaway/double-counted capacity");
  check(beef.text.startsWith("**初步方案结论**"),"beef freezer must be answer-first");
