@@ -23,7 +23,9 @@ export function calculateProductPullDownTime(input={}){
   const source=String(method.source||input.heatTransferSource||"").trim();
   if(!source) return {ok:false,status:"reviewed_source_required"};
 
-  let result;\n  try { result=method.calculate({...input}); }\n  catch (error) { return {ok:false,status:"method_input_invalid",reason:String(error?.message||error),source}; }
+  let result;
+  try { result=method.calculate({...input}); }
+  catch (error) { return {ok:false,status:"method_input_invalid",reason:String(error?.message||error),source}; }
   const hours=n(result?.hours);
   if(hours===null||hours<=0){
     return {ok:false,status:"invalid_method_result",source};
