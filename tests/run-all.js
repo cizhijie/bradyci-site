@@ -2,6 +2,7 @@ const suites=[
  ["ashrae-freezing-benchmark","./ashrae-freezing-benchmark-regression.js","runAshraeFreezingBenchmarkRegression"],
  ["architecture-brand-bridge","./architecture-brand-bridge-regression.js","runArchitectureBrandBridgeRegression"],
  ["architecture-selection","./architecture-selection-regression.js","runArchitectureSelectionRegression"],
+ ["cleland-earle-freezing-time","./cleland-earle-freezing-time-regression.js","runClelandEarleFreezingTimeRegression"],
  ["compressor-schema","./compressor-schema-regression.js","runCompressorSchemaRegression"],
  ["direct-architecture-router","./direct-architecture-router-regression.js","runDirectArchitectureRouterRegression"],
  ["direct-manufacturer-request","./direct-manufacturer-request-regression.js","runDirectManufacturerRequestRegression"],
