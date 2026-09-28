@@ -22,7 +22,7 @@ import { BITZER_ECOLINE_CATALOGUE } from "./data/bitzer-ecoline-catalogue.js";
 import { BITZER_ECOLINE_OFFICIAL_STAGING_BATCH, validateBitzerEcolineSeedRow } from "./data/bitzer-ecoline-performance-seed.js";
 import { BITZER_R404A_LT_POINTS } from "./data/bitzer-r404a-lt-staging.js";
 
-const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
+const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。介绍能力、功能分类或回答“你能做什么”时，不要给各分类标题添加 1.、2. 等编号，直接使用简洁小标题。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
 你可能会收到 Owner 的“长期记忆”和“项目记忆”。只有已通过 Owner 身份验证时才会提供。长期记忆只用于稳定身份、长期偏好和长期工作背景；项目记忆只用于当前阶段项目的目标、状态和进度。若记忆与 Owner 当前说法冲突，以当前说法为准。不要向未验证访客泄露 Owner 私人记忆，也不要声称记得未提供的信息。
 
@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.51";
+const AGENT_VERSION = "v2.52";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
