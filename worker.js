@@ -6,12 +6,13 @@ import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicR
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
-import { saveReviewedManufacturerDocument, promoteAndSavePerformancePoint } from "./lib/manufacturer-performance-write.js";
+import { saveReviewedManufacturerDocument } from "./lib/manufacturer-performance-write.js";
 import { stagePerformanceExtractionRow, listStagedPerformanceRows, reviewStagedPerformanceRow } from "./lib/manufacturer-performance-staging.js";
 import { promoteReviewedStagingRow } from "./lib/manufacturer-staging-promotion.js";
 import { normalizeBitzerPerformanceRow } from "./tools/bitzer-import.js";
 import { BITZER_SOURCE_REGISTRY } from "./data/bitzer-source-registry.js";
 import { BITZER_ECOLINE_CATALOGUE } from "./data/bitzer-ecoline-catalogue.js";
+import { BITZER_ECOLINE_OFFICIAL_STAGING_BATCH, validateBitzerEcolineSeedRow } from "./data/bitzer-ecoline-performance-seed.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -22,7 +23,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.62";
+const AGENT_VERSION = "v1.63";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -90,6 +91,22 @@ export default {
       return json({ ok: true, source: BITZER_SOURCE_REGISTRY });
     }
 
+    if (url.pathname === "/api/manufacturer/bitzer/bootstrap") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const documentResult=await saveReviewedManufacturerDocument(env,BITZER_ECOLINE_OFFICIAL_STAGING_BATCH.document);
+        if(!documentResult.ok) return json(documentResult,400);
+        const staged=[];
+        for(const row of BITZER_ECOLINE_OFFICIAL_STAGING_BATCH.rows){
+          const validation=validateBitzerEcolineSeedRow(row);
+          if(!validation.ok) return json({ok:false,error:"invalid_official_seed",validation},400);
+          staged.push(await stagePerformanceExtractionRow(env,row));
+        }
+        return json({ok:staged.every(x=>x.ok),document:documentResult.document,staged,reviewStatus:"unreviewed",nextStep:"Review each staging row, then promote it. Bootstrap never writes directly to Verified."});
+      } catch (error) { return json({ error: error?.message || "BITZER bootstrap failed" }, 500); }
+    }
+
     if (url.pathname === "/api/manufacturer/bitzer/stage") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
@@ -143,12 +160,7 @@ export default {
     }
 
     if (url.pathname === "/api/manufacturer/performance/promote") {
-      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
-      try {
-        const result = await promoteAndSavePerformancePoint(env, await request.json().catch(() => ({})));
-        return json(result, result.ok ? 200 : 400);
-      } catch (error) { return json({ error: error?.message || "Manufacturer performance promotion failed" }, 500); }
+      return json({error:"Direct promotion is disabled. Use staging -> reviewed (with review note) -> staging/promote."},409);
     }
 
     if (url.pathname === "/api/manufacturer/performance/query") {

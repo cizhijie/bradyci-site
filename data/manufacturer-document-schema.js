@@ -52,6 +52,8 @@ export function canPromoteExtractionRow(row={}){
   if(!row.page) blockers.push("source_page");
   if(!row.model) blockers.push("model");
   if(!row.refrigerant) blockers.push("refrigerant");
+  if(!row.rawRatingCondition) blockers.push("rating_condition");
+  if(!row.extractionMethod) blockers.push("extraction_method");
   for(const k of ["evaporatingTempC","condensingTempC","coolingCapacityKW"]) if(!Number.isFinite(Number(row[k]))) blockers.push(k);
   return {promotable:blockers.length===0,blockers,rule:"Only reviewed, page-traceable rows may enter the manufacturer performance dataset."};
 }

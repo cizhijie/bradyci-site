@@ -15,6 +15,13 @@ export const BITZER_SOURCE_REGISTRY = {
   },
   reviewedDocuments: [
     {
+      documentId: "bitzer-kp-104-3-cn", title: "ECOLINE semi-hermetic reciprocating compressors",
+      documentType: "performance-table", version: "KP-104-3-CN",
+      sourceRef: "https://www.bitzer.de/shared_media/documentation/kp-104-3-cn.pdf",
+      language: "de/en/zh", reviewStatus: "reviewed",
+      note: "Official BITZER performance tables: EN 12900, 50 Hz, 20°C suction gas temperature, no liquid subcooling."
+    },
+    {
       documentId: "bitzer-at-640-3-2026",
       title: "Selecting compressors via BITZER SOFTWARE (AT-640-3)",
       documentType: "application-manual",

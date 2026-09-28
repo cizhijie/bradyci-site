@@ -35,12 +35,17 @@ export function normalizeBitzerPerformanceRow(input={}){
   for(const k of ["model","refrigerant"]) if(!row[k]) missing.push(k);
   for(const k of ["evaporatingTempC","condensingTempC","coolingCapacityKW"]) if(row[k]===null) missing.push(k);
   const contextPresent=Object.entries(ratingContext).filter(([,v])=>v!==null&&v!=="").map(([k])=>k);
+  if(!row.rawRatingCondition) missing.push("rawRatingCondition");
+  if(!row.extractionMethod) missing.push("extractionMethod");
+  if(ratingContext.frequencyHz===null) missing.push("frequencyHz");
+  if(ratingContext.superheatK===null&&ratingContext.suctionGasTempC===null) missing.push("superheatOrSuctionCondition");
+  if(ratingContext.liquidTempC===null&&ratingContext.subcoolingK===null) missing.push("liquidTemperatureOrSubcooling");
   return {
     ok:missing.length===0,
     row:{...row,rawRatingCondition:row.rawRatingCondition||JSON.stringify(ratingContext)},
     ratingContext,
     contextPresent,
     missing,
-    warning:contextPresent.length?"Rating context captured; keep it with the source record.":"Core point is parseable, but formal selection should retain BITZER rating context such as superheat/suction condition, liquid condition and frequency/speed where applicable."
+    warning:missing.length?"BITZER point is blocked until the complete official rating context is supplied.":"Complete BITZER rating context captured; row remains unreviewed until explicit review."
   };
 }
