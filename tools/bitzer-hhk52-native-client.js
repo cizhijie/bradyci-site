@@ -8,7 +8,11 @@ export function buildHhk52DesignCall(request={}){
  if(!t(request.refrigerant))blocked.push("refrigerant");
  if(n(request.evaporatingTempC)===null)blocked.push("evaporatingTempC");
  if(n(request.condensingTempC)===null)blocked.push("condensingTempC");
- if(n(request.superheatK)!==null||n(request.suctionGasTempC)!==null)blocked.push("I_Flags_TS_semantics_not_reviewed");
- if(n(request.subcoolingK)!==null||n(request.liquidTempC)!==null)blocked.push("I_Flags_TL_semantics_not_reviewed");
- return {ok:blocked.length===0,dll:BITZER_HHK52_ABI.dll,exportName:BITZER_HHK52_ABI.design.exportName,callingConvention:BITZER_HHK52_ABI.callingConvention,reviewedInputs:{I_Ref:t(request.refrigerant),I_Q:n(request.requiredCapacityKW),I_T0:n(request.evaporatingTempC),I_TC:n(request.condensingTempC),I_Typ:t(request.model)},blocked,status:blocked.length?"abi_flag_review_required":"native_call_shape_ready",rule:"Do not invoke HHK52 Design until I_Flags semantics for I_TS/I_TL and all required mode/series/control fields are reviewed from the official interface manual."};
+ const hasSH=n(request.superheatK)!==null,hasSG=n(request.suctionGasTempC)!==null,hasSC=n(request.subcoolingK)!==null,hasLT=n(request.liquidTempC)!==null;
+ if(hasSH&&hasSG)blocked.push("choose_superheatK_or_suctionGasTempC");
+ if(hasSC&&hasLT)blocked.push("choose_subcoolingK_or_liquidTempC");
+ let flags=0;
+ if(hasSH)flags|=BITZER_HHK52_ABI.flagValues.superheatInput;
+ if(hasSC)flags|=BITZER_HHK52_ABI.flagValues.subcoolingInput;
+ return {ok:blocked.length===0,dll:BITZER_HHK52_ABI.dll,exportName:BITZER_HHK52_ABI.design.exportName,callingConvention:BITZER_HHK52_ABI.callingConvention,reviewedInputs:{I_Flags:flags,I_Ref:t(request.refrigerant),I_Q:n(request.requiredCapacityKW),I_T0:n(request.evaporatingTempC),I_TC:n(request.condensingTempC),I_TS:hasSH?n(request.superheatK):n(request.suctionGasTempC),I_TL:hasSC?n(request.subcoolingK):n(request.liquidTempC),I_Typ:t(request.model)},blocked,status:blocked.length?"abi_flag_review_required":"native_call_shape_ready",rule:"I_TS/I_TL flag semantics are reviewed; native execution remains gated until required mode/series/control defaults are pinned for the requested ECOLINE case."};
 }
