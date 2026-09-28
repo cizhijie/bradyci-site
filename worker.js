@@ -21,6 +21,7 @@ import { BITZER_SOURCE_REGISTRY } from "./data/bitzer-source-registry.js";
 import { BITZER_ECOLINE_CATALOGUE } from "./data/bitzer-ecoline-catalogue.js";
 import { BITZER_ECOLINE_OFFICIAL_STAGING_BATCH, validateBitzerEcolineSeedRow } from "./data/bitzer-ecoline-performance-seed.js";
 import { BITZER_R404A_LT_POINTS } from "./data/bitzer-r404a-lt-staging.js";
+import { inspectBitzerPolynomialCsv } from "./tools/bitzer-polynomial-import.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。介绍能力、功能分类或回答“你能做什么”时，不要给各分类标题添加 1.、2. 等编号，直接使用简洁小标题。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -31,7 +32,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.75";
+const AGENT_VERSION = "v2.76";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -106,6 +107,18 @@ export default {
         return json({ ok: true });
       }
       return json({ error: "Method not allowed" }, 405);
+    }
+
+    if (url.pathname === "/api/manufacturer/bitzer/polynomial/inspect") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const body=await request.json();
+        const csvText=String(body?.csvText||"");
+        if(!csvText.trim()) return json({ok:false,error:"csvText is required"},400);
+        if(csvText.length>2_000_000) return json({ok:false,error:"CSV is too large for inspection"},413);
+        return json(inspectBitzerPolynomialCsv(csvText,body?.metadata||{}));
+      } catch (error) { return json({ error: error?.message || "BITZER polynomial CSV inspection failed" }, 400); }
     }
 
     if (url.pathname === "/api/manufacturer/bitzer/ecoline") {
