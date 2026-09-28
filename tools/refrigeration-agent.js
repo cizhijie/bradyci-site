@@ -113,6 +113,13 @@ export function extractColdRoomProject(text = "") {
   else if (/猪肉/.test(raw)) project.productCategory = "猪肉";
   else if (/鸡肉/.test(raw)) project.productCategory = "鸡肉";
   else if (/豆腐/.test(raw)) project.productCategory = "豆腐";
+  else if (/蔬菜|青菜|叶菜/.test(raw)) project.productCategory = "蔬菜";
+  else if (/水果|苹果|梨|柑橘|橙子/.test(raw)) project.productCategory = "水果";
+  else if (/海鲜|水产|鱼|虾/.test(raw)) project.productCategory = "水产/海鲜";
+  else if (/饮料|啤酒|酒水/.test(raw)) project.productCategory = "饮料/酒水";
+  if (/速冻|冻结加工|鲜货冻结|常温货冻结|从.+冻到|中心温度/.test(raw)) project.processMode = "freezing";
+  else if (/冷冻储存|冻品储存|冻货储存|存放冻品|放冻肉|放冻货/.test(raw)) project.processMode = "frozen_storage";
+  else if (/冷藏|保鲜/.test(raw)) project.processMode = "chilled_storage";
   const floorParts = [];
   if (/一楼(?:直接)?落地|一层(?:直接)?落地|落地库/.test(raw)) floorParts.push("一楼落地");
   else if (/楼层上|楼上|二楼|三楼|四楼/.test(raw)) floorParts.push("楼层上");
