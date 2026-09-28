@@ -181,6 +181,8 @@ export function mapBitzerPolynomialCsv(parsed={}){
   const identityKeys=normalizedRows.map(row=>[row.model,row.refrigerant,row.quantity,row.polynomialStandard].map(v=>String(v).trim().toUpperCase()).join("|"));
   const duplicateRows=identityKeys.map((key,index)=>identityKeys.indexOf(key)!==index?index+2:null).filter(Number.isFinite);
   if(duplicateRows.length) return {ok:false,error:"duplicate_polynomial_identity_requires_review",rows:duplicateRows,detected};
+  const mixedStandards=[...new Set(normalizedRows.map(row=>row.polynomialStandard.toUpperCase()))];
+  if(mixedStandards.length!==1) return {ok:false,error:"mixed_polynomial_standards_require_separate_review",standards:mixedStandards,detected};
   return {ok:true,rows:normalizedRows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
 
