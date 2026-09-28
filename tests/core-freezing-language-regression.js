@@ -7,5 +7,6 @@ export function runCoreFreezingLanguageRegression(){
  ck(p.airVelocityMs===3,"air velocity extraction");
  ck(p.packaging==="unpacked"&&p.stacking==="spaced","packaging and stacking extraction");
  ck(p.pullDownHours===8,"required time extraction");
- return {ok:true,checks:5};
+ ck(project.geometry==="brick","explicit meat block dimensions should infer brick geometry");
+ return {ok:true,checks:6};
 }
