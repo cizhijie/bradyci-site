@@ -12,6 +12,7 @@ const suites=[
  ["preliminary-solution-summary","./preliminary-solution-summary-regression.js","runPreliminarySolutionSummaryRegression"],
  ["product-target-temperature","./product-target-temperature-regression.js","runProductTargetTemperatureRegression"],
  ["product-pulldown-feasibility","./product-pulldown-feasibility-regression.js","runProductPullDownFeasibilityRegression"],
+ ["product-pulldown-time","./product-pulldown-time-regression.js","runProductPullDownTimeRegression"],
  ["readiness-conversation","./readiness-conversation-regression.js","runReadinessConversationRegression"],
  ["real-project-e2e","./real-project-e2e-regression.js","runRealProjectE2ERegression"],
  ["selection-gate","./selection-gate-regression.js","runSelectionGateRegression"]
