@@ -1,6 +1,7 @@
 import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
+import { quickEstimateColdRoom } from "./tools/quick-cold-room-estimate.js";
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
@@ -27,7 +28,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.28";
+const AGENT_VERSION = "v2.29";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -348,7 +349,7 @@ export default {
             if(!p.insulation?.material||!Number.isFinite(p.insulation?.thicknessMm))missing.push("库板是什么材料、厚度多少？");
             if(!p.floor?.description)missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
             if(!p.doorUsage?.description)missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
-            const reply="已记录："+known.join("，")+"。\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做基础负荷估算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
+            const quick = quickEstimateColdRoom(p);\n            const quickText = quick.ok ? "\n\n工程快速估算参考：制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW，压缩机约 "+quick.referenceCompressorHP.min+"～"+quick.referenceCompressorHP.max+" 匹。该结果仅用于前期沟通，不代表具体厂家型号。" : "";\n            const reply="已记录："+known.join("，")+"。"+quickText+"\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做正式负荷核算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
             return sseText(reply,{model:"deterministic-intake",role:"visitor",skill:"refrigeration-intake"});
           }
         }
