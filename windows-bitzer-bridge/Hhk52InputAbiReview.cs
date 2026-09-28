@@ -8,6 +8,8 @@ internal static class Hhk52InputAbiReview
     internal const int ModeCompressor = 0;
     internal const int ReservedCc = 0;
     internal const int NoFrequencyInverter = 0;
+    internal const int InternalFrequencyInverter = 1;
+    internal const int ExternalFrequencyInverter = 2;
     internal const int OperatingModeAutomatic = 0;
 
     internal const int FlagIpUnits = 1;
@@ -45,9 +47,7 @@ internal static class Hhk52InputAbiReview
         missing.Add("I_DS");
         missing.Add("I_OV");
 
-        // Useful superheat and capacity-control intent are not represented yet.
-        missing.Add("I_TN");
-        missing.Add("I_CR");
+        // These control inputs are not represented by the public request yet.\n        // Do not silently choose inverter, useful-superheat or capacity-control intent.\n        missing.Add("I_FI");\n        missing.Add("I_TN");\n        missing.Add("I_CR");
         return missing.ToArray();
     }
 
