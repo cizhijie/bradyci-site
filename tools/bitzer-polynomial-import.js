@@ -102,3 +102,61 @@ export function evaluateReviewedBitzerPolynomial(input={}){
   if(!calculated.ok) return calculated;
   return {...calculated,domain,model:text(input.model),refrigerant:text(input.refrigerant),quantity:text(input.quantity),softwareVersion:text(input.softwareVersion),status:"calculated_from_reviewed_polynomial",verified:false};
 }
+
+
+const canonicalHeader=v=>text(v).toLowerCase().replace(/[\s_\-\/().°]+/g,"");
+
+export function detectBitzerPolynomialColumns(header=[]){
+  const aliases={
+    model:["model","compressor","compressormodel","verdichter","verdichtertyp"],
+    refrigerant:["refrigerant","ref","kältemittel","kaeltemittel"],
+    quantity:["quantity","performance","value","result","größe","groesse"],
+    polynomialStandard:["polynomialstandard","standard","polynomial","polynom"],
+    evaporatingMinC:["temin","to min","evaporatingmin","evapmin"],
+    evaporatingMaxC:["temax","to max","evaporatingmax","evapmax"],
+    condensingMinC:["tcmin","condensingmin","condmin"],
+    condensingMaxC:["tcmax","condensingmax","condmax"]
+  };
+  const normalized=header.map((name,index)=>({name,index,key:canonicalHeader(name)}));
+  const mapping={},ambiguous={};
+  for(const [target,names] of Object.entries(aliases)){
+    const keys=names.map(canonicalHeader);
+    const hits=normalized.filter(h=>keys.includes(h.key));
+    if(hits.length===1) mapping[target]=hits[0].name;
+    else if(hits.length>1) ambiguous[target]=hits.map(h=>h.name);
+  }
+  const coefficientColumns=normalized.filter(h=>/^c(?:oeff)?0?\d+$/.test(h.key)||/^c\d+$/.test(h.key)).map(h=>h.name);
+  return {
+    ok:Object.keys(ambiguous).length===0,
+    mapping,
+    coefficientColumns,
+    ambiguous,
+    unmapped:header.filter(h=>!Object.values(mapping).includes(h)&&!coefficientColumns.includes(h)),
+    rule:"Header detection is conservative. Unknown or ambiguous BITZER export headers must be reviewed instead of guessed."
+  };
+}
+
+export function mapBitzerPolynomialCsv(parsed={}){
+  if(!parsed.ok||!Array.isArray(parsed.header)||!Array.isArray(parsed.rows)) return {ok:false,error:"parsed_csv_required"};
+  const detected=detectBitzerPolynomialColumns(parsed.header);
+  if(!detected.ok) return {ok:false,error:"ambiguous_headers",detected};
+  const required=["model","refrigerant","quantity","polynomialStandard"];
+  const missing=required.filter(k=>!detected.mapping[k]);
+  if(missing.length) return {ok:false,error:"required_headers_not_recognized",missing,detected};
+  const rows=parsed.rows.map(raw=>{
+    const pick=k=>raw[detected.mapping[k]];
+    return {
+      model:text(pick("model")),
+      refrigerant:text(pick("refrigerant")),
+      quantity:text(pick("quantity")),
+      polynomialStandard:text(pick("polynomialStandard")),
+      evaporatingMinC:num(pick("evaporatingMinC")),
+      evaporatingMaxC:num(pick("evaporatingMaxC")),
+      condensingMinC:num(pick("condensingMinC")),
+      condensingMaxC:num(pick("condensingMaxC")),
+      coefficients:detected.coefficientColumns.map(k=>num(raw[k])),
+      raw
+    };
+  });
+  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
+}
