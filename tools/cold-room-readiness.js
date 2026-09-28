@@ -60,11 +60,27 @@ export function assessColdRoomProject(state = {}) {
   const ambiguous = findAmbiguousFoodTerm(foodText);
   const food = !ambiguous ? findFoodThermalProperties(foodText) : null;
   const isFreezingProcess = state.processMode === "freezing";
-  const productFactsReady = Number.isFinite(Number(state.dailyInboundKg)) && Number.isFinite(Number(state.entryTempC)) && hasRoomTemp && (!isFreezingProcess || Number.isFinite(Number(state.pullDownHours)));
+  const hasProductBasics = Number.isFinite(Number(state.dailyInboundKg)) && Number.isFinite(Number(state.entryTempC));
+  const hasProductTarget = Number.isFinite(Number(state.productTargetTempC));
+  const hasPullDownTime = Number.isFinite(Number(state.pullDownHours));
+  const hasPullDownBasis = ["product_core","product_average","room_air"].includes(String(state.pullDownTargetBasis||""));
+  const productFactsReady = hasProductBasics && hasProductTarget && hasPullDownTime && hasPullDownBasis;
   if (productFactsReady && food) ready.push({ id:"product_load", source:food.source, label:food.label });
   else {
     const reasons = [];
-    if (!productFactsReady) reasons.push(isFreezingProcess ? "冻结项目的货物质量、入库温度或处理时间未齐" : "货物质量或入库温度未齐");
+    if (!hasProductBasics) reasons.push("货物质量或入库温度未齐");
+    if (!hasProductTarget) {
+      reasons.push("缺货物目标温度/中心温度；库温不能代替货物目标温度");
+      customerQuestions.push("这批货要求在规定时间内降到多少℃？如果是速冻，请给货物中心目标温度（例如中心 -18℃），不要填库温。");
+    }
+    if (!hasPullDownTime) {
+      reasons.push(isFreezingProcess ? "缺货物达到目标温度的处理时间" : "缺货物降到目标温度的时间");
+      customerQuestions.push("这批货希望在多少小时内从入库温度降到目标货温？");
+    }
+    if (hasProductTarget && hasPullDownTime && !hasPullDownBasis) {
+      reasons.push("处理时间的目标口径未明确");
+      customerQuestions.push("你说的几小时，是要求货物中心达到目标温度，还是货物平均温度达到目标值？速冻项目通常请明确货物中心要求。");
+    }
     if (!food) reasons.push("具体食品热物性尚未匹配到审核资料");
     blocked.push({ id:"product_load", reason:reasons.join("；"), sourceReady:!!food });
   }
