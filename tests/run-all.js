@@ -5,6 +5,7 @@ const suites=[
 ["core-freezing-direct-router","./core-freezing-direct-router-regression.js","runCoreFreezingDirectRouterRegression"],
 ["core-freezing-fail-closed-e2e","./core-freezing-fail-closed-e2e-regression.js","runCoreFreezingFailClosedE2ERegression"],
 ["bitzer-dll-adapter","./bitzer-dll-adapter-regression.js","runBitzerDllAdapterRegression"],
+["bitzer-selection-bridge","./bitzer-selection-bridge-regression.js","runBitzerSelectionBridgeRegression"],
  ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
