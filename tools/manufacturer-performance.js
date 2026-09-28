@@ -81,8 +81,8 @@ export function buildArchitectureAwareManufacturerPlan(selectionRequest={},archi
   const request=selectionRequest?.request;
   if(!selectionRequest?.ready||!request) return {ok:false,blocked:true,reason:"运行工况尚未满足厂家查询条件",queries:[]};
   const assessed=Array.isArray(architectureResult?.architectureAssessment)?architectureResult.architectureAssessment:[];
-  const preferred=[...new Set(assessed.filter(x=>x.preference==="preferred").map(x=>x.architecture))];
-  const fallback=[...new Set(assessed.filter(x=>x.preference!=="preferred").map(x=>x.architecture).filter(x=>!preferred.includes(x)))];
+  const preferred=[...new Set(assessed.filter(x=>x.preference==="preferred").map(x=>x.architecture).filter(Boolean))];
+  const fallback=[...new Set(assessed.filter(x=>x.preference!=="preferred").map(x=>x.architecture).filter(Boolean).filter(x=>!preferred.includes(x)))];
   return {
     ok:true,
     request,
