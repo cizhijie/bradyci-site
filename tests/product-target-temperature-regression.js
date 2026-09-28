@@ -1,7 +1,7 @@
 import { assessColdRoomProject, calculateReadyColdRoomParts } from "../tools/cold-room-readiness.js";
 const check=(v,m)=>{if(!v)throw new Error(m)};
 export function runProductTargetTemperatureRegression(){
- const base={engineeringMode:"estimate",roomTempC:-35,productCategory:"牛肉",dailyInboundKg:5000,entryTempC:25,pullDownHours:8};
+ const base={engineeringMode:"estimate",roomTempC:-35,productCategory:"牛西冷（瘦肉）",dailyInboundKg:5000,entryTempC:25,pullDownHours:8,pullDownTargetBasis:"product_core"};
  const missing=assessColdRoomProject(base);
  check(!missing.ready.some(x=>x.id==="product_load"),"room temperature must not make product load ready");
  check(missing.blocked.some(x=>x.id==="product_load"&&/库温不能代替/.test(x.reason)),"missing product target must be explicit");
