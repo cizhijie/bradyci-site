@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.37";
+const AGENT_VERSION = "v2.38";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -356,9 +356,9 @@ export default {
             let quickText = "";
             if(quick.ok){
               quickText = "\n\n工程快速估算参考："+quick.category+"，制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW。";
-              const refrigerant = /R507A?|507/i.test(visitorText) ? "R507A" : /R404A?/i.test(visitorText) ? "R404A" : "";
-              const teMatch = visitorText.match(/(?:Te|蒸发温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
-              const tcMatch = visitorText.match(/(?:Tc|冷凝温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
+              const allUserText = messages.filter(m=>m?.role==="user").map(m=>String(m.content||"")).join("\n");
+              const refrigerant = /R507A?|507/i.test(allUserText) ? "R507A" : /R404A?/i.test(allUserText) ? "R404A" : "";
+              const teMatch = allUserText.match(/(?:Te|蒸发温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);\n              const tcMatch = allUserText.match(/(?:Tc|冷凝温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
               if(refrigerant && teMatch && tcMatch){
                 const perf=await queryManufacturerPerformance(env,{refrigerant,evaporatingTempC:Number(teMatch[1]),condensingTempC:Number(tcMatch[1]),requiredCoolingCapacityKW:quick.refrigerationLoadKW.min});
                 const ref=referenceCompressorBandFromReviewedPerformance(perf,{requiredLoadMinKW:quick.refrigerationLoadKW.min,requiredLoadMaxKW:quick.refrigerationLoadKW.max});
