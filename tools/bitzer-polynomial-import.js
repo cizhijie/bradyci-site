@@ -160,3 +160,19 @@ export function mapBitzerPolynomialCsv(parsed={}){
   });
   return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
+
+export function inspectBitzerPolynomialCsv(csvText="",metadata={}){
+  const parsed=parseBitzerPolynomialCsv(csvText,metadata);
+  if(!parsed.ok) return parsed;
+  const detected=detectBitzerPolynomialColumns(parsed.header);
+  const mapped=mapBitzerPolynomialCsv(parsed);
+  return {
+    ok:mapped.ok,
+    parsed:{delimiter:parsed.delimiter,header:parsed.header,rowCount:parsed.rows.length},
+    detected,
+    mapped:mapped.ok?{rowCount:mapped.rows.length,sample:mapped.rows.slice(0,3),reviewStatus:mapped.reviewStatus}:null,
+    error:mapped.ok?null:mapped.error,
+    missing:mapped.missing||[],
+    nextStep:mapped.ok?"Review the detected BITZER field convention and coefficient order before evaluation.":"Use the real BITZER SOFTWARE CSV header to extend aliases; do not guess missing mappings."
+  };
+}
