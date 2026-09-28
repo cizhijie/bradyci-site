@@ -452,7 +452,7 @@ export default {
                 const chain = finalizeCompressorCandidates(performance, envelope.ok ? envelope.points : []);
                 architectureRuns.push({ query:manufacturerQuery, performance, chain });
               }
-              const finalCandidates = architectureRuns.flatMap((run,architectureRank)=>(run.chain.finalCandidates||[]).map(candidate=>({...candidate,architecture:run.query.architecture||candidate.architecture||null,architectureRank,capacityMarginKW:Number(candidate.coolingCapacityKW)-Number(run.query.requiredCoolingCapacityKW)}))).sort((a,b)=>a.architectureRank-b.architectureRank || a.capacityMarginKW-b.capacityMarginKW);
+              const rankedCandidates = architectureRuns.flatMap((run,architectureRank)=>(run.chain.finalCandidates||[]).map(candidate=>({...candidate,architecture:run.query.architecture||candidate.architecture||null,architectureRank,capacityMarginKW:Number(candidate.coolingCapacityKW)-Number(run.query.requiredCoolingCapacityKW)}))).sort((a,b)=>a.architectureRank-b.architectureRank || a.capacityMarginKW-b.capacityMarginKW);
               const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
               const hasExactData = architectureRuns.some(x=>!x.performance.noExactData);
               if (finalCandidates.length) {
