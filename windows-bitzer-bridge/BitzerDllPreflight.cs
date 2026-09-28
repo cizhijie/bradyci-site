@@ -2,7 +2,7 @@ namespace Brady.BitzerBridge;
 
 internal static class BitzerDllPreflight
 {
-    private static readonly string[] Hhk52RequiredExports = ["Design", "Thresholds", "TechData"];
+    private static readonly string[] Hhk52RequiredExports = ["CopyDesign", "Thresholds", "TechData"];
 
     public static (bool Ok, string Status, string[] Missing) CheckHhk52(string dllPath)
     {
