@@ -397,7 +397,8 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
   if(coreIntent){
     const p=extractColdRoomProject(text);
     const args={};
-    for(const k of ["geometry","productCharacteristicThicknessMm","productDimensionRatios","airVelocityMs","packaging","stacking","pullDownHours"]) if(p[k]!=null) args[k]=p[k];
+    for(const k of ["geometry","productCharacteristicThicknessMm","productDimensionRatios","airVelocityMs","packaging","stacking"]) if(p[k]!=null) args[k]=p[k];
+    if(Number.isFinite(p.pullDownHours)) args.requiredPullDownHours=p.pullDownHours;
     if(Number.isFinite(p.productTargetTempC)) args.finalCenterTempC=p.productTargetTempC;
     const medium=text.match(/(?:冻结空气温度|空气温度|库温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
     if(medium) args.mediumTempC=Number(medium[1]);
