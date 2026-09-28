@@ -1,6 +1,13 @@
 // Reviewed heat-transfer-correlation registry.
 // A correlation is selectable only when product, medium and applicability ranges match.
 export const HEAT_TRANSFER_CORRELATIONS=[
+ {id:"ashrae-beef-patties-becker-fricke-2004",reviewStatus:"reviewed",productGroup:"beef_patties",medium:"air",
+  geometry:"slab",packaging:"unpacked",equation:{type:"Nu=C*Re^m*Pr^n",C:1.37,m:0.282,n:0.3},
+  applicability:{mediumTempC:[-32,-28],velocityMs:[2.8,6.0],reynolds:[2000,7500]},
+  characteristicDimension:"patty_thickness",
+  source:{organization:"ASHRAE",chapter:"Thermal Properties of Foods",reference:"Becker and Fricke (2004)"},
+  evidence:{pointsInCorrelation:7},
+  prohibitedUses:["generic_beef","beef_blocks","packaged_beef","outside_temperature_range","outside_velocity_range","outside_reynolds_range"]},
  {id:"ashrae-citrus-baird-gaffney-1976",reviewStatus:"reviewed",productGroup:"citrus",medium:"air",
   geometry:"bulk_spherical_fruit",equation:{type:"Nu=C*Re^m",C:1.17,m:0.529},
   applicability:{diameterMm:[70,107],velocityMs:[0.025,2.1]},
