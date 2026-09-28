@@ -83,3 +83,22 @@ export function evaluateStandardTenCoefficientPolynomial(coefficients=[],evapora
     rule:"Use only after the imported BITZER CSV explicitly confirms this coefficient order and polynomial convention for the selected quantity."
   };
 }
+
+
+export function validateBitzerPolynomialDomain(input={}){
+  const te=Number(input.evaporatingTempC),tc=Number(input.condensingTempC);
+  const teMin=Number(input.evaporatingMinC),teMax=Number(input.evaporatingMaxC);
+  const tcMin=Number(input.condensingMinC),tcMax=Number(input.condensingMaxC);
+  if([te,tc,teMin,teMax,tcMin,tcMax].some(v=>!Number.isFinite(v))) return {ok:false,error:"complete polynomial validity range is required"};
+  const inside=te>=teMin&&te<=teMax&&tc>=tcMin&&tc<=tcMax;
+  return {ok:inside,inside,evaporatingTempC:te,condensingTempC:tc,validity:{evaporatingTempC:[teMin,teMax],condensingTempC:[tcMin,tcMax]},error:inside?null:"outside_polynomial_validity_range",rule:"Never evaluate a BITZER polynomial outside its exported validity range."};
+}
+
+export function evaluateReviewedBitzerPolynomial(input={}){
+  if(input.conventionReviewed!==true) return {ok:false,error:"polynomial_convention_not_reviewed"};
+  const domain=validateBitzerPolynomialDomain(input);
+  if(!domain.ok) return {ok:false,error:domain.error,domain};
+  const calculated=evaluateStandardTenCoefficientPolynomial(input.coefficients,input.evaporatingTempC,input.condensingTempC);
+  if(!calculated.ok) return calculated;
+  return {...calculated,domain,model:text(input.model),refrigerant:text(input.refrigerant),quantity:text(input.quantity),softwareVersion:text(input.softwareVersion),status:"calculated_from_reviewed_polynomial",verified:false};
+}
