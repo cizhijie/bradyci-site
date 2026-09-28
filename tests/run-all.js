@@ -15,6 +15,7 @@ const suites=[
  ["product-pulldown-time","./product-pulldown-time-regression.js","runProductPullDownTimeRegression"],
  ["readiness-conversation","./readiness-conversation-regression.js","runReadinessConversationRegression"],
  ["real-project-e2e","./real-project-e2e-regression.js","runRealProjectE2ERegression"],
+ ["surface-heat-transfer","./surface-heat-transfer-regression.js","runSurfaceHeatTransferRegression"],
  ["selection-gate","./selection-gate-regression.js","runSelectionGateRegression"]
 ];
 let failed=0,totalChecks=0;
