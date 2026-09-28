@@ -12,7 +12,8 @@ export const BITZER_SOFTWARE_DATA_SOURCE={
     {family:"ORBIT",architecture:"scroll",enabled:true},
     {family:"CS/HS",architecture:"screw",enabled:true}
   ],
-  preferredAcquisition:["compressor-polynomial-csv","performance-table"],
+  preferredAcquisition:["official-windows-dll-interface","compressor-polynomial-csv","performance-table"],
+  officialWindowsInterface:{documented:true,bitness:"32bit",families:{ECOLINE:"HHK52.DLL",HS:"HS51.DLL","CS/CSH/CSW":"HCS51.DLL",ORBIT:"ESC51.DLL"},functions:["Design","CopyDesign","Thresholds","CopyThresholds","TechData"],rule:"Use only through an authorized Windows-side adapter. Preserve BITZER return/error codes and do not bypass application-limit results."},
   traceabilityRequired:[
     "softwareVersion","model","refrigerant","ratingConvention",
     "polynomialConvention","validityRange","exportFileName"
