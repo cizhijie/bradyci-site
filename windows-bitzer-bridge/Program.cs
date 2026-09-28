@@ -53,7 +53,52 @@ internal static class Program
             return mapped.Ok ? 6 : 0;
         }
 
-        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll> | --smoke-gate <path-to-Hhk52.dll>]");
+        if (args.Length == 2 && string.Equals(args[0], "--discover-local-data", StringComparison.OrdinalIgnoreCase))
+        {
+            var root = args[1];
+            if (!Directory.Exists(root))
+            {
+                Console.Error.WriteLine($"BITZER root not found: {root}");
+                return 7;
+            }
+
+            var interestingExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".db", ".db3", ".sqlite", ".sqlite3", ".csv", ".xml", ".json",
+                ".ini", ".cfg", ".config", ".dat"
+            };
+            var hits = new List<string>();
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+                {
+                    var name = Path.GetFileName(file);
+                    var ext = Path.GetExtension(file);
+                    if (interestingExtensions.Contains(ext) ||
+                        name.Contains("hhk", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("compress", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("technical", StringComparison.OrdinalIgnoreCase))
+                        hits.Add(file);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.Error.WriteLine($"Discovery access blocked: {ex.Message}");
+                return 8;
+            }
+            catch (IOException ex)
+            {
+                Console.Error.WriteLine($"Discovery IO error: {ex.Message}");
+                return 9;
+            }
+
+            Console.WriteLine($"BITZER local-data candidates: {hits.Count}");
+            foreach (var hit in hits.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                Console.WriteLine(hit);
+            return 0;
+        }
+
+        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll> | --smoke-gate <path-to-Hhk52.dll> | --discover-local-data <BITZER-root>]");
         return 1;
     }
 }
