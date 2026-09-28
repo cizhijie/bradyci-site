@@ -32,7 +32,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.81";
+const AGENT_VERSION = "v2.82";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -456,7 +456,7 @@ export default {
               const bestArchitectureRank = rankedCandidates.length ? rankedCandidates[0].architectureRank : null;\n              const finalCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank===bestArchitectureRank).slice(0,3);\n              const fallbackVerifiedCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank>bestArchitectureRank);\n              const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
               const hasExactData = architectureRuns.some(x=>!x.performance.noExactData);
               if (finalCandidates.length) {
-                compressorSelectionText = "\n\n**压缩机候选**\n" + finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW" + (x.architecture ? "；架构 " + x.architecture : "") + "。").join("\n") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
+                compressorSelectionText = "\n\n**压缩机候选**\n" + finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW" + (x.architecture ? "；架构 " + x.architecture : "") + "。").join("\n") + (fallbackVerifiedCandidates.length ? "\n\n其他架构也有通过校验的候选，当前不混入主候选；需要做方案对比时再展开。" : "") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
               } else if (!hasExactData) {
                 compressorSelectionText = "\n\n**压缩机选型状态**\n当前候选架构在该制冷剂和运行工况下还没有已验证的精确厂家性能点，因此暂不报具体型号，也不会跨架构用排量或匹数反推。";
               } else if (capacityCandidates.length) {
