@@ -17,6 +17,12 @@ internal static class Hhk52InputAbiReview
     internal const int FlagSubcoolingGiven = 16;
     internal const int FlagTandemOnly = 512;
 
+    // BITZER manual: I_CR is the compressor capacity-control step in percent.
+    // Documented discrete steps include 100/83/75/66/50/33/25/17;
+    // stepless control uses 10..100. Do not choose a default here.
+    internal const float CapacityControlMinPercent = 10f;
+    internal const float CapacityControlMaxPercent = 100f;
+
     internal static int BuildFlags(BitzerBridgeRequest request)
     {
         var flags = 0; // SI units
@@ -44,4 +50,7 @@ internal static class Hhk52InputAbiReview
         missing.Add("I_CR");
         return missing.ToArray();
     }
+
+    internal static bool IsCapacityControlPercentInDocumentedRange(float value) =>
+        value >= CapacityControlMinPercent && value <= CapacityControlMaxPercent;
 }
