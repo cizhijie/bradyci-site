@@ -1,4 +1,5 @@
 const suites=[
+ ["forced-air-heat-transfer","./forced-air-heat-transfer-regression.js","runForcedAirHeatTransferRegression"],
  ["core-freezing-language","./core-freezing-language-regression.js","runCoreFreezingLanguageRegression"],
  ["agent-core-freezing-tool","./agent-core-freezing-tool-regression.js","runAgentCoreFreezingToolRegression"],
  ["ashrae-published-numeric-benchmark","./ashrae-published-numeric-benchmark-regression.js","runAshraePublishedNumericBenchmarkRegression"],
