@@ -424,7 +424,7 @@ export default {
             let calculatedText = formatReadyColdRoomCalculations(readyResults);
             let compressorSelectionText = "";
             const selectionRequest = readyResults.manufacturer_selection_request;
-            if (selectionRequest?.ok && readyResults.selection_readiness?.readyForManufacturerSelection) {
+            if (selectionRequest?.ready && readyResults.selection_readiness?.readyForManufacturerSelection) {
               const performance = await queryManufacturerPerformance(env, selectionRequest);
               const envelope = await queryReviewedEnvelopePoints(env, selectionRequest);
               const chain = finalizeCompressorCandidates(performance, envelope.ok ? envelope.points : []);
