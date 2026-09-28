@@ -437,14 +437,23 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       condensingTempC:results.condensing_condition?.condensingTempC
     });
     results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
-    const exactTe=results.evaporating_condition?.evaporatingTempC;
-    const exactTc=results.condensing_condition?.condensingTempC;
-    results.manufacturer_selection_request=buildManufacturerSelectionRequest({
-      refrigerant:state.refrigerant,
-      evaporatingTempC:exactTe,
-      condensingTempC:exactTc,
-      requiredCoolingCapacityKW:results.design_capacity?.requiredCapacityRangeKW?.max
-    });
+    const exactTe=results.selection_readiness?.conditionsUsed?.evaporatingTempC;
+    const exactTc=results.selection_readiness?.conditionsUsed?.condensingTempC;
+    if(results.selection_readiness?.readyForManufacturerSelection){
+      results.manufacturer_selection_request=buildManufacturerSelectionRequest({
+        refrigerant:state.refrigerant,
+        evaporatingTempC:exactTe,
+        condensingTempC:exactTc,
+        requiredCoolingCapacityKW:results.design_capacity?.requiredCapacityRangeKW?.max
+      });
+    }else{
+      results.manufacturer_selection_request={
+        ok:false,
+        blocked:true,
+        missing:results.selection_readiness?.missing||[],
+        reason:"厂家型号查询只在设计冷量、制冷剂、Te、Tc均已形成后启动。"
+      };
+    }
   }
   return results;
 }
