@@ -5,8 +5,8 @@ export const BITZER_R404A_LT_POINTS = [
 ].map(([model,coolingCapacityKW,inputPowerKW])=>({
   documentId:"bitzer-kp-104-3-cn",page:"KP-104-3-CN p.19",table:"R404A 50 Hz",
   manufacturer:"BITZER",model,refrigerant:"R404A",evaporatingTempC:-35,condensingTempC:40,
-  coolingCapacityKW,inputPowerKW,frequencyHz:50,suctionGasTempC:20,subcoolingK:0,
-  rawRatingCondition:"50 Hz; suction gas temperature 20 C; without liquid subcooling",
-  extractionMethod:"Manual transcription from official BITZER KP-104-3-CN p.19; explicit staging review required",
+  coolingCapacityKW,inputPowerKW,frequencyHz:50,subcoolingK:0,
+  rawRatingCondition:"EN 12900; 50 Hz; without liquid subcooling",
+  extractionMethod:"Manual transcription from official BITZER KP-104-3-CN p.19; R404A only; explicit staging review required",
   reviewStatus:"unreviewed"
 }));
