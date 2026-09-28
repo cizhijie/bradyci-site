@@ -61,6 +61,13 @@ form.addEventListener("submit",async e=>{
         try{const data=JSON.parse(payload),delta=data?.choices?.[0]?.delta?.content;if(typeof delta==="string"&&delta){reply+=delta;bubble.innerHTML=(toolUsed?"<p><strong>⚙ 已调用确定性计算工具："+escapeHtml(toolUsed)+"</strong></p>":"")+renderMarkdown(reply);chat.scrollTop=chat.scrollHeight;}}catch{}
       }
     }
+    if(buffer.trim()){
+      for(const raw of buffer.split("\n")){
+        const line=raw.trim();if(!line.startsWith("data:"))continue;
+        const payload=line.slice(5).trim();if(!payload||payload==="[DONE]")continue;
+        try{const data=JSON.parse(payload),delta=data?.choices?.[0]?.delta?.content;if(typeof delta==="string"&&delta){reply+=delta;bubble.innerHTML=(toolUsed?"<p><strong>⚙ 已调用确定性计算工具："+escapeHtml(toolUsed)+"</strong></p>":"")+renderMarkdown(reply);}}catch{}
+      }
+    }
     if(!reply)throw new Error("模型没有返回内容");messages.push({role:"assistant",content:reply});
   }catch(err){bubble.innerHTML=renderMarkdown("暂时无法连接 AI："+err.message);}finally{send.disabled=false;input.focus();}
 });
