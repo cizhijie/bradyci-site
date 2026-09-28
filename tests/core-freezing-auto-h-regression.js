@@ -10,7 +10,9 @@ export function runCoreFreezingAutoHRegression(){
  ck(/geometry/i.test(String(r.result.reason||"")),"geometry incompatibility should be explicit");
  const wrong=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,productGroup:"beef",geometry:"brick",productCharacteristicThicknessMm:40}});
  ck(!wrong.result.ok&&wrong.result.status==="surface_heat_transfer_unresolved","generic beef block must not borrow patty correlation");
+ const brickWithPattyGroup=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,geometry:"brick"}});
+ ck(!brickWithPattyGroup.result.ok&&brickWithPattyGroup.result.status==="surface_heat_transfer_unresolved","brick geometry must not borrow slab patty correlation");
  const packed=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,packaging:"carton"}});
  ck(!packed.result.ok&&packed.result.status==="surface_heat_transfer_unresolved","carton patties must not borrow unpackaged correlation");
- return {ok:true,checks:4};
+ return {ok:true,checks:5};
 }
