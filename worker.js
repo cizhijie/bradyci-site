@@ -453,7 +453,7 @@ export default {
                 architectureRuns.push({ query:manufacturerQuery, performance, chain });
               }
               const rankedCandidates = architectureRuns.flatMap((run,architectureRank)=>(run.chain.finalCandidates||[]).map(candidate=>({...candidate,architecture:run.query.architecture||candidate.architecture||null,architectureRank,capacityMarginKW:Number(candidate.coolingCapacityKW)-Number(run.query.requiredCoolingCapacityKW)}))).sort((a,b)=>a.architectureRank-b.architectureRank || a.capacityMarginKW-b.capacityMarginKW);
-              const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
+              const bestArchitectureRank = rankedCandidates.length ? rankedCandidates[0].architectureRank : null;\n              const finalCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank===bestArchitectureRank).slice(0,3);\n              const fallbackVerifiedCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank>bestArchitectureRank);\n              const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
               const hasExactData = architectureRuns.some(x=>!x.performance.noExactData);
               if (finalCandidates.length) {
                 compressorSelectionText = "\n\n**压缩机候选**\n" + finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW" + (x.architecture ? "；架构 " + x.architecture : "") + "。").join("\n") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
