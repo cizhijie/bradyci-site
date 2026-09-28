@@ -19,6 +19,22 @@ internal static class Program
 
         Console.WriteLine("Brady BITZER Bridge x86 host ready.");
         Console.WriteLine($"Process architecture: {RuntimeInformation.ProcessArchitecture}");
-        return 0;
+
+        if (args.Length == 0)
+            return 0;
+
+        if (args.Length == 2 && string.Equals(args[0], "--preflight", StringComparison.OrdinalIgnoreCase))
+        {
+            var dllPath = args[1];
+            var result = BitzerDllPreflight.CheckHhk52(dllPath);
+            Console.WriteLine($"HHK52 preflight: {result.Status}");
+            Console.WriteLine($"DLL: {dllPath}");
+            if (result.Missing.Length != 0)
+                Console.WriteLine($"Missing exports: {string.Join(", ", result.Missing)}");
+            return result.Ok ? 0 : 4;
+        }
+
+        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll>]");
+        return 1;
     }
 }
