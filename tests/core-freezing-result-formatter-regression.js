@@ -8,5 +8,8 @@ export function runCoreFreezingResultFormatterRegression(){
  const g=formatCoreFreezingFailure({status:"freezing_geometry_method_mismatch"});
  ck(/矩形块/.test(g)&&/实际形状/.test(g),"geometry mismatch should be explained");
  ck(formatCoreFreezingFailure({status:"other"})==="","unknown status should not invent an explanation");
- return {ok:true,checks:5};
+ const guided=formatCoreFreezingFailure({status:"surface_heat_transfer_unresolved",guidance:{usefulFieldData:["产品实际尺寸/形状","产品表面实际风速","冻结空气温度"],requiredEvidence:["已审核表面换热系数 h"]}});
+ ck(/产品实际尺寸\/形状/.test(guided)&&/产品表面实际风速/.test(guided),"formatter should surface useful field data");
+ ck(/最关键的不是再猜一个 h/.test(guided)&&/已审核表面换热系数 h/.test(guided),"formatter should explain evidence priority");
+ return {ok:true,checks:7};
 }
