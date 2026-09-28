@@ -253,11 +253,19 @@ export function formatColdRoomIntake(text = "", existingState = null) {
   return formatColdRoomProjectState(p);
 }
 
-export function detectManufacturerSelectionRequest(messages = []) {
+export function detectManufacturerSelectionRequest(messages = [], projectState = null) {
   const current=[...messages].reverse().find(m=>m?.role==="user"&&typeof m.content==="string");
   const text=current?.content||"";
   if(!/(比泽尔|BITZER|压缩机).*(选|选型|怎么配|型号|候选)|(?:选|选型|型号|候选).*(比泽尔|BITZER|压缩机)/i.test(text)) return null;
-  const refrigerant=(text.match(/\b(R(?:22|134A|404A|407[ACF]|448A|449A|450A|452A|507A?|513A))\b/i)||[])[1];
+  const refrigerant=(text.match(/\b(R(?:22|134A|404A|407[ACF]|448A|449A|450A|452A|507A?|513A))\b/i)||[])[1] || projectState?.refrigerant;
+  const architecture = /涡旋|scroll/i.test(text) ? "scroll" : /活塞|往复|reciprocating|piston/i.test(text) ? "semi-hermetic-reciprocating" : /螺杆|screw/i.test(text) ? "screw" : "";
+  const preferredBrands=[];
+  if(/艾默生|谷轮|Copeland/i.test(text)) preferredBrands.push("copeland");
+  if(/松下|Panasonic/i.test(text)) preferredBrands.push("panasonic");
+  if(/英华特|Invotech/i.test(text)) preferredBrands.push("invotech");
+  if(/比泽尔|BITZER/i.test(text)) preferredBrands.push("bitzer");
+  if(/汉钟|HANBELL/i.test(text)) preferredBrands.push("hanbell");
+  if(/复盛|FUSHENG/i.test(text)) preferredBrands.push("fusheng");
   const te=(text.match(/(?:Te|蒸发温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
   const tc=(text.match(/(?:Tc|冷凝温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
   const kw=(text.match(/(?:需要|需求|所需|冷量|制冷量)\s*[:：=]?\s*(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i)||[])[1];
@@ -267,7 +275,7 @@ export function detectManufacturerSelectionRequest(messages = []) {
   if(tc==null) missing.push("冷凝温度 Tc");
   if(kw==null) missing.push("所需制冷量 kW");
   if(missing.length) return {clarify:"压缩机厂家性能选型还缺："+missing.join("、")+"。这些条件必须明确后才能查 Verified 厂家性能点。"};
-  return {query:{manufacturer:/比泽尔|BITZER/i.test(text)?"BITZER":"",refrigerant:String(refrigerant).toUpperCase(),evaporatingTempC:Number(te),condensingTempC:Number(tc),requiredCoolingCapacityKW:Number(kw)}};
+  return {query:{manufacturer:/比泽尔|BITZER/i.test(text)?"BITZER":"",architecture,refrigerant:String(refrigerant).toUpperCase(),evaporatingTempC:Number(te),condensingTempC:Number(tc),requiredCoolingCapacityKW:Number(kw)},preferredBrands};
 }
 
 export function formatManufacturerSelectionResult(result={}) {
