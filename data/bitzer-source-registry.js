@@ -19,7 +19,7 @@ export const BITZER_SOURCE_REGISTRY = {
       documentType: "performance-table", version: "KP-104-3-CN",
       sourceRef: "https://www.bitzer.de/shared_media/documentation/kp-104-3-cn.pdf",
       language: "de/en/zh", reviewStatus: "reviewed",
-      note: "Official BITZER performance tables: EN 12900, 50 Hz, 20°C suction gas temperature, no liquid subcooling."
+      note: "Official BITZER performance table document. Rating conditions must be preserved per refrigerant/table/row; do not apply one suction or liquid condition globally across the document."
     },
     {
       documentId: "bitzer-at-640-3-2026",
