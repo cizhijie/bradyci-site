@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.70";
+const AGENT_VERSION = "v2.71";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -425,8 +425,8 @@ export default {
             let compressorSelectionText = "";
             const selectionRequest = readyResults.manufacturer_selection_request;
             if (selectionRequest?.ready && readyResults.selection_readiness?.readyForManufacturerSelection) {
-              const performance = await queryManufacturerPerformance(env, selectionRequest);
-              const envelope = await queryReviewedEnvelopePoints(env, selectionRequest);
+              const performance = await queryManufacturerPerformance(env, selectionRequest.request);
+              const envelope = await queryReviewedEnvelopePoints(env, selectionRequest.request);
               const chain = finalizeCompressorCandidates(performance, envelope.ok ? envelope.points : []);
               if (chain.finalCandidates?.length) {
                 compressorSelectionText = "\n\n**压缩机候选**\n" + chain.finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW。").join("\n") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
