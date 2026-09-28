@@ -55,7 +55,14 @@ internal static class Hhk52InputAbiReview
         missing.Add("I_DS");
         missing.Add("I_OV");
 
-        // These control inputs are not represented by the public request yet.\n        // Do not silently choose inverter, useful-superheat or capacity-control intent.\n        missing.Add("I_FI");\n        missing.Add("I_TN");\n        missing.Add("I_CR");
+        // These control inputs are not represented by the public request yet.
+        // Do not silently choose inverter, useful-superheat or capacity-control intent.
+        missing.Add("I_FI");
+        missing.Add("I_TN");
+        missing.Add("I_CR");
+        missing.Add("I_FCF");
+        missing.Add("I_FCV");
+        missing.Add("I_FCOF");
         return missing.ToArray();
     }
 
