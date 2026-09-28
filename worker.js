@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.23";
+const AGENT_VERSION = "v2.24";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -408,8 +408,20 @@ export default {
           if (!visitorResponse.ok) { visitorResponse = await callModelNonStream(env, FALLBACK_MODEL, messages, systemPrompt, VISITOR_MAX_TOKENS); usedModel = FALLBACK_MODEL; }
           if (!visitorResponse.ok) return json({ error: "访客体验暂时不可用，请稍后再试。" }, visitorResponse.status);
           const data = await visitorResponse.json().catch(() => null);
-          const answer = data?.choices?.[0]?.message?.content?.trim() || "";
-          if (!answer) return json({ error: "暂时没有生成有效回答，请稍后再试。" }, 502);
+          const message = data?.choices?.[0]?.message || {};
+          let answer = typeof message.content === "string" ? message.content.trim() : "";
+          if (!answer && typeof message.reasoning === "string") {
+            const reasoning = message.reasoning.trim();
+            const chinese = reasoning.match(/(?:^|\n)([\u4e00-\u9fff][\s\S]*)$/);
+            if (chinese) answer = chinese[1].trim();
+          }
+          if (!answer) {
+            const rescuePrompt = systemPrompt + "\n\n重要：直接给用户最终中文答案，不要输出分析过程。答案必须完整，最多300字。";
+            const rescue = await callModelNonStream(env, FALLBACK_MODEL, messages, rescuePrompt, 400);
+            const rescueData = rescue.ok ? await rescue.json().catch(() => null) : null;
+            answer = rescueData?.choices?.[0]?.message?.content?.trim() || "";
+          }
+          if (!answer) answer = "这次没有生成完整回答，请重新发送一次问题。";
           return sseText(answer, { model: usedModel, role: "visitor", skill: "general" });
         }
         let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt, maxTokens), usedModel = PRIMARY_MODEL;
