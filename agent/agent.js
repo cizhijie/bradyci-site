@@ -1,5 +1,5 @@
 const chat=document.querySelector("#chat"),input=document.querySelector("#input"),form=document.querySelector("#composer"),welcome=document.querySelector(".welcome"),send=document.querySelector("#send");
-const messages=[];
+const messages=[];\nconst MAX_CHAT_MESSAGES=12;
 let ownerPin=sessionStorage.getItem("bradyOwnerPin")||"";
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
@@ -43,7 +43,7 @@ form.addEventListener("submit",async e=>{
   add(t,"user");messages.push({role:"user",content:t});input.value="";send.disabled=true;const bubble=add("正在连接…","assistant");let reply="";
   try{
     const headers={"Content-Type":"application/json"};if(ownerPin)headers["X-Owner-Pin"]=ownerPin;
-    const r=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages})});
+    const r=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:messages.slice(-MAX_CHAT_MESSAGES)})});
     if(!r.ok){const data=await r.json().catch(()=>({}));throw new Error(data.error||"请求失败");}
     const toolUsed=r.headers.get("X-Brady-Tool")||"";if(!r.body)throw new Error("浏览器不支持流式响应");bubble.textContent="";
     const reader=r.body.getReader(),decoder=new TextDecoder();let buffer="";
