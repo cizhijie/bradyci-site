@@ -10,7 +10,7 @@ export function calculateProductPullDownTime(input={}){
   }
   const required=["productCharacteristicThicknessMm","airVelocityMs","packaging","stacking","heatTransferMethod","heatTransferSource"];
   const missing=required.filter(k=>{
-    if(["productCharacteristicThicknessMm","airVelocityMs"].includes(k)) return n(input[k])===null;
+    if(["productCharacteristicThicknessMm","airVelocityMs"].includes(k)) { const x=n(input[k]); return x===null||x<=0; }
     return !String(input[k]||"").trim();
   });
   if(missing.length) return {ok:false,status:"insufficient_inputs",missing};
