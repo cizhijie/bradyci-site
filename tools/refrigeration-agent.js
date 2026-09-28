@@ -238,7 +238,7 @@ export function formatManufacturerSelectionResult(result={}) {
   const c=result.capacityCandidates||[];
   if(!c.length) return `已找到该精确工况的 Verified 性能点，但现有记录均低于所需 ${result.requiredCoolingCapacityKW} kW，暂不能给出满足冷量的型号。`;
   const lines=c.slice(0,8).map(x=>`• ${x.model}：${x.coolingCapacityKW} kW${Number.isFinite(Number(x.inputPowerKW))?", 输入功率 "+x.inputPowerKW+" kW":""}；来源 ${x.sourceVersion||x.documentId} / ${x.sourcePage}`);
-  return `按 Verified 厂家数据，在精确制冷剂 / Te / Tc 条件下找到 ${c.length} 个冷量候选：\n${lines.join("\n")}\n\n以上只是冷量候选，不等于最终型号确认；还需核对运行范围、电机版本、电气条件、应用限制和系统架构。`;
+  return `按 Verified 厂家数据，在精确制冷剂 / Te / Tc 条件下找到 ${c.length} 个冷量候选：\n${lines.join("\n")}\n\n以上只是冷量候选，不等于最终型号确认；在官方运行范围/application limits 尚未通过审核校验前，禁止标记为最终可选型号；之后还需核对电机版本、电气条件和系统架构。`;
 }
 
 export function detectDeterministicRefrigerationRequest(messages = []) {
