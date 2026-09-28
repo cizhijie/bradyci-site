@@ -8,6 +8,7 @@ const suites=[
  ["engineering-mode-selection-gate","./engineering-mode-selection-gate-regression.js","runEngineeringModeSelectionGateRegression"],
  ["live-selection-architecture","./live-selection-architecture-regression.js","runLiveSelectionArchitectureRegression"],
  ["freezing-dimensionless","./freezing-dimensionless-regression.js","runFreezingDimensionlessRegression"],
+ ["freezing-geometry","./freezing-geometry-regression.js","runFreezingGeometryRegression"],
  ["heat-transfer-correlation","./heat-transfer-correlation-regression.js","runHeatTransferCorrelationRegression"],
  ["load-time-basis","./load-time-basis-regression.js","runLoadTimeBasisRegression"],
  ["manufacturer-candidate","./manufacturer-candidate-regression.js","runManufacturerCandidateRegression"],
