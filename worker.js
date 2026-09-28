@@ -32,7 +32,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.84";
+const AGENT_VERSION = "v2.85";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -480,7 +480,7 @@ export default {
             const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
             const envelopeResult = await queryReviewedEnvelopePoints(env, manufacturerSelection.query);
             const selectionChain = finalizeCompressorCandidates(selected, envelopeResult.ok ? envelopeResult.points : []);
-            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query,finalCandidates:selectionChain.finalCandidates}) + (selectionChain.provisionalCandidates?.length ? "\\n\\n运行范围校验：仍有容量候选尚未通过已审核的官方 Application Limits 运行点校验，因此这些型号只能保持候选状态。" : "");
+            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query,finalCandidates:selectionChain.finalCandidates}) + (selectionChain.provisionalCandidates?.length ? "\\n\\n运行范围校验：仍有容量候选尚未通过已审核的官方 Application Limits 运行点校验，因此这些型号只能保持候选状态。" : "") + (!manufacturerSelection.query.manufacturer && selected.architecture==="semi-hermetic-reciprocating" ? "\\n\\n数据说明：本次未指定厂家，当前半封闭活塞数据库默认查询 BITZER 已验证数据；这表示当前数据覆盖范围，不代表工程上只推荐 BITZER。" : "");
             return sseText(selectionText, { model:"deterministic-manufacturer-db", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
