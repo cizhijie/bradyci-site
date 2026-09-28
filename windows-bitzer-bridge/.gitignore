@@ -1,0 +1,7 @@
+# BITZER DLL local files
+# Vendor binaries are licensed/external dependencies and must never be committed.
+*.dll
+*.DLL
+vendor/
+bin/
+obj/
