@@ -1,3 +1,5 @@
+import { findManufacturerCandidates } from "../data/compressor-manufacturer-registry.js";
+
 // Compressor/system architecture candidate layer.
 // Purpose: organize engineering candidates before manufacturer model selection.
 // It intentionally avoids universal kW/horsepower cutoffs and never emits a specific model.
@@ -91,6 +93,16 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     return {...item,preference,reasons};
   });
 
+  const manufacturerCandidates=architectureAssessment.map(item=>({
+    architecture:item.architecture,
+    preference:item.preference,
+    brands:item.architecture==="parallel-rack" ? [] : findManufacturerCandidates(item.architecture,{preferredBrands:Array.isArray(state.preferredCompressorBrands)?state.preferredCompressorBrands:[]})
+  }));
+
+  const explanation=architectureAssessment
+    .filter(x=>x.preference==="preferred"||x.reasons.some(r=>!r.startsWith("当前项目条件不足")))
+    .map(x=>({architecture:x.architecture,preference:x.preference,reasons:x.reasons,brandCandidates:manufacturerCandidates.find(m=>m.architecture===x.architecture)?.brands.map(b=>b.displayName)||[]}));
+
   const customerQuestions=[];
   if(state.redundancyRequired==null) customerQuestions.push("这个库如果一台压缩机停机，能不能接受停库？还是希望多机互为备用？");
   if(state.partLoadImportant==null) customerQuestions.push("每天货量和负荷变化大不大？是长期接近满负荷，还是经常只有一部分负荷？");
@@ -102,6 +114,8 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     architectureAssessment,
     projectSignals,
     recommendationFactors,
+    manufacturerCandidates,
+    explanation,
     customerQuestions,
     readyForSpecificModel:false,
     rule:"本层只形成压缩机/机组架构候选。具体型号必须在制冷剂、Te、Tc、设计冷量明确后，用厂家性能表/选型软件验证。"
