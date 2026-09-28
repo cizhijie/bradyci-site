@@ -75,6 +75,11 @@ export function extractColdRoomProject(text = "") {
   const project = {};
   const compact = raw.match(/(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:米|m)?/);
   if (compact) project.dimensions = { lengthM:Number(compact[1]), widthM:Number(compact[2]), heightM:Number(compact[3]) };
+  const area = raw.match(/(?:面积|大概|约)?\s*(\d+(?:\.\d+)?)\s*(?:平方米|平米|㎡)/i);
+  const heightOnly = raw.match(/(?:高|高度|层高)\s*(?:约|大概)?\s*(\d+(?:\.\d+)?)\s*(?:米|m)/i);
+  if (area) project.floorAreaM2 = Number(area[1]);
+  if (heightOnly) project.heightM = Number(heightOnly[1]);
+  if (Number.isFinite(project.floorAreaM2) && Number.isFinite(project.heightM)) project.volumeM3 = project.floorAreaM2 * project.heightM;
   const room = raw.match(/(?:库温|库内温度|目标库温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
   if (room) project.roomTempC = Number(room[1]);
   const projectOutdoor = raw.match(/(?:室外|环境|外界|夏天|夏季|最热(?:的时候)?)[^。；，,]{0,14}(?:按|大概|约|有|到|达到|温度)?[^0-9-]{0,5}(-?[0-9]+(?:\.[0-9]+)?)\s*(?:℃|度)/i);
@@ -93,7 +98,7 @@ export function extractColdRoomProject(text = "") {
   if (/冻肉|肉类/.test(raw)) project.productCategory = "冻肉/肉类（待确认具体品类与入库状态）";
   else if (/牛肉/.test(raw)) project.productCategory = "牛肉";
   else if (/猪肉/.test(raw)) project.productCategory = "猪肉";
-  else if (/鸡肉/.test(raw)) project.productCategory = "鸡肉";
+  else if (/鸡肉/.test(raw)) project.productCategory = "鸡肉";\n  else if (/豆腐/.test(raw)) project.productCategory = "豆腐";
   const floorParts = [];
   if (/一楼(?:直接)?落地|一层(?:直接)?落地|落地库/.test(raw)) floorParts.push("一楼落地");
   else if (/楼层上|楼上|二楼|三楼|四楼/.test(raw)) floorParts.push("楼层上");
@@ -174,7 +179,7 @@ export function extractColdRoomProject(text = "") {
 export function formatColdRoomProjectState(p = {}) {
   const known = [];
   if (p.location) known.push("地点：" + p.location);
-  if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");
+  if (p.dimensions?.lengthM && p.dimensions?.widthM && p.dimensions?.heightM) known.push("尺寸：" + p.dimensions.lengthM + "×" + p.dimensions.widthM + "×" + p.dimensions.heightM + " m");\n  if (Number.isFinite(p.floorAreaM2)) known.push("库房面积：约 " + p.floorAreaM2 + " m²");\n  if (Number.isFinite(p.heightM)) known.push("库房高度：" + p.heightM + " m");\n  if (Number.isFinite(p.volumeM3)) known.push("估算容积：约 " + Math.round(p.volumeM3*10)/10 + " m³");
   if (Number.isFinite(p.roomTempC)) known.push("目标库温：" + p.roomTempC + "℃");
   if (Number.isFinite(p.projectOutdoorTempC)) known.push("项目设计室外温度：" + p.projectOutdoorTempC + "℃（项目约束，不等同于规范气象参考值）");
   if (p.insulation?.material && Number.isFinite(p.insulation?.thicknessMm)) known.push("保温：" + p.insulation.thicknessMm + " mm " + p.insulation.material + "板");
