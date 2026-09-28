@@ -293,9 +293,14 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
   if (readyIds.has("product_load")) {
     const hasProductTarget = Number.isFinite(Number(state.productTargetTempC));
+  const hasPullDownBasis = ["product_core","product_average","room_air"].includes(String(state.pullDownTargetBasis||""));
   if (hasProductBasics && !hasProductTarget) {
     blocked.push({ id:"product_load", reason:"已知入库量、入库温度和处理时间，但还缺货物目标温度/中心温度；库温不能代替货物目标温度。" });
     customerQuestions.push("这批货要求在规定时间内降到多少℃？如果是速冻，请给货物中心目标温度（例如中心 -18℃），不要填库温。");
+  }
+  if (hasProductBasics && hasProductTarget && !hasPullDownBasis) {
+    blocked.push({ id:"product_load", reason:"处理时间的目标口径还不明确：必须区分货物中心温度、货物平均温度和库内空气温度。" });
+    customerQuestions.push("你说的几小时，是要求货物中心达到目标温度，还是库温降到目标值？速冻项目通常请明确货物中心要求。");
   }
   const food = findFoodThermalProperties(state.productCategory || "");
     if (food) {
@@ -304,6 +309,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
         entryTempC: Number(state.entryTempC),
         targetTempC: Number(state.productTargetTempC),
         pullDownHours: Number(state.pullDownHours),
+        targetBasis: state.pullDownTargetBasis,
         freezingPointC: food.freezingPointC,
         cpAboveKJkgK: food.cpAboveKJkgK,
         latentHeatKJkg: food.latentHeatKJkg,
