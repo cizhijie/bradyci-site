@@ -13,6 +13,7 @@ import { normalizeBitzerPerformanceRow } from "./tools/bitzer-import.js";
 import { BITZER_SOURCE_REGISTRY } from "./data/bitzer-source-registry.js";
 import { BITZER_ECOLINE_CATALOGUE } from "./data/bitzer-ecoline-catalogue.js";
 import { BITZER_ECOLINE_OFFICIAL_STAGING_BATCH, validateBitzerEcolineSeedRow } from "./data/bitzer-ecoline-performance-seed.js";
+import { BITZER_R404A_LT_POINTS } from "./data/bitzer-r404a-lt-staging.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -23,7 +24,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.68";
+const AGENT_VERSION = "v1.69";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -105,6 +106,20 @@ export default {
         }
         return json({ok:staged.every(x=>x.ok),document:documentResult.document,staged,reviewStatus:"unreviewed",nextStep:"Review each staging row, then promote it. Bootstrap never writes directly to Verified."});
       } catch (error) { return json({ error: error?.message || "BITZER bootstrap failed" }, 500); }
+    }
+
+    if (url.pathname === "/api/manufacturer/bitzer/bootstrap-r404a-lt") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const staged=[];
+        for (const row of BITZER_R404A_LT_POINTS) {
+          const validation=validateBitzerEcolineSeedRow(row);
+          if (!validation.ok) return json({ok:false,error:"invalid_r404a_lt_seed",validation,row},400);
+          staged.push(await stagePerformanceExtractionRow(env,row));
+        }
+        return json({ok:staged.every(x=>x.ok),count:staged.length,staged,reviewStatus:"unreviewed",nextStep:"Review against KP-104-3-CN p.19 before promotion. No row is written directly to Verified."});
+      } catch (error) { return json({ error:error?.message || "BITZER R404A low-temperature bootstrap failed" },500); }
     }
 
     if (url.pathname === "/api/manufacturer/bitzer/stage") {
