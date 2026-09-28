@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.48";
+const AGENT_VERSION = "v2.49";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -370,13 +370,13 @@ export default {
                 if(ref.ok&&ref.candidates.length) quickText += " 在你明确的 "+refrigerant+"、Te "+teMatch[1]+"℃、Tc "+tcMatch[1]+"℃ 条件下，已找到可追溯厂家性能候选，可继续核对具体型号。";
                 else quickText += " 当前工况下暂无足够的已审核厂家性能点，因此暂不报具体匹数或型号。";
               } else {
-                quickText += " 压缩机进一步选型需要制冷剂和运行工况；这些属于工程参数，不要求普通客户提供。";
                 const duty=deriveEngineeringDuty(p);
-                if(duty.ok) quickText += " 工程侧暂按“"+duty.duty+"”建立候选工况：Te约 "+duty.evaporatingTempCRange.min+"～"+duty.evaporatingTempCRange.max+"℃，Tc暂按 "+duty.condensingTempC+"℃；这些是明确标注的工程估算值，正式选型前必须复核。";
+                quickText += " 压缩机具体型号需要结合制冷剂和实际运行工况核对厂家性能数据，这些工程参数不要求普通客户提供。";
+                if(duty.ok) quickText += " 当前已进入"+duty.duty+"的工程预选流程，正式定型前还会复核运行工况。";
                 if(refrigerant&&duty.ok){
                   const provisional=await queryProvisionalDutyCandidates(env,{...p,refrigerant},quick.refrigerationLoadKW.min);
                   const count=provisional.ok?provisional.hits.reduce((n,h)=>n+h.candidates.length,0):0;
-                  if(count) quickText += " 已在这些估算工况中找到 "+count+" 个已审核厂家性能候选，但因工况尚未最终确认，只能作为暂定候选，不能直接定型。";
+                  if(count) quickText += " 当前已有可追溯厂家性能候选，但仍属于暂定预选，不能直接定型。";
                 }
               }
               quickText += " 该估算仅用于前期沟通。";
