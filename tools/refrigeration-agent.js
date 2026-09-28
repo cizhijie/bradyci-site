@@ -100,6 +100,14 @@ export function extractColdRoomProject(text = "") {
   if (entry) project.entryTempC = Number(entry[1]);
   const hours = raw.match(/(?:要求|用时|降温时间|冻结时间)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
   if (hours) project.pullDownHours = Number(hours[1]);
+  if (/不知道|不清楚|不确定|不晓得/.test(raw)) {
+    project.unknownFields = project.unknownFields || [];
+    if (/(?:入库|货温|进货温度)/.test(raw)) project.unknownFields.push("entryTempC");
+    if (/(?:库板|板厚|保温板)/.test(raw)) project.unknownFields.push("insulation");
+    if (/(?:地面|地坪|一楼|楼上)/.test(raw)) project.unknownFields.push("floor");
+    if (/(?:开门|库门|进出)/.test(raw)) project.unknownFields.push("doorUsage");
+    project.unknownFields=[...new Set(project.unknownFields)];
+  }
   if (/冻肉|肉类/.test(raw)) project.productCategory = "冻肉/肉类（待确认具体品类与入库状态）";
   else if (/牛肉/.test(raw)) project.productCategory = "牛肉";
   else if (/猪肉/.test(raw)) project.productCategory = "猪肉";
