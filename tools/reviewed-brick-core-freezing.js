@@ -23,7 +23,9 @@ export const reviewedBrickCoreFreezingMethod={
  name:"Cleland-Earle rectangular-brick core freezing",
  source:"ASHRAE Cooling and Freezing Times of Foods; Cleland-Earle reviewed method chain",
  calculate(input={}){
-  const thickness=Number(input.productCharacteristicThicknessMm);\n  const dimensionsM=Array.isArray(input.dimensionsM)?input.dimensionsM:\n   (Number.isFinite(thickness)&&thickness>0&&Array.isArray(input.productDimensionRatios)&&input.productDimensionRatios.length===2
+  const thickness=Number(input.productCharacteristicThicknessMm);
+  const dimensionsM=Array.isArray(input.dimensionsM)?input.dimensionsM:
+   (Number.isFinite(thickness)&&thickness>0&&Array.isArray(input.productDimensionRatios)&&input.productDimensionRatios.length===2
     ?[Number(input.productCharacteristicThicknessMm)/1000,Number(input.productCharacteristicThicknessMm)/1000*Number(input.productDimensionRatios[0]),Number(input.productCharacteristicThicknessMm)/1000*Number(input.productDimensionRatios[1])]:null);
   return calculateReviewedBrickCoreFreezingTime({...input,dimensionsM});
  }
