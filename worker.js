@@ -32,7 +32,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.76";
+const AGENT_VERSION = "v2.77";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -335,6 +335,12 @@ export default {
         const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
+        if (!owner && latestUser) {
+          const capabilityQuestion = latestUser.content || "";
+          if (/(?:能不能|可以|能否|会不会|是否).{0,8}(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片)|(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片).{0,8}(?:吗|么|不)/i.test(capabilityQuestion)) {
+            return sseText("目前这个 Brady Agent 网页还没有接入图片生成接口，所以暂时不能在这里直接出图。我可以帮你设计画面、写生成提示词、优化图片方案；以后接入图片生成服务后，就可以直接生成。", { model:"deterministic-capability", role:"visitor", skill:"general" });
+          }
+        }
         if (!owner && latestUser && projectId) {
           const visitorText = latestUser.content || "";
           const visitorColdRoom = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(visitorText) &&
@@ -503,17 +509,12 @@ export default {
           if (!visitorResponse.ok) return json({ error: "访客体验暂时不可用，请稍后再试。" }, visitorResponse.status);
           const data = await visitorResponse.json().catch(() => null);
           const message = data?.choices?.[0]?.message || {};
-          let answer = typeof message.content === "string" ? message.content.trim() : "";
-          if (!answer && typeof message.reasoning === "string") {
-            const reasoning = message.reasoning.trim();
-            const chinese = reasoning.match(/(?:^|\n)([\u4e00-\u9fff][\s\S]*)$/);
-            if (chinese) answer = chinese[1].trim();
-          }
+          let answer = cleanFinalAnswer(typeof message.content === "string" ? message.content : "");
           if (!answer) {
             const rescuePrompt = systemPrompt + "\n\n重要：直接给用户最终中文答案，不要输出分析过程。答案必须完整，最多300字。";
             const rescue = await callModelNonStream(env, FALLBACK_MODEL, messages, rescuePrompt, 400);
             const rescueData = rescue.ok ? await rescue.json().catch(() => null) : null;
-            answer = rescueData?.choices?.[0]?.message?.content?.trim() || "";
+            answer = cleanFinalAnswer(rescueData?.choices?.[0]?.message?.content || "");
           }
           if (!answer) answer = "这次没有生成完整回答，请重新发送一次问题。";
           return sseText(answer, { model: usedModel, role: "visitor", skill: "general" });
