@@ -4,6 +4,8 @@ import { calculateProductLoad } from "./product-load.js";
 import { calculateEnvelopeUValue, calculateEnvelopeUValueRange } from "./envelope-u-value.js";
 import { findFoodThermalProperties, findAmbiguousFoodTerm } from "../data/food-thermal-properties.js";
 import { findInsulationMaterial, VERIFIED_PANEL_PRODUCTS } from "../data/insulation-properties.js";
+import { calculateProductPullDownTime } from "./product-pulldown-time.js";
+import { reviewedBrickCoreFreezingMethod } from "./reviewed-brick-core-freezing.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -19,6 +21,9 @@ export function runRefrigerationTool(input = {}) {
   }
   if (input.tool === "envelope_u_value") {
     return { tool: input.tool, result: calculateEnvelopeUValue(input.args || {}) };
+  }
+  if (input.tool === "product_core_freezing_time") {
+    return { tool: input.tool, result: calculateProductPullDownTime({...(input.args||{}), targetBasis:"product_core", reviewedMethod:reviewedBrickCoreFreezingMethod}) };
   }
   if (input.tool === "envelope_u_value_range") {
     return { tool: input.tool, result: calculateEnvelopeUValueRange(input.args || {}) };
@@ -40,6 +45,8 @@ export const REFRIGERATION_TOOL_PROTOCOL = `
 {"__brady_tool__":"envelope_u_value","args":{...}}
 或
 {"__brady_tool__":"envelope_u_value_range","args":{...}}
+或
+{"__brady_tool__":"product_core_freezing_time","args":{...}}
 
 cold_storage_load 可用字段：
 lengthM, widthM, heightM, roomTempC, ambientTempC, uValueWm2K,
@@ -58,6 +65,12 @@ cpAboveKJkgK, latentHeatKJkg, cpBelowKJkgK
 envelope_u_value 可用字段：
 layers:[{label, thicknessMm, lambdaWmK}], innerSurfaceConductanceWm2K, outerSurfaceConductanceWm2K
 
+product_core_freezing_time 可用字段：
+productCharacteristicThicknessMm, productDimensionRatios:[beta1,beta2], airVelocityMs, packaging, stacking, heatTransferMethod, heatTransferSource, requiredPullDownHours,
+hWm2K, frozenThermalConductivityWmK, volumetricEnthalpyChangeJm3, unfrozenVolumetricHeatCapacityJm3K, frozenVolumetricHeatCapacityJm3K,
+initialTempC, initialFreezingTempC, mediumTempC, finalCenterTempC
+注意：airVelocityMs 不能自动换算 hWm2K；h 必须来自已审核的传热关联式或可靠项目数据。
+
 envelope_u_value_range 可用字段：
 label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
 
@@ -66,7 +79,7 @@ label, thicknessMm, lambdaMinWmK, lambdaMaxWmK
 2. 缺参数时正常用中文追问，不输出工具 JSON。
 3. 货物跨越冻结点时，必须有冻结点、冻结点以上比热、潜热、冻结点以下比热。
 4. 工具返回后，以工具结果为准进行解释，不要重新心算覆盖结果。
-5. 当 product_load 返回 propertyData 时，最终回答必须单独列出“采用的食品热物性”，至少显示食品名称、冻结点、冻结点以上比热、冻结潜热、冻结点以下比热和资料来源；不得把这些参数说成模型估算值。\n6. cold_storage_load_range 返回的是热工参数不确定性传播得到的负荷范围，不得把它描述成安全系数、选型裕量或压缩机推荐范围。\n7. 分项围护计算中，地面边界温度缺失时必须追问；不得用室外空气温度代替地温。\n8. 工具失败或提示 missing 时，向 Owner 说明缺什么，不得自行补值。
+5. 当 product_load 返回 propertyData 时，最终回答必须单独列出“采用的食品热物性”，至少显示食品名称、冻结点、冻结点以上比热、冻结潜热、冻结点以下比热和资料来源；不得把这些参数说成模型估算值。\n6. cold_storage_load_range 返回的是热工参数不确定性传播得到的负荷范围，不得把它描述成安全系数、选型裕量或压缩机推荐范围。\n7. 分项围护计算中，地面边界温度缺失时必须追问；不得用室外空气温度代替地温。\n8. 工具失败或提示 missing 时，向 Owner 说明缺什么，不得自行补值。\n9. 用户问货物中心温度能否在指定时间达到时，优先使用 product_core_freezing_time；缺产品特征厚度/三维比例、可靠 h、包装堆码或热物性时必须追问，不得用库温或货物总热量代替中心温度时间。
 `;
 
 
