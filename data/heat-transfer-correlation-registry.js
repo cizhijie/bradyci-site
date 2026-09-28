@@ -6,6 +6,13 @@ export const HEAT_TRANSFER_CORRELATIONS=[
   applicability:{diameterMm:[70,107],velocityMs:[0.025,2.1]},
   source:{organization:"ASHRAE",chapter:"Methods of Precooling Fruits, Vegetables, and Cut Flowers",reference:"Baird and Gaffney (1976)"},
   prohibitedUses:["meat","generic_food","outside_velocity_range","outside_geometry_range"]}
+ ,{id:"becker-fricke-2004-forced-air-foods",reviewStatus:"source_identified",implementationStatus:"equations_not_transcribed",
+  productGroup:"food",medium:"air",geometry:"multiple",
+  source:{authors:"Becker & Fricke",journal:"International Journal of Refrigeration",year:2004,volume:"27(5)",pages:"540-551",doi:"10.1016/j.ijrefrig.2004.02.006"},
+  evidence:{coolingCurves:777,foodItems:295,literatureHeatTransferCoefficients:144,literatureFoodItems:13,correlations:9},
+  safeguards:["Do not select until the exact correlation equation, food grouping, geometry, characteristic length and validity range are independently verified.",
+   "Do not convert air velocity directly to h without reviewed air-property and Nu/Re/Pr evaluation.",
+   "Do not treat this source record as a generic meat correlation."]}
 ];
 const num=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
 const inside=(v,r)=>v!==null&&v>=r[0]&&v<=r[1];
