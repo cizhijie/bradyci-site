@@ -432,7 +432,10 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     } else if (state.heatRejectionType && Number.isFinite(Number(state.condenserApproachK))) {
       results.condensing_condition=deriveCondensingTemperature({heatRejectionType:state.heatRejectionType,designAmbientTempC:state.projectOutdoorTempC,condenserApproachK:state.condenserApproachK,designWetBulbC:state.designWetBulbC});
     }
-    results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
+    results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity,{
+      evaporatingTempC:results.evaporating_condition?.evaporatingTempC,
+      condensingTempC:results.condensing_condition?.condensingTempC
+    });
     results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
     const exactTe=results.evaporating_condition?.evaporatingTempC;
     const exactTc=results.condensing_condition?.condensingTempC;
