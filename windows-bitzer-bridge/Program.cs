@@ -34,7 +34,26 @@ internal static class Program
             return result.Ok ? 0 : 4;
         }
 
-        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll>]");
+        if (args.Length == 2 && string.Equals(args[0], "--smoke-gate", StringComparison.OrdinalIgnoreCase))
+        {
+            var dllPath = args[1];
+            var gate = Hhk52NativeExecutionGate.Check(dllPath);
+            Console.WriteLine($"HHK52 execution gate: {gate.Status}");
+            if (!gate.Ok) return 5;
+
+            var probe = new BitzerBridgeRequest(
+                "smoke-gate", "ECOLINE", "R404A", -10d, 40d,
+                null, null, null, null, null, null);
+            var mapped = Hhk52CopyDesignInputMapper.Map(probe, null, dllPath, dllPath);
+            Console.WriteLine($"HHK52 input mapper: {mapped.Status}");
+            if (mapped.Missing.Length != 0)
+                Console.WriteLine($"Blocked missing inputs: {string.Join(", ", mapped.Missing)}");
+
+            // This command deliberately never invokes CopyDesign.
+            return mapped.Ok ? 6 : 0;
+        }
+
+        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll> | --smoke-gate <path-to-Hhk52.dll>]");
         return 1;
     }
 }
