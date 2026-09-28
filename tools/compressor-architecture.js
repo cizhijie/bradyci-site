@@ -84,6 +84,8 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
   return {
     facts,
     candidates,
+    architectureAssessment,
+    projectSignals,
     recommendationFactors,
     customerQuestions,
     readyForSpecificModel:false,
