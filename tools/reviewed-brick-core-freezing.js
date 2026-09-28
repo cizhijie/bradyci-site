@@ -17,3 +17,15 @@ export function calculateReviewedBrickCoreFreezingTime(i={}){
   finalCenterTempC:i.finalCenterTempC,equivalentHeatTransferDimensionality:e.E,geometryBasis:"slab_pr_plus_ehtd"});
  return {...t,method:"Cleland-Earle slab plus EHTD",dimensionless:n,P:pr.P,R:pr.R,beta1,beta2};
 }
+
+export const reviewedBrickCoreFreezingMethod={
+ reviewStatus:"reviewed",
+ name:"Cleland-Earle rectangular-brick core freezing",
+ source:"ASHRAE Cooling and Freezing Times of Foods; Cleland-Earle reviewed method chain",
+ calculate(input={}){
+  const dimensionsM=Array.isArray(input.dimensionsM)?input.dimensionsM:
+   (Number.isFinite(Number(input.productCharacteristicThicknessMm))&&Array.isArray(input.productDimensionRatios)&&input.productDimensionRatios.length===2
+    ?[Number(input.productCharacteristicThicknessMm)/1000,Number(input.productCharacteristicThicknessMm)/1000*Number(input.productDimensionRatios[0]),Number(input.productCharacteristicThicknessMm)/1000*Number(input.productDimensionRatios[1])]:null);
+  return calculateReviewedBrickCoreFreezingTime({...input,dimensionsM});
+ }
+};
