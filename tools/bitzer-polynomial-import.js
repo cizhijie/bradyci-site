@@ -151,6 +151,9 @@ export function mapBitzerPolynomialCsv(parsed={}){
   if(missing.length) return {ok:false,error:"required_headers_not_recognized",missing,detected};
   if(!detected.coefficientSetValid) return {ok:false,error:"ten_unique_coefficient_columns_required",detected};
   if(!detected.coefficientSequenceValid) return {ok:false,error:"coefficient_columns_must_be_c1_through_c10_in_order",detected};
+  const domainFields=["evaporatingMinC","evaporatingMaxC","condensingMinC","condensingMaxC"];
+  const missingDomain=domainFields.filter(k=>!detected.mapping[k]);
+  if(missingDomain.length) return {ok:false,error:"polynomial_validity_range_headers_required",missing:missingDomain,detected};
   const rows=parsed.rows.map(raw=>{
     const pick=k=>raw[detected.mapping[k]];
     return {
@@ -166,7 +169,7 @@ export function mapBitzerPolynomialCsv(parsed={}){
       raw
     };
   });
-  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
+  const invalidDomainRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>[x.rowData.evaporatingMinC,x.rowData.evaporatingMaxC,x.rowData.condensingMinC,x.rowData.condensingMaxC].some(v=>!Number.isFinite(v)) || x.rowData.evaporatingMinC>x.rowData.evaporatingMaxC || x.rowData.condensingMinC>x.rowData.condensingMaxC);\n  if(invalidDomainRows.length) return {ok:false,error:"invalid_polynomial_validity_range",rows:invalidDomainRows.map(x=>x.row),detected};\n  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
 
 export function inspectBitzerPolynomialCsv(csvText="",metadata={}){
