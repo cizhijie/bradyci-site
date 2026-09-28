@@ -405,7 +405,6 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
     results.condition_readiness=assessRefrigerationConditionInputs(state);
     results.heat_rejection_strategy=assessHeatRejectionCandidates(state);
-    results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
     const exactTe=results.evaporating_condition?.evaporatingTempC;
     const exactTc=results.condensing_condition?.condensingTempC;
     results.manufacturer_selection_request=buildManufacturerSelectionRequest({
@@ -414,6 +413,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       condensingTempC:exactTc,
       requiredCoolingCapacityKW:results.design_capacity?.requiredCapacityRangeKW?.max
     });
+    results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
     if (results.engineering_mode.id === "estimate") {
       const tdDefault=getEvaporatorTDDefault(state.roomTempC);
       if (!Number.isFinite(Number(state.evaporatingTempC)) && !Number.isFinite(Number(state.evaporatorTDK)) && tdDefault) {
