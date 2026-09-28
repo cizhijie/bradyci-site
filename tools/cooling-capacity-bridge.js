@@ -36,6 +36,7 @@ export function calculateRequiredCoolingCapacity({
 }
 
 export function assessEquipmentSelectionReadiness(state={}, capacityResult=null, conditions={}){
+  const mode=String(state.engineeringMode||"estimate").toLowerCase();
   const missing=[];
   const te=Number.isFinite(Number(conditions.evaporatingTempC)) ? Number(conditions.evaporatingTempC) : Number(state.evaporatingTempC);
   const tc=Number.isFinite(Number(conditions.condensingTempC)) ? Number(conditions.condensingTempC) : Number(state.condensingTempC);
@@ -43,14 +44,18 @@ export function assessEquipmentSelectionReadiness(state={}, capacityResult=null,
   if(!Number.isFinite(te)) missing.push("evaporating_temperature");
   if(!Number.isFinite(tc)) missing.push("condensing_temperature");
   if(!state.refrigerant) missing.push("refrigerant");
+  const factsReady=missing.length===0;
+  const formalSelectionAllowed=factsReady && mode==="selection";
   return {
-    readyForManufacturerSelection:missing.length===0,
+    readyForManufacturerSelection:formalSelectionAllowed,
+    readyForPerformanceComparison:factsReady,
+    engineeringMode:mode,
     missing,
     conditionsUsed:{
       evaporatingTempC:Number.isFinite(te)?te:null,
       condensingTempC:Number.isFinite(tc)?tc:null,
       source:"project_or_derived_engineering_condition"
     },
-    rule:"即使设计冷量已得到，也不得仅按“匹数”或名义冷量直接报具体压缩机型号；必须使用厂家在项目Te/Tc/制冷剂工况下的性能数据。"
+    rule: formalSelectionAllowed ? "正式选型条件已齐；具体型号仍必须通过厂家实际 Te/Tc/制冷剂性能数据和运行包络校验。" : factsReady ? "当前条件可用于性能比较/预选，但工程模式不是正式选型；不得把估算或工程核算结果升级为最终设备型号。" : "即使设计冷量已得到，也不得仅按“匹数”或名义冷量直接报具体压缩机型号；必须补齐关键工况。"
   };
 }
