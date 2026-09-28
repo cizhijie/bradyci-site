@@ -10,7 +10,7 @@ function run(state){
 export function runRealProjectE2ERegression(){
  const beef=run({
   engineeringMode:"estimate",location:"成都",dimensions:{lengthM:5.6,widthM:8.5,heightM:4.7},
-  roomTempC:-35,productCategory:"牛肉",dailyInboundKg:5000,entryTempC:25,pullDownHours:8,
+  roomTempC:-35,productCategory:"牛肉",dailyInboundKg:5000,entryTempC:25,productTargetTempC:-18,pullDownHours:8,pullDownTargetBasis:"product_core",
   processMode:"freezing",insulation:{material:"聚氨酯",thicknessMm:150},projectOutdoorTempC:39,
   refrigerationRunHoursPerDay:20,refrigerant:"R507A"
  });
@@ -23,7 +23,7 @@ export function runRealProjectE2ERegression(){
 
  const tofu=run({
   engineeringMode:"estimate",location:"成都",dimensions:{lengthM:10,widthM:10,heightM:2.6},
-  roomTempC:-3,productCategory:"豆腐",dailyInboundKg:2000,entryTempC:20,
+  roomTempC:-3,productCategory:"豆腐",dailyInboundKg:2000,entryTempC:20,productTargetTempC:-3,
   processMode:"chilled_storage",insulation:{material:"聚氨酯",thicknessMm:100},projectOutdoorTempC:39
  });
  check(tofu.assessment.engineeringMode.id==="estimate","tofu case must stay usable in estimate mode");
@@ -33,7 +33,7 @@ export function runRealProjectE2ERegression(){
 
  const guizhou=run({
   engineeringMode:"estimate",location:"贵州",dimensions:{lengthM:4,widthM:5.1,heightM:4.1},
-  roomTempC:-35,productCategory:"肉类",dailyInboundKg:7000,entryTempC:30,pullDownHours:12,
+  roomTempC:-35,productCategory:"肉类",dailyInboundKg:7000,entryTempC:30,productTargetTempC:-18,pullDownHours:12,pullDownTargetBasis:"product_core",
   processMode:"freezing",insulation:{material:"聚氨酯",thicknessMm:150},projectOutdoorTempC:35,
   refrigerationRunHoursPerDay:20
  });
