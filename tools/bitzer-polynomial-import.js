@@ -169,7 +169,9 @@ export function mapBitzerPolynomialCsv(parsed={}){
       raw
     };
   });
-  const invalidDomainRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>[x.rowData.evaporatingMinC,x.rowData.evaporatingMaxC,x.rowData.condensingMinC,x.rowData.condensingMaxC].some(v=>!Number.isFinite(v)) || x.rowData.evaporatingMinC>x.rowData.evaporatingMaxC || x.rowData.condensingMinC>x.rowData.condensingMaxC);\n  if(invalidDomainRows.length) return {ok:false,error:"invalid_polynomial_validity_range",rows:invalidDomainRows.map(x=>x.row),detected};\n  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
+  const invalidDomainRows=rows.map((row,index)=>({row:index+2,rowData:row})).filter(x=>[x.rowData.evaporatingMinC,x.rowData.evaporatingMaxC,x.rowData.condensingMinC,x.rowData.condensingMaxC].some(v=>!Number.isFinite(v)) || x.rowData.evaporatingMinC>x.rowData.evaporatingMaxC || x.rowData.condensingMinC>x.rowData.condensingMaxC);
+  if(invalidDomainRows.length) return {ok:false,error:"invalid_polynomial_validity_range",rows:invalidDomainRows.map(x=>x.row),detected};
+  return {ok:true,rows,detected,reviewStatus:"normalized_unreviewed",rule:"Automatic mapping never supplies missing BITZER fields or coefficients."};
 }
 
 export function inspectBitzerPolynomialCsv(csvText="",metadata={}){
