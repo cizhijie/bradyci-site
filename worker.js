@@ -7,6 +7,7 @@ import { deriveEngineeringDuty } from "./tools/refrigeration-duty.js";
 import { queryProvisionalDutyCandidates } from "./tools/provisional-compressor-search.js";
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
+import { formatCoreFreezingFailure } from "./tools/core-freezing-result-formatter.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
@@ -665,7 +666,7 @@ function callModelNonStream(env, model, messages, systemPrompt, maxTokens = 700)
 function formatDeterministicRefrigerationResult(data) {
   const r = data?.result;
   if (!r) return null;
-  if (!r.ok) return r.message || r.error || (r.missing?.length ? "还缺参数：" + r.missing.join("、") : null);
+  if (!r.ok) return (data.tool === "product_core_freezing_time" ? formatCoreFreezingFailure(r) : "") || r.message || r.error || (r.missing?.length ? "还缺参数：" + r.missing.join("、") : null);
   if (data.tool === "cold_storage_load") {
     const g=r.geometry||{}, e=r.envelope||{};
     return "**围护结构传热负荷：" + r.totalKW + " kW**\n\n"
