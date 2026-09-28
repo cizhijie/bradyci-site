@@ -84,7 +84,7 @@ envelope_u_value 可用字段：
 layers:[{label, thicknessMm, lambdaWmK}], innerSurfaceConductanceWm2K, outerSurfaceConductanceWm2K
 
 product_core_freezing_time 可用字段：
-productCharacteristicThicknessMm, productDimensionRatios:[beta1,beta2], airVelocityMs, packaging, stacking, heatTransferMethod, heatTransferSource, requiredPullDownHours,
+geometry, productCharacteristicThicknessMm, productDimensionRatios:[beta1,beta2], airVelocityMs, packaging, stacking, heatTransferMethod, heatTransferSource, requiredPullDownHours,
 hWm2K, frozenThermalConductivityWmK, volumetricEnthalpyChangeJm3, unfrozenVolumetricHeatCapacityJm3K, frozenVolumetricHeatCapacityJm3K,
 initialTempC, initialFreezingTempC, mediumTempC, finalCenterTempC
 注意：airVelocityMs 不能自动换算 hWm2K；h 必须来自已审核的传热关联式或可靠项目数据。
