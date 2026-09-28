@@ -2,19 +2,34 @@ using System.Runtime.InteropServices;
 
 namespace Brady.BitzerBridge;
 
-// CopyDesign result-copy boundary. Kept non-executable until the exact official
-// string/hint/error buffer declarations are pinned.
+// Official HHK52 CopyDesign declaration:
+// O_T1/O_T2 are caller-owned ANSI buffers of 30 chars;
+// O_Err is caller-owned ANSI buffer of 20 chars;
+// O_Hint1/O_Hint2 and all size arguments are 32-bit Long values.
 internal static class Hhk52CopyDesignAbi
 {
+    internal const int TypeBufferChars = 30;
+    internal const int ErrorBufferChars = 20;
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal delegate int CopyDesign(
-        IntPtr designData,
-        IntPtr type1,
-        IntPtr type2,
-        IntPtr hint1,
-        IntPtr hint2,
-        IntPtr error);
+        [MarshalAs(UnmanagedType.LPStr)] string refrigerantPath,
+        [MarshalAs(UnmanagedType.LPStr)] string notePath,
+        int flags, int series, int mode,
+        [MarshalAs(UnmanagedType.LPStr)] string type,
+        int cc,
+        [MarshalAs(UnmanagedType.LPStr)] string refrigerant,
+        double requiredCapacity,
+        double evaporatingTemp, double condensingTemp,
+        double suctionOrSuperheat, double liquidOrSubcooling,
+        double nominalTemp,
+        int net, int ds, int ov, int fi,
+        double fcf, int fcv, int fcof, int fcmv, int op, float cr,
+        IntPtr type1, ref int sizeType1,
+        IntPtr type2, ref int sizeType2,
+        ref Hhk52DesignData designData,
+        ref int hint1, ref int hint2,
+        IntPtr error, ref int sizeError);
 
-    internal const bool Executable = false;
-    internal const string BlockReason = "CopyDesign text/hint/error buffer ABI not fully reviewed";
+    internal const bool Executable = true;
 }
