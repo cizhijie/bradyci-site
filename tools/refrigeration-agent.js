@@ -7,6 +7,7 @@ import { findInsulationMaterial, VERIFIED_PANEL_PRODUCTS } from "../data/insulat
 import { calculateProductPullDownTime } from "./product-pulldown-time.js";
 import { reviewedBrickCoreFreezingMethod } from "./reviewed-brick-core-freezing.js";
 import { resolveReviewedSurfaceH } from "./reviewed-surface-h-resolver.js";
+import { inferProductGeometryFromText } from "./product-geometry-inference.js";
 
 export function runRefrigerationTool(input = {}) {
   if (!input || typeof input !== "object") return { ok: false, error: "Invalid tool input" };
@@ -137,7 +138,7 @@ export function extractColdRoomProject(text = "") {
   const airVelocity=raw.match(/(?:风速|迎面风速|空气速度)[^\d]{0,6}(\d+(?:\.\d+)?)\s*(?:m\/s|米\/秒)/i);
   if(airVelocity) project.airVelocityMs=Number(airVelocity[1]);
   const productDims = raw.match(/(?:肉块|牛肉|猪肉|鱼块|产品|货物)[^。；，,]{0,8}(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(mm|毫米|cm|厘米)/i);
-  if(productDims){ const k=/cm|厘米/i.test(productDims[4])?10:1; const d=[Number(productDims[1])*k,Number(productDims[2])*k,Number(productDims[3])*k].sort((a,b)=>a-b); project.productDimensionsMm=d; project.productCharacteristicThicknessMm=d[0]; project.productDimensionRatios=[d[1]/d[0],d[2]/d[0]]; }
+  if(productDims){ const k=/cm|厘米/i.test(productDims[4])?10:1; const d=[Number(productDims[1])*k,Number(productDims[2])*k,Number(productDims[3])*k].sort((a,b)=>a-b); project.productDimensionsMm=d; project.productCharacteristicThicknessMm=d[0]; project.productDimensionRatios=[d[1]/d[0],d[2]/d[0]]; const inferredGeometry=inferProductGeometryFromText(raw); if(inferredGeometry) project.geometry=inferredGeometry; }
   if(/(?:裸冻|无包装|不包装|散装裸露)/.test(raw)) project.packaging="unpacked";
   else if(/(?:纸箱|箱装)/.test(raw)) project.packaging="carton";
   else if(/(?:真空包装|真空袋)/.test(raw)) project.packaging="vacuum_bag";
