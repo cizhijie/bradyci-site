@@ -2,8 +2,8 @@
 // This is deliberately separate from formal load calculation and manufacturer model selection.
 // Ranges are engineering reference bands, not manufacturer ratings.
 const BANDS = [
-  { id:"chilled", minTemp:-5, maxTemp:10, wM3:[45,75], hpPerKW:[0.32,0.42], label:"普通冷藏/保鲜" },
-  { id:"frozen", minTemp:-25, maxTemp:-15, wM3:[65,105], hpPerKW:[0.38,0.50], label:"低温冷冻储存" }
+  { id:"chilled", minTemp:-5, maxTemp:10, wM3:[45,75], label:"普通冷藏/保鲜", referenceDuty:"中高温冷藏工况" },
+  { id:"frozen", minTemp:-25, maxTemp:-15, wM3:[65,105], label:"低温冷冻储存", referenceDuty:"低温冷冻工况" }
 ];
 const MAX_QUICK_VOLUME_M3 = 500;
 
@@ -30,11 +30,10 @@ export function quickEstimateColdRoom(input={}) {
     else if(density>7){factorMin*=1.05;factorMax*=1.15;}
   }
   const loadMin=volume*band.wM3[0]*factorMin/1000, loadMax=volume*band.wM3[1]*factorMax/1000;
-  const hpMin=loadMin*band.hpPerKW[0], hpMax=loadMax*band.hpPerKW[1];
-  return {ok:true,method:"reviewed-engineering-quick-estimate-v1",category:band.label,volumeM3:r(volume),
-    refrigerationLoadKW:{min:r(loadMin),max:r(loadMax)},referenceCompressorHP:{min:r(hpMin,1),max:r(hpMax,1)},
-    assumptions:["用于不超过 "+MAX_QUICK_VOLUME_M3+" m³ 的小型储存冷库前期沟通/报价参考","按常规使用强度的工程区间估算","小库按表面积/体积比更高进行附加修正","压缩机匹数仅为经验参考区间，不代表任何厂家具体型号"],
-    warnings:["若存在大量高温货物集中入库、速冻/冻结、频繁长时间开门等情况，应转正式负荷核算","具体压缩机型号必须按制冷剂、Te、Tc和可追溯厂家性能数据选择"]
+  return {ok:true,method:"reviewed-engineering-quick-estimate-v2",category:band.label,referenceDuty:band.referenceDuty,volumeM3:r(volume),
+    refrigerationLoadKW:{min:r(loadMin),max:r(loadMax)},referenceCompressorHP:null,
+    assumptions:["用于不超过 "+MAX_QUICK_VOLUME_M3+" m³ 的小型储存冷库前期沟通/报价参考","按常规使用强度的工程区间估算","小库按表面积/体积比更高进行附加修正","当前版本不再用固定 hp/kW 系数把负荷强行换算成压缩机匹数"],
+    warnings:["若存在大量高温货物集中入库、速冻/冻结、频繁长时间开门等情况，应转正式负荷核算","压缩机匹数/型号需结合制冷剂、Te、Tc和可追溯厂家性能数据；后续可增加经审核的工况匹数参考表"]
   };
 }
 function finite(v){return v!==null&&v!==""&&Number.isFinite(Number(v))?Number(v):null}
