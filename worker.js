@@ -440,7 +440,7 @@ export default {
 \
 " + formatColdRoomReadiness(readiness) + (calculatedText ? "\
 \
-" + calculatedText : "");
+" + calculatedText : "") + compressorSelectionText;
             return sseText(intakeReply, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
           }
           const manufacturerSelection = detectManufacturerSelectionRequest(messages);
