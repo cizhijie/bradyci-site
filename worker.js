@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.26";
+const AGENT_VERSION = "v2.28";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -318,33 +318,38 @@ export default {
         const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
-        if (!owner && latestUser) {
+        if (!owner && latestUser && projectId) {
           const visitorText = latestUser.content || "";
           const visitorColdRoom = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(visitorText) &&
             /(?:怎么配|怎么选|方案|配置|选型|负荷|计算|核算|做一个|建一个)/i.test(visitorText);
-          if (visitorColdRoom) {
-            const p = extractColdRoomProject(visitorText);
-            const known = [];
-            if (p.location) known.push(p.location);
-            if (p.dimensions?.lengthM) known.push(p.dimensions.lengthM+"×"+p.dimensions.widthM+"×"+p.dimensions.heightM+" m");
-            else {
-              if (Number.isFinite(p.floorAreaM2)) known.push("约"+p.floorAreaM2+"㎡");
-              if (Number.isFinite(p.heightM)) known.push("高"+p.heightM+"m");
-            }
-            if (Number.isFinite(p.volumeM3)) known.push("约"+Math.round(p.volumeM3*10)/10+"m³");
-            if (Number.isFinite(p.roomTempC)) known.push("库温"+p.roomTempC+"℃");
-            if (p.productCategory) known.push(p.productCategory);
-            if (Number.isFinite(p.dailyInboundKg)) known.push("日进货约"+(p.dailyInboundKg/1000)+"吨");
-            const missing = [];
-            if (!Number.isFinite(p.entryTempC)) missing.push("货物入库时大约多少℃？");
-            if (!Number.isFinite(p.pullDownHours)) missing.push("希望这批货多少小时降到目标库温？");
-            if (!p.insulation?.material || !Number.isFinite(p.insulation?.thicknessMm)) missing.push("库板是什么材料、厚度多少？");
-            if (!p.floor?.description) missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
-            if (!p.doorUsage?.description) missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
-            const reply = "已记录：" + (known.length ? known.join("，") : "你提供的冷库基本条件") + "。\n\n"
-              + (missing.length ? "继续核算前，请补充：\n" + missing.map((x,i)=>(i+1)+". "+x).join("\n") + "\n\n不知道的项目可以直接说“不知道”，后续估算会单独标明。" : "基本项目条件已较完整，可继续进入负荷核算。")
-              + "\n\n访客体验有使用额度限制，回答采用简洁模式。";
-            return sseText(reply, { model: "deterministic-intake", role: "visitor", skill: "refrigeration-intake" });
+          let visitorState = await loadColdRoomProjectState(env, projectId);
+          const visitorFollowup = !!visitorState && /(?:入库|货温|聚氨酯|PIR|XPS|EPS|一楼|楼上|地面|保温|开门|次|分钟|人工|叉车|速冻|冻结|小时|不知道)/i.test(visitorText);
+          if (visitorColdRoom || visitorFollowup) {
+            const patch = extractColdRoomProject(visitorText);
+            if (visitorColdRoom) visitorState = {};
+            visitorState = mergeColdRoomProjectState(visitorState || {}, patch);
+            await saveColdRoomProjectState(env, visitorState, projectId);
+            const p = visitorState, known=[];
+            if(p.location)known.push(p.location);
+            if(p.dimensions?.lengthM)known.push(p.dimensions.lengthM+"×"+p.dimensions.widthM+"×"+p.dimensions.heightM+" m");
+            else {if(Number.isFinite(p.floorAreaM2))known.push("约"+p.floorAreaM2+"㎡");if(Number.isFinite(p.heightM))known.push("高"+p.heightM+"m");}
+            if(Number.isFinite(p.volumeM3))known.push("约"+Math.round(p.volumeM3*10)/10+"m³");
+            if(Number.isFinite(p.roomTempC))known.push("库温"+p.roomTempC+"℃");
+            if(p.productCategory)known.push(p.productCategory);
+            if(Number.isFinite(p.dailyInboundKg))known.push("日进货约"+p.dailyInboundKg/1000+"吨");
+            if(Number.isFinite(p.entryTempC))known.push("入库"+p.entryTempC+"℃");
+            if(p.insulation?.material)known.push(p.insulation.thicknessMm+"mm "+p.insulation.material+"板");
+            if(p.floor?.description)known.push(p.floor.description);
+            if(p.doorUsage?.description)known.push(p.doorUsage.description);
+            const freezing = /(?:速冻|冻结)/i.test(visitorText) || /(?:冻肉|冻结)/i.test(p.productCategory||"") || (Number.isFinite(p.roomTempC)&&p.roomTempC<=-18);
+            const missing=[];
+            if(!Number.isFinite(p.entryTempC))missing.push("货物入库时大约多少℃？");
+            if(freezing&&!Number.isFinite(p.pullDownHours))missing.push("如果是速冻/冻结项目，要求货物多少小时达到目标温度？");
+            if(!p.insulation?.material||!Number.isFinite(p.insulation?.thicknessMm))missing.push("库板是什么材料、厚度多少？");
+            if(!p.floor?.description)missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
+            if(!p.doorUsage?.description)missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
+            const reply="已记录："+known.join("，")+"。\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做基础负荷估算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
+            return sseText(reply,{model:"deterministic-intake",role:"visitor",skill:"refrigeration-intake"});
           }
         }
         if (owner && activeSkill?.id === "refrigeration") {
