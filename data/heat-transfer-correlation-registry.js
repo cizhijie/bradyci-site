@@ -22,7 +22,7 @@ export const HEAT_TRANSFER_CORRELATIONS=[
  ,{id:"ashrae-meat-slab-h-reference",reviewStatus:"reviewed_reference_only",implementationStatus:"exact_points_no_interpolation",
   productGroup:"meat",medium:"air",geometry:"slab",
   applicability:{characteristicThicknessMm:[23,23],mediumTempC:[0,0],velocityMs:[0.56,3.7]},
-  source:{organization:"ASHRAE",edition:2026,chapter:19,chapterTitle:"Thermal Properties of Foods",reference:"Table 13; Radford, Herbert and Lovett (1976), Chilling of meat—A mathematical model for heat and mass transfer",url:"https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"},
+  source:{organization:"ASHRAE",edition:2026,chapter:19,chapterTitle:"Thermal Properties of Foods",reference:"Table 13; Radford, Herbert and Lovett (1976), Chilling of meat—A mathematical model for heat and mass transfer, IIR Bulletin Annex 1976-1, pp. 323-330",url:"https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"},
   evidence:{shape:"23-mm-thick slab",mediumTempC:0,reportedPoints:[{velocityMs:0.56,hWm2K:10.6},{velocityMs:1.4,hWm2K:20.0},{velocityMs:3.7,hWm2K:35.0}],reynoldsReported:false,nuRePrCorrelationReported:false},
   safeguards:["ASHRAE Table 13 reports these exact experimental points for 23-mm meat slabs in air at 0 °C, referenced to Radford et al. (1976).","ASHRAE reports no Reynolds range or Nu-Re-Pr correlation for this row; do not interpolate or extrapolate the three h points.","Do not apply to 40-mm beef blocks, packaged meat, freezing air near -30 °C, or arbitrary meat geometry.","Do not use for automatic core-freezing calculations."]}
  ,{id:"becker-fricke-2004-forced-air-foods",reviewStatus:"source_identified",implementationStatus:"equations_not_transcribed",
