@@ -5,7 +5,7 @@ export function runAshraePublishedNumericBenchmarkRegression(){
  const p=x.published;
  ck(p.Bi===0.964&&p.Pk===0.211&&p.Ste===0.289,"published dimensionless benchmark values");
  ck(p.P===0.468&&p.R===0.248,"published rectangular-brick P/R");
- const r=modifiedPlankFreezingTime({deltaH10Jm3:p.volumetricEnthalpyChangeJm3,initialFreezingTempC:p.initialFreezingTempC,
+ const r=clelandEarleSlabFreezingTime({deltaH10Jm3:p.volumetricEnthalpyChangeJm3,initialFreezingTempC:p.initialFreezingTempC,
   mediumTempC:x.airTempC,characteristicDimensionM:x.characteristicDimensionM,hWm2K:x.hWm2K,
   frozenThermalConductivityWmK:p.frozenThermalConductivityWmK,P:p.P,R:p.R,Ste:p.Ste,finalCenterTempC:x.finalCenterTempC});
  ck(near(r.seconds,p.freezingTimeSeconds,20),"must reproduce ASHRAE 5250 s within published rounding");
