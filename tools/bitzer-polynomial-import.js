@@ -126,10 +126,14 @@ export function detectBitzerPolynomialColumns(header=[]){
     else if(hits.length>1) ambiguous[target]=hits.map(h=>h.name);
   }
   const coefficientColumns=normalized.filter(h=>/^c(?:oeff)?0?\d+$/.test(h.key)||/^c\d+$/.test(h.key)).map(h=>h.name);
+  const coefficientIndexes=coefficientColumns.map(name=>{const m=canonicalHeader(name).match(/(\d+)$/);return m?Number(m[1]):null;});
+  const coefficientSetValid=coefficientColumns.length===10 && coefficientIndexes.every(Number.isFinite) && new Set(coefficientIndexes).size===10;
   return {
     ok:Object.keys(ambiguous).length===0,
     mapping,
     coefficientColumns,
+    coefficientIndexes,
+    coefficientSetValid,
     ambiguous,
     unmapped:header.filter(h=>!Object.values(mapping).includes(h)&&!coefficientColumns.includes(h)),
     rule:"Header detection is conservative. Unknown or ambiguous BITZER export headers must be reviewed instead of guessed."
@@ -143,6 +147,7 @@ export function mapBitzerPolynomialCsv(parsed={}){
   const required=["model","refrigerant","quantity","polynomialStandard"];
   const missing=required.filter(k=>!detected.mapping[k]);
   if(missing.length) return {ok:false,error:"required_headers_not_recognized",missing,detected};
+  if(!detected.coefficientSetValid) return {ok:false,error:"ten_unique_coefficient_columns_required",detected};
   const rows=parsed.rows.map(raw=>{
     const pick=k=>raw[detected.mapping[k]];
     return {
