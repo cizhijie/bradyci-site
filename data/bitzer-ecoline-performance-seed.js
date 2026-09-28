@@ -24,7 +24,7 @@ export const BITZER_ECOLINE_OFFICIAL_STAGING_BATCH={
     {evaporatingTempC:-10,condensingTempC:60,coolingCapacityKW:0.790,inputPowerKW:0.60},
     {evaporatingTempC:-15,condensingTempC:60,coolingCapacityKW:0.570,inputPowerKW:0.51},
     {evaporatingTempC:-20,condensingTempC:60,coolingCapacityKW:0.385,inputPowerKW:0.42}
-  ].map(point=>({documentId:"bitzer-kp-104-3-cn",page:"KP-104-3-CN performance table",table:"R134a — motor versions 1/2",manufacturer:"BITZER",model:"2KES-05Y",refrigerant:"R134a",...point,frequencyHz:50,suctionGasTempC:20,subcoolingK:0,rawRatingCondition:"50 Hz; suction gas temperature 20°C; without liquid subcooling",extractionMethod:"Manual transcription from official BITZER PDF KP-104-3-CN; values cross-checked against the published table; explicit staging review is still required before promotion",reviewStatus:"unreviewed"}))
+  ].map(point=>({documentId:"bitzer-kp-104-3-cn",page:"KP-104-3-CN performance table",table:"R134a — motor versions 1/2",manufacturer:"BITZER",model:"2KES-05Y",refrigerant:"R134a",...point,frequencyHz:50,suctionGasTempC:20,subcoolingK:0,rawRatingCondition:"50 Hz; suction gas temperature 20°C; without liquid subcooling",extractionMethod:"Manual transcription from official BITZER PDF KP-104-3-CN; 2KES-05Y R134a Te +10 to -20°C / Tc 40, 50, 60°C values verified against the official published table on 2026-09-28; explicit staging row review is still required before promotion",reviewStatus:"unreviewed"}))
 };
 
 export function validateBitzerEcolineSeedRow(row={}){
