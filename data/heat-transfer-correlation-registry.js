@@ -6,7 +6,7 @@ export const HEAT_TRANSFER_CORRELATIONS=[
   applicability:{mediumTempC:[-32,-28],velocityMs:[2.8,6.0],reynolds:[2000,7500]},
   characteristicDimension:"patty_thickness",
   source:{organization:"ASHRAE",edition:2026,chapter:19,chapterTitle:"Thermal Properties of Foods",reference:"Becker and Fricke (2004)",url:"https://handbook.ashrae.org/Handbooks/R26/SI/R26_Ch19/R26_ch19_si.aspx"},
-  evidence:{pointsInCorrelation:7,verifiedAgainst:"ASHRAE 2026 SI Chapter 19",verifiedEquation:"Nu = 1.37 Re^0.282 Pr^0.3",verifiedTemperatureC:[-32,-28],verifiedVelocityMs:[2.8,6.0],verifiedReynolds:[2000,7500],verifiedPackaging:"unpackaged",verifiedCharacteristicDimension:"patty_thickness"},
+  evidence:{pointsInCorrelation:7,verifiedAgainst:"ASHRAE 2026 SI Chapter 19",verifiedEquation:"Nu = 1.37 Re^0.282 Pr^0.3",verifiedTemperatureC:[-32,-28],verifiedVelocityMs:[2.8,6.0],verifiedReynolds:[2000,7500],verifiedPackaging:"unpackaged",verifiedCharacteristicDimension:"patty_thickness",scopeWarning:"Do not apply to generic beef, beef blocks, carcasses, or packaged beef."},
   prohibitedUses:["generic_beef","beef_blocks","packaged_beef","outside_temperature_range","outside_velocity_range","outside_reynolds_range"]},
  {id:"ashrae-citrus-baird-gaffney-1976",reviewStatus:"reviewed",productGroup:"citrus",medium:"air",
   geometry:"bulk_spherical_fruit",equation:{type:"Nu=C*Re^m",C:1.17,m:0.529},
@@ -31,7 +31,6 @@ export function matchHeatTransferCorrelation(input={}){
  const d=num(input.diameterMm),v=num(input.airVelocityMs),t=num(input.mediumTempC);
  const thickness=num(input.characteristicThicknessMm);
  const packaging=String(input.packaging||"").trim();
- const trace=[];
  const candidates=HEAT_TRANSFER_CORRELATIONS.filter(c=>c.reviewStatus==="reviewed"&&c.productGroup===productGroup&&c.medium===medium&&c.geometry===geometry);
  if(!candidates.length)return {status:"no_reviewed_correlation",canCalculateH:false};
  const c=candidates.find(x=>{
