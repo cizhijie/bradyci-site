@@ -23,7 +23,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.65";
+const AGENT_VERSION = "v1.66";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -161,6 +161,17 @@ export default {
 
     if (url.pathname === "/api/manufacturer/performance/promote") {
       return json({error:"Direct promotion is disabled. Use staging -> reviewed (with review note) -> staging/promote."},409);
+    }
+
+    if (url.pathname === "/api/manufacturer/performance/select") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const body = await request.json().catch(() => ({}));
+        const result = await queryManufacturerPerformance(env, body);
+        if (!result.ok) return json(result, 400);
+        return json({...result,selectionStatus:result.noExactData?"insufficient_verified_data":(result.capacityCandidates?.length?"verified_capacity_candidates":"verified_points_below_required"),note:result.noExactData?"No verified manufacturer point exists at this exact refrigerant/Te/Tc condition. Do not interpolate, extrapolate, or infer capacity from displacement.":"Candidates are capacity matches only; operating envelope, application limits, motor version, electrical data and system architecture still require verification."});
+      } catch (error) { return json({ error: error?.message || "Manufacturer selection failed" }, 500); }
     }
 
     if (url.pathname === "/api/manufacturer/performance/query") {
