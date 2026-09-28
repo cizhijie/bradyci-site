@@ -10,6 +10,13 @@ function renderMarkdown(text){
   s=s.replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
   s=s.replace(/^### (.+)$/gm,"<h3>$1</h3>").replace(/^## (.+)$/gm,"<h2>$1</h2>").replace(/^# (.+)$/gm,"<h1>$1</h1>");
   s=s.replace(/^> (.+)$/gm,"<blockquote>$1</blockquote>");
+  s=s.replace(/((?:^|\n)(?:\|.*\|\n){2,})/g,block=>{
+    const rows=block.trim().split("\n").filter(x=>/^\|.*\|$/.test(x));
+    if(rows.length<2||!/^\|?\s*:?-{3,}/.test(rows[1].replace(/^\|/,"")))return block;
+    const cells=r=>r.replace(/^\||\|$/g,"").split("|").map(x=>x.trim());
+    const head=cells(rows[0]), body=rows.slice(2).map(cells);
+    return "\n<table><thead><tr>"+head.map(x=>"<th>"+x+"</th>").join("")+"</tr></thead><tbody>"+body.map(r=>"<tr>"+r.map(x=>"<td>"+x+"</td>").join("")+"</tr>").join("")+"</tbody></table>\n";
+  });
   s=s.replace(/(?:^|\n)((?:[-*] .+(?:\n|$))+)/g,(_,list)=>"\n<ul>"+list.trim().split("\n").map(x=>`<li>${x.replace(/^[-*] /,"")}</li>`).join("")+"</ul>");
   s=s.replace(/(?:^|\n)((?:\d+\. .+(?:\n|$))+)/g,(_,list)=>"\n<ol>"+list.trim().split("\n").map(x=>`<li>${x.replace(/^\d+\. /,"")}</li>`).join("")+"</ol>");
   s=s.replace(/\n{2,}/g,"</p><p>").replace(/\n/g,"<br>");s=`<p>${s}</p>`.replace(/<p>\s*(<(?:h[1-3]|ul|ol|pre|blockquote)>)/g,"$1").replace(/(<\/(?:h[1-3]|ul|ol|pre|blockquote)>)\s*<\/p>/g,"$1");
