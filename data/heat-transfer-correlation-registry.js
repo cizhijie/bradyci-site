@@ -22,15 +22,24 @@ export const HEAT_TRANSFER_CORRELATIONS=[
    "Do not treat this source record as a generic meat correlation."]}
 ];
 const num=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
-const inside=(v,r)=>v!==null&&v>=r[0]&&v<=r[1];
+const inside=(v,r)=>Array.isArray(r)&&r.length===2&&v!==null&&v>=r[0]&&v<=r[1];
+const optionalInside=(v,r)=>!Array.isArray(r)||inside(v,r);
 export function matchHeatTransferCorrelation(input={}){
  const productGroup=String(input.productGroup||"").trim();
  const medium=String(input.medium||"air").trim();
  const geometry=String(input.geometry||"").trim();
- const d=num(input.diameterMm),v=num(input.airVelocityMs);
+ const d=num(input.diameterMm),v=num(input.airVelocityMs),t=num(input.mediumTempC);
+ const thickness=num(input.characteristicThicknessMm);
+ const packaging=String(input.packaging||"").trim();
  const candidates=HEAT_TRANSFER_CORRELATIONS.filter(c=>c.reviewStatus==="reviewed"&&c.productGroup===productGroup&&c.medium===medium&&c.geometry===geometry);
  if(!candidates.length)return {status:"no_reviewed_correlation",canCalculateH:false};
- const c=candidates.find(x=>inside(d,x.applicability.diameterMm)&&inside(v,x.applicability.velocityMs));
+ const c=candidates.find(x=>{
+  if(!inside(v,x.applicability.velocityMs)||!optionalInside(t,x.applicability.mediumTempC))return false;
+  if(x.packaging&&packaging!==x.packaging)return false;
+  if(Array.isArray(x.applicability.diameterMm)&&!inside(d,x.applicability.diameterMm))return false;
+  if(x.characteristicDimension==="patty_thickness"&&!(thickness!==null&&thickness>0))return false;
+  return true;
+ });
  if(!c)return {status:"outside_applicability",canCalculateH:false,candidateIds:candidates.map(x=>x.id)};
  return {status:"reviewed_correlation_matched",canCalculateH:true,correlation:c};
 }
