@@ -38,8 +38,8 @@ export function normalizeBitzerPerformanceRow(input={}){
   if(!row.rawRatingCondition) missing.push("rawRatingCondition");
   if(!row.extractionMethod) missing.push("extractionMethod");
   if(ratingContext.frequencyHz===null) missing.push("frequencyHz");
-  if(ratingContext.superheatK===null&&ratingContext.suctionGasTempC===null) missing.push("superheatOrSuctionCondition");
-  if(ratingContext.liquidTempC===null&&ratingContext.subcoolingK===null) missing.push("liquidTemperatureOrSubcooling");
+  if(ratingContext.superheatK===null&&ratingContext.suctionGasTempC===null&&!row.rawRatingCondition) missing.push("superheatOrSuctionCondition");
+  if(ratingContext.liquidTempC===null&&ratingContext.subcoolingK===null&&!row.rawRatingCondition) missing.push("liquidTemperatureOrSubcooling");
   return {
     ok:missing.length===0,
     row:{...row,rawRatingCondition:row.rawRatingCondition||JSON.stringify(ratingContext)},
