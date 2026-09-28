@@ -29,8 +29,8 @@ export function runRealProjectE2ERegression(){
  });
  check(tofu.assessment.engineeringMode.id==="estimate","tofu case must stay usable in estimate mode");
  check(tofu.text.includes("快速估算"),"tofu answer must disclose estimate status");
- check(tofu.results.design_capacity?.requiredCapacityRangeKW?.max > 0,"tofu estimate must produce a positive equipment capacity");
- check(tofu.results.design_capacity.requiredCapacityRangeKW.max < 100,"small tofu room fixture must catch runaway estimate");
+ check(!tofu.results.product_load?.ok,"tofu product load must stay blocked until reviewed tofu thermal-property data exists");
+ check(tofu.assessment.blocked.some(x=>x.id==="product_load"),"tofu case must disclose that product load is blocked rather than inventing food properties");
 
  const guizhou=run({
   engineeringMode:"estimate",location:"贵州",dimensions:{lengthM:4,widthM:5.1,heightM:4.1},
