@@ -10,7 +10,7 @@ export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvel
   const evaluations=capacityCandidates.map(candidate=>{
     const envelope=reviewedEnvelopePoints.find(e=>
       e.reviewStatus==="reviewed" &&
-      (!Array.isArray(e.models)||e.models.includes(candidate.model)) &&
+      (e.model ? String(e.model)===String(candidate.model) : (Array.isArray(e.models)&&e.models.includes(candidate.model))) &&
       String(e.refrigerant||"").toUpperCase()===String(candidate.refrigerant||"").toUpperCase() &&
       Number(e.evaporatingTempC)===Number(candidate.evaporatingTempC) &&
       Number(e.condensingTempC)===Number(candidate.condensingTempC)
