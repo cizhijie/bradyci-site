@@ -35,15 +35,22 @@ export function calculateRequiredCoolingCapacity({
   };
 }
 
-export function assessEquipmentSelectionReadiness(state={}, capacityResult=null){
+export function assessEquipmentSelectionReadiness(state={}, capacityResult=null, conditions={}){
   const missing=[];
+  const te=Number.isFinite(Number(conditions.evaporatingTempC)) ? Number(conditions.evaporatingTempC) : Number(state.evaporatingTempC);
+  const tc=Number.isFinite(Number(conditions.condensingTempC)) ? Number(conditions.condensingTempC) : Number(state.condensingTempC);
   if(!capacityResult?.ok) missing.push("design_cooling_capacity");
-  if(!Number.isFinite(Number(state.evaporatingTempC))) missing.push("evaporating_temperature");
-  if(!Number.isFinite(Number(state.condensingTempC))) missing.push("condensing_temperature");
+  if(!Number.isFinite(te)) missing.push("evaporating_temperature");
+  if(!Number.isFinite(tc)) missing.push("condensing_temperature");
   if(!state.refrigerant) missing.push("refrigerant");
   return {
     readyForManufacturerSelection:missing.length===0,
     missing,
+    conditionsUsed:{
+      evaporatingTempC:Number.isFinite(te)?te:null,
+      condensingTempC:Number.isFinite(tc)?tc:null,
+      source:"project_or_derived_engineering_condition"
+    },
     rule:"即使设计冷量已得到，也不得仅按“匹数”或名义冷量直接报具体压缩机型号；必须使用厂家在项目Te/Tc/制冷剂工况下的性能数据。"
   };
 }
