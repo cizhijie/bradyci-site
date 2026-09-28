@@ -104,21 +104,28 @@ export function assessColdRoomProject(state = {}) {
 }
 
 export function formatColdRoomReadiness(a = {}) {
-  const lines = ["**下一步核算状态**"];
-  if (a.engineeringMode) lines.push("", "**当前模式：" + a.engineeringMode.label + "**", a.engineeringMode.rule);
-  if (a.ready?.length) {
-    lines.push("", "**现在可以计算**");
-    for (const x of a.ready) lines.push("• " + x.id + (x.label ? "：" + x.label : ""));
+  const lines = [];
+  if (a.engineeringMode) {
+    lines.push("**当前处理方式：" + a.engineeringMode.label + "**");
+    if (a.engineeringMode.id === "estimate") lines.push("客户暂时不知道的非关键条件，可以采用有依据的工程估算继续，并把估算项单独标明。");
   }
-  if (a.blocked?.length) {
-    lines.push("", "**暂不能直接计算**");
-    for (const x of a.blocked) lines.push("• " + x.id + "：" + x.reason);
+  const blocked = a.blocked || [];
+  const friendly = [];
+  const map = {
+    envelope_load:"围护结构负荷",
+    product_load:"货物负荷",
+    infiltration_load:"开门渗透负荷",
+    internal_loads:"人员、照明和风机等内部负荷"
+  };
+  for (const x of blocked) {
+    if (map[x.id]) friendly.push("• " + map[x.id] + "：" + x.reason);
   }
+  if (friendly.length) lines.push("", "**目前还不能完成的分项**", ...friendly);
   if (a.customerQuestions?.length) {
-    lines.push("", "**下一步只需要补这些实际信息**");
+    lines.push("", "**接下来只需要补充这些实际信息**");
     a.customerQuestions.forEach((x,i)=>lines.push((i+1)+". "+x));
   }
-  lines.push("", "不会要求客户提供 U 值、导热系数、食品比热或潜热；这些应由审核资料层补全并保留来源。");
+  lines.push("", "U值、导热系数、食品比热和潜热等专业参数不需要客户提供；有可靠资料的由系统补全，没有可靠资料的会标明待核定。");
   return lines.join("\n");
 }
 
