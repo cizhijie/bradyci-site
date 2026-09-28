@@ -64,7 +64,13 @@ form.addEventListener("submit",async e=>{
   }catch(err){bubble.innerHTML=renderMarkdown("暂时无法连接 AI："+err.message);}finally{send.disabled=false;input.focus();}
 });
 input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
-document.querySelector("#clear").onclick=async()=>{\n  messages.length=0;\n  if(ownerPin){\n    await fetch("/api/project/cold-room/reset",{method:"POST",headers:ownerHeaders()}).catch(()=>{});\n  }\n  location.reload();\n};
+document.querySelector("#clear").onclick=async()=>{
+  messages.length=0;
+  if(ownerPin){
+    await fetch("/api/project/cold-room/reset",{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Pin":ownerPin}}).catch(()=>{});
+  }
+  location.reload();
+};
 verifyStoredPin();
 
 const memoryPanel=document.querySelector("#memoryPanel"),memoryList=document.querySelector("#memoryList");
