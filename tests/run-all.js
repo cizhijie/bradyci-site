@@ -1,4 +1,5 @@
 const suites=[
+ ["worker-core-freezing-formatter-wiring","./worker-core-freezing-formatter-wiring-regression.js","runWorkerCoreFreezingFormatterWiringRegression"],
  ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
