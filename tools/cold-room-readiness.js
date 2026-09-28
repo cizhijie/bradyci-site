@@ -292,12 +292,17 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
   }
 
   if (readyIds.has("product_load")) {
-    const food = findFoodThermalProperties(state.productCategory || "");
+    const hasProductTarget = Number.isFinite(Number(state.productTargetTempC));
+  if (hasProductBasics && !hasProductTarget) {
+    blocked.push({ id:"product_load", reason:"已知入库量、入库温度和处理时间，但还缺货物目标温度/中心温度；库温不能代替货物目标温度。" });
+    customerQuestions.push("这批货要求在规定时间内降到多少℃？如果是速冻，请给货物中心目标温度（例如中心 -18℃），不要填库温。");
+  }
+  const food = findFoodThermalProperties(state.productCategory || "");
     if (food) {
       results.product_load = calculateProductLoad({
         massKg: Number(state.dailyInboundKg),
         entryTempC: Number(state.entryTempC),
-        targetTempC: Number(state.roomTempC),
+        targetTempC: Number(state.productTargetTempC),
         pullDownHours: Number(state.pullDownHours),
         freezingPointC: food.freezingPointC,
         cpAboveKJkgK: food.cpAboveKJkgK,
