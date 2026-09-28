@@ -467,24 +467,23 @@ export function formatReadyColdRoomCalculations(results = {}) {
     lines.push(`• 每日累计开门时间：**${dot.minOpenMinutes}–${dot.maxOpenMinutes} 分钟/天**`);
     lines.push(`• 折算24小时开门时间比例：**${(dot.minFraction*100).toFixed(2)}%–${(dot.maxFraction*100).toFixed(2)}%**`);
     if (dot.assumption) lines.push("• ⚠ 单次开门时间采用快速估算：" + dot.assumption.label + "；依据：" + (dot.assumption.source || dot.assumption.basis || "快速估算规则") + "；不是客户实测值。");
-    lines.push("• 开门时间工况将与门洞、湿空气状态及已审核的ASHRAE门洞渗透方法组合；满足快速估算条件时，下方会给出kW范围。", "");
+    lines.push("• 结合门洞尺寸、室内外空气状态和开门时间估算开门带入的热湿负荷。", "");
   }
   const il = results.infiltration_load_estimate;
   if (il?.ok) {
     lines.push("**开门渗透负荷快速估算**", "");
     lines.push(`• 24小时平均渗透负荷范围：**${il.averageLoadRangeKW.min}–${il.averageLoadRangeKW.max} kW**`);
     lines.push(`• 项目室外高温：${il.projectOutdoorTempC}℃；室外RH估算范围：${il.outdoorRhRangePct[0]}%–${il.outdoorRhRangePct[1]}%`);
-    lines.push(`• 库内RH计算参考：${il.roomRhPct}%；门洞流动因子 Df=${il.doorwayFlowFactor}；防护效率折减 E=${il.protectiveEffectiveness}`);
     if (il.doorDimensionsEstimated) lines.push("• ⚠ 门洞尺寸采用场景快速估算范围，不是现场实测。");
     lines.push("• ⚠ 这是快速估算，不是正式设计值；室外湿度为独立观测宽范围，并非与该高温干球的规范同时气象条件。");
-    lines.push(`• 方法：${il.method}；来源：${il.source}`, "");
+    if (il.source) lines.push(`• 计算依据：${il.source}`, "");
   }
   const fbr=results.floor_boundary_rule;
   if (fbr) {
-    lines.push("**地面边界计算规则**", "");
+    lines.push("**地面传热处理**", "");
     lines.push("• 当前为负温一楼落地库：地面传热快速/工程边界应采用**年平均地温**，不拿夏季室外38℃直接代替。");
     lines.push("• 依据："+fbr.source+"。");
-    lines.push("• 在年平均地温数据取得前，地面负荷继续保持待核定；严谨板-地传热需更多土壤与板体参数。", "");
+    lines.push("• 在取得可靠地温资料前，地面负荷暂不作为最终设计值；正式设计时再结合地面结构和当地条件复核。", "");
   }
   const f = results.floor_thermal_data;
   if (f?.ok) {
@@ -496,7 +495,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
       lines.push(`• 地面保温芯材理论 U 值：**${f.uValueWm2K} W/(m²·K)**`);
     }
     if (f.source) lines.push(`• 资料来源：${f.source}`);
-    lines.push("• 地面外侧温度/地温尚未有审核依据时，地面传热负荷继续保持待核定，不用室外空气温度代替。", "");
+    lines.push("• 地温依据不足时，地面传热负荷暂不作为最终设计值，也不会直接拿室外空气温度代替。", "");
   }
   const po = results.project_outdoor;
   if (po) {
@@ -529,7 +528,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
   }
   const peopleLoad=results.people_load, lightingLoad=results.lighting_load, fanLoad=results.fan_load;
   if (peopleLoad?.ok || lightingLoad?.ok || fanLoad?.ok) {
-    lines.push("**内部负荷已按已知项目数据计算**", "");
+    lines.push("**人员、照明和风机负荷**", "");
     if (peopleLoad?.ok) lines.push(`• 人员：运行时 **${peopleLoad.activeLoadKW} kW**；24h平均 **${peopleLoad.average24hLoadKW} kW**（${peopleLoad.peopleCount}人，${peopleLoad.hoursPerDay}h/天）`);
     if (lightingLoad?.ok) lines.push(`• 照明：开启时 **${lightingLoad.activeLoadKW} kW**；24h平均 **${lightingLoad.average24hLoadKW} kW**（${lightingLoad.hoursPerDay}h/天）`);
     if (fanLoad?.ok) lines.push(`• 库内风机：运行时 **${fanLoad.activeLoadKW} kW**；24h平均 **${fanLoad.average24hLoadKW} kW**（${fanLoad.hoursPerDay}h/天）`);
