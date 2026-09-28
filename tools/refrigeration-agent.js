@@ -215,6 +215,32 @@ export function formatColdRoomIntake(text = "", existingState = null) {
   return formatColdRoomProjectState(p);
 }
 
+export function detectManufacturerSelectionRequest(messages = []) {
+  const current=[...messages].reverse().find(m=>m?.role==="user"&&typeof m.content==="string");
+  const text=current?.content||"";
+  if(!/(比泽尔|BITZER|压缩机).*(选|选型|怎么配|型号|候选)|(?:选|选型|型号|候选).*(比泽尔|BITZER|压缩机)/i.test(text)) return null;
+  const refrigerant=(text.match(/\b(R(?:22|134A|404A|407[ACF]|448A|449A|450A|452A|507A?|513A))\b/i)||[])[1];
+  const te=(text.match(/(?:Te|蒸发温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
+  const tc=(text.match(/(?:Tc|冷凝温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
+  const kw=(text.match(/(?:需要|需求|所需|冷量|制冷量)\s*[:：=]?\s*(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i)||[])[1];
+  const missing=[];
+  if(!refrigerant) missing.push("制冷剂");
+  if(te==null) missing.push("蒸发温度 Te");
+  if(tc==null) missing.push("冷凝温度 Tc");
+  if(kw==null) missing.push("所需制冷量 kW");
+  if(missing.length) return {clarify:"压缩机厂家性能选型还缺："+missing.join("、")+"。这些条件必须明确后才能查 Verified 厂家性能点。"};
+  return {query:{manufacturer:/比泽尔|BITZER/i.test(text)?"BITZER":"",refrigerant:String(refrigerant).toUpperCase(),evaporatingTempC:Number(te),condensingTempC:Number(tc),requiredCoolingCapacityKW:Number(kw)}};
+}
+
+export function formatManufacturerSelectionResult(result={}) {
+  if(!result.ok) return "厂家性能数据库查询失败："+(result.error||"未知错误");
+  if(result.noExactData) return `当前 Verified 厂家性能库中没有 ${result.refrigerant||"该制冷剂"} 在该精确 Te/Tc 工况的可用性能点，因此暂不能报具体型号。不会用排量换算制冷量，也不会静默插值或外推。需要补入对应官方性能表或 BITZER SOFTWARE 可追溯数据后再选型。`;
+  const c=result.capacityCandidates||[];
+  if(!c.length) return `已找到该精确工况的 Verified 性能点，但现有记录均低于所需 ${result.requiredCoolingCapacityKW} kW，暂不能给出满足冷量的型号。`;
+  const lines=c.slice(0,8).map(x=>`• ${x.model}：${x.coolingCapacityKW} kW${Number.isFinite(Number(x.inputPowerKW))?", 输入功率 "+x.inputPowerKW+" kW":""}；来源 ${x.sourceVersion||x.documentId} / ${x.sourcePage}`);
+  return `按 Verified 厂家数据，在精确制冷剂 / Te / Tc 条件下找到 ${c.length} 个冷量候选：\n${lines.join("\n")}\n\n以上只是冷量候选，不等于最终型号确认；还需核对运行范围、电机版本、电气条件、应用限制和系统架构。`;
+}
+
 export function detectDeterministicRefrigerationRequest(messages = []) {
   const currentUserMessage = [...messages].reverse().find(m => m?.role === "user" && typeof m.content === "string");
   const text = currentUserMessage?.content || "";
