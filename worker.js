@@ -456,7 +456,8 @@ export default {
               const bestArchitectureRank = rankedCandidates.length ? rankedCandidates[0].architectureRank : null;
               const finalCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank===bestArchitectureRank).slice(0,3);
               const fallbackVerifiedCandidates = bestArchitectureRank==null ? [] : rankedCandidates.filter(x=>x.architectureRank>bestArchitectureRank);
-              const higherPriorityUnverified = bestArchitectureRank==null ? [] : architectureRuns.slice(0,bestArchitectureRank).filter(run=>!(run.chain.finalCandidates||[]).length).map(run=>run.query.architecture).filter(Boolean);\n              const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
+              const higherPriorityUnverified = bestArchitectureRank==null ? [] : architectureRuns.slice(0,bestArchitectureRank).filter(run=>!(run.chain.finalCandidates||[]).length).map(run=>run.query.architecture).filter(Boolean);
+              const capacityCandidates = architectureRuns.flatMap(x=>x.performance.capacityCandidates||[]);
               const hasExactData = architectureRuns.some(x=>!x.performance.noExactData);
               if (finalCandidates.length) {
                 compressorSelectionText = "\n\n**压缩机候选**\n" + finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW" + (x.architecture ? "；架构 " + x.architecture : "") + "。").join("\n") + (higherPriorityUnverified.length ? "\n\n说明：工程判断中还有优先级更高的架构（" + higherPriorityUnverified.join("、") + "），但当前数据库缺少足够的已验证厂家性能/运行范围数据；这里显示的是目前资料闭环后可确认的候选，不代表工程上否定前述架构。" : "") + (fallbackVerifiedCandidates.length ? "\n\n其他架构也有通过校验的候选，当前不混入主候选；需要做方案对比时再展开。" : "") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
