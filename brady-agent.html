@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Brady Agent V0.1 测试台</title><link rel="stylesheet" href="/styles.css"><style>
+body{margin:0;background:#f4f2ec;color:#20231f;font-family:system-ui,-apple-system,"PingFang SC",sans-serif}.agent{max-width:900px;margin:auto;padding:28px 18px 60px}.agent h1{font-size:clamp(30px,6vw,54px);margin:8px 0}.note{color:#667064}.chat{background:#fff;border:1px solid #ddd8cc;border-radius:18px;padding:18px;margin-top:24px}.log{min-height:260px;max-height:55vh;overflow:auto;white-space:pre-wrap}.msg{padding:12px 14px;margin:10px 0;border-radius:14px;background:#f3f3ef}.msg.me{background:#e6eee8}.composer{display:flex;gap:10px;margin-top:16px}.composer textarea{flex:1;min-height:70px;padding:12px;border:1px solid #c9c8c0;border-radius:12px;font:inherit}.composer button{padding:0 20px;border:0;border-radius:12px;background:#20231f;color:white}.back{color:inherit}
+</style></head>
+<body><main class="agent"><a class="back" href="/">← 返回慢光之间</a><p class="note">BRADY AGENT · V0.1 PREVIEW</p><h1>冷库选型助手</h1><p class="note">先用于真实项目测试。计算与厂家选型会优先走确定性工具；厂家数据不足时应明确提示，不用排量猜冷量。</p>
+<section class="chat"><div id="log" class="log"><div class="msg">你好，我是 Brady Agent。你可以直接描述冷库尺寸、库温、货物、入库温度、每天入库量和降温时间。</div></div><div class="composer"><textarea id="input" placeholder="例如：成都，冷库 6×8×4m，库温 -18℃，每天入库 2 吨牛肉……"></textarea><button id="send">发送</button></div></section></main>
+<script>
+const log=document.querySelector("#log"),input=document.querySelector("#input"),send=document.querySelector("#send");
+function add(t,me=false){const d=document.createElement("div");d.className="msg"+(me?" me":"");d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight}
+async function go(){const text=input.value.trim();if(!text)return;add(text,true);input.value="";send.disabled=true;try{const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:text}]})});const j=await r.json();add(j.reply||j.content||j.error||"暂时没有返回结果");}catch(e){add("连接失败，请稍后重试。")}finally{send.disabled=false;input.focus()}}
+send.onclick=go;input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();go()}});
+</script></body></html>
