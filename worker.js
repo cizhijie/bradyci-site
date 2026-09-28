@@ -33,7 +33,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.99";
+const AGENT_VERSION = "v3.00";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -475,9 +475,27 @@ export default {
 " + calculatedText : "") + compressorSelectionText;
             return sseText(intakeReply, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
           }
-          const manufacturerSelection = detectManufacturerSelectionRequest(messages);
+          const manufacturerSelection = detectManufacturerSelectionRequest(messages, coldRoomState);
           if (manufacturerSelection?.clarify) return sseText(manufacturerSelection.clarify, { model:"deterministic-router", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           if (manufacturerSelection?.query) {
+            // Direct compressor questions use the same architecture layer as full cold-room projects.
+            // If the user did not explicitly name scroll/reciprocating/screw, infer only from persisted
+            // project facts; never choose an architecture from capacity alone.
+            if (!manufacturerSelection.query.architecture) {
+              const architectureAssessment = assessCompressorArchitectureCandidates(coldRoomState || {}, {
+                design_capacity:{requiredCapacityRangeKW:{min:manufacturerSelection.query.requiredCoolingCapacityKW,max:manufacturerSelection.query.requiredCoolingCapacityKW}}
+              });
+              const preferredArchitectures=(architectureAssessment.architectureAssessment||[])
+                .filter(x=>x.preference==="preferred")
+                .map(x=>x.architecture)
+                .filter(x=>x!=="parallel-rack");
+              if (preferredArchitectures.length===1) manufacturerSelection.query.architecture=preferredArchitectures[0];
+              else if (preferredArchitectures.length>1) {
+                return sseText("根据当前项目资料，存在多个合理的压缩机架构候选（"+preferredArchitectures.join("、")+"）。我不会只按冷量大小替你强行定一种。请补充连续运行时间、负荷波动、多库/并联需求和冗余要求，或明确希望比较哪种架构。",{model:"deterministic-architecture-router",role:"owner",skill:activeSkill.id,tool:"manufacturer_selection"});
+              } else {
+                return sseText("现在已经具备厂家性能查询条件，但还不能可靠判断该优先用涡旋、半封闭活塞还是螺杆。我不会只按 kW/匹数直接定架构。请补充项目用途（冷藏/冷冻/速冻）、库温或工艺、连续运行时间、负荷波动，以及是否多库/需要并联冗余。",{model:"deterministic-architecture-router",role:"owner",skill:activeSkill.id,tool:"manufacturer_selection"});
+              }
+            }
             const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
             const envelopeResult = await queryReviewedEnvelopePointsForCandidates(env, selected.capacityCandidates||[]);
             const directArchitecture = manufacturerSelection.query.architecture ? [manufacturerSelection.query.architecture] : [];
