@@ -6,6 +6,7 @@ import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicR
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
+import { finalizeCompressorCandidates } from "./tools/compressor-selection-chain.js";
 import { saveReviewedManufacturerDocument } from "./lib/manufacturer-performance-write.js";
 import { stagePerformanceExtractionRow, listStagedPerformanceRows, reviewStagedPerformanceRow } from "./lib/manufacturer-performance-staging.js";
 import { promoteReviewedStagingRow } from "./lib/manufacturer-staging-promotion.js";
