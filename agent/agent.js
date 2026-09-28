@@ -1,5 +1,6 @@
 const chat=document.querySelector("#chat"),input=document.querySelector("#input"),form=document.querySelector("#composer"),welcome=document.querySelector(".welcome"),send=document.querySelector("#send");
-const messages=[];\nconst MAX_CHAT_MESSAGES=12;
+const messages=[];
+const MAX_CHAT_MESSAGES=12;
 let ownerPin=sessionStorage.getItem("bradyOwnerPin")||"";
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
