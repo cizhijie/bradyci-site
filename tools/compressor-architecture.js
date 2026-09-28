@@ -47,6 +47,35 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
 
   const recommendationFactors=["项目实际设计冷量与运行工况","冷藏、冷冻储存或冻结加工","负荷波动与部分负荷运行","是否需要多机分级和故障冗余","维修便利性与备件条件","初投资、控制复杂度及长期运行需求"];
 
+  const projectSignals={
+    freezingProcess:state.processMode==="freezing",
+    frozenStorage:state.processMode==="frozen_storage",
+    chilledStorage:state.processMode==="chilled_storage",
+    variableLoad:state.partLoadImportant===true,
+    redundancyRequired:state.redundancyRequired===true
+  };
+
+  // These are engineering preference signals, not hard kW cutoffs.
+  // Final architecture still requires manufacturer performance/envelope verification.
+  const architectureAssessment=candidates.map(item=>{
+    let preference="compare";
+    const reasons=[];
+    if(item.architecture==="parallel-rack" && (projectSignals.variableLoad||projectSignals.redundancyRequired)){
+      preference="preferred"; reasons.push("项目存在明显部分负荷或冗余需求，多机分级有实际价值");
+    }
+    if(item.architecture==="semi-hermetic-reciprocating" && (projectSignals.freezingProcess||projectSignals.frozenStorage)){
+      preference="preferred"; reasons.push("中低温/冻结工况下应重点比较半封闭活塞的实际工况能力与可维护性");
+    }
+    if(item.architecture==="scroll" && projectSignals.chilledStorage && !projectSignals.redundancyRequired){
+      preference="preferred"; reasons.push("冷藏储存项目可优先比较结构紧凑的涡旋方案");
+    }
+    if(item.architecture==="screw" && projectSignals.freezingProcess){
+      preference="compare"; reasons.push("冻结加工可进入螺杆方案比较，但是否优先取决于实际负荷规模和连续运行需求");
+    }
+    if(!reasons.length) reasons.push("当前项目条件不足以把该方案排在其他架构之前");
+    return {...item,preference,reasons};
+  });
+
   const customerQuestions=[];
   if(state.redundancyRequired==null) customerQuestions.push("这个库如果一台压缩机停机，能不能接受停库？还是希望多机互为备用？");
   if(state.partLoadImportant==null) customerQuestions.push("每天货量和负荷变化大不大？是长期接近满负荷，还是经常只有一部分负荷？");
