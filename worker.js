@@ -55,6 +55,13 @@ export default {
       return ok ? json({ ok: true, role: "owner" }) : json({ error: "Owner PIN 不正确" }, 401);
     }
 
+    if (url.pathname === "/api/project/cold-room/reset") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      await clearColdRoomProjectState(env);
+      return json({ ok: true });
+    }
+
     if (url.pathname === "/api/memory") {
       if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
       if (!env.brady_agent_memory) return json({ error: "Memory database is not configured" }, 500);
