@@ -113,6 +113,12 @@ export function extractColdRoomProject(text = "") {
   if (entry) project.entryTempC = Number(entry[1]);
   const hours = raw.match(/(?:要求|用时|降温时间|冻结时间)[^\d]{0,8}(\d+(?:\.\d+)?)\s*(?:小时|h)/i);
   if (hours) project.pullDownHours = Number(hours[1]);
+  const coreTarget = raw.match(/(?:中心温度|中心|芯温)[^\\d-]{0,10}(?:达到|降到|冻到|要求)?[^\\d-]{0,5}(-?\\d+(?:\\.\\d+)?)\\s*(?:℃|度)?/i);
+  if (coreTarget) { project.productTargetTempC=Number(coreTarget[1]); project.pullDownTargetBasis="product_core"; }
+  const productThickness = raw.match(/(?:货物|产品|肉块|牛肉|猪肉|鱼块)?[^。；，,]{0,10}(?:厚度|厚|最薄尺寸|特征厚度)[^\\d]{0,5}(\\d+(?:\\.\\d+)?)\\s*(mm|毫米|cm|厘米)/i);
+  if(productThickness) project.productCharacteristicThicknessMm=Number(productThickness[1])*(/cm|厘米/i.test(productThickness[2])?10:1);
+  const airVelocity=raw.match(/(?:风速|迎面风速|空气速度)[^\\d]{0,6}(\\d+(?:\\.\\d+)?)\\s*(?:m\\/s|米\\/秒)/i);
+  if(airVelocity) project.airVelocityMs=Number(airVelocity[1]);
   if (/不知道|不清楚|不确定|不晓得/.test(raw)) {
     project.unknownFields = project.unknownFields || [];
     if (/(?:入库|货温|进货温度)/.test(raw)) project.unknownFields.push("entryTempC");
