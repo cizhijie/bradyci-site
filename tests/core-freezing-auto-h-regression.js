@@ -12,9 +12,11 @@ export function runCoreFreezingAutoHRegression(){
  ck(!suppliedHSlab.result.ok&&suppliedHSlab.result.status==="freezing_geometry_method_mismatch","supplied h must not bypass rectangular-brick geometry guard");
  const wrong=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,productGroup:"beef",geometry:"brick",productCharacteristicThicknessMm:40}});
  ck(!wrong.result.ok&&wrong.result.status==="surface_heat_transfer_unresolved","generic beef block must not borrow patty correlation");
+ ck(Array.isArray(wrong.result.guidance?.usefulFieldData)&&wrong.result.guidance.usefulFieldData.length>=5,"unresolved beef block should explain useful field data");
+ ck(/仅有风速不能自动换算 h/.test(String(wrong.result.guidance?.rule||"")),"unresolved h guidance must prohibit velocity-only conversion");
  const brickWithPattyGroup=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,geometry:"brick"}});
  ck(!brickWithPattyGroup.result.ok&&brickWithPattyGroup.result.status==="surface_heat_transfer_unresolved","brick geometry must not borrow slab patty correlation");
  const packed=runRefrigerationTool({tool:"product_core_freezing_time",args:{...common,geometry:"brick",packaging:"carton"}});
  ck(!packed.result.ok&&packed.result.status==="surface_heat_transfer_unresolved","carton patties must not borrow unpackaged correlation");
- return {ok:true,checks:6};
+ return {ok:true,checks:8};
 }
