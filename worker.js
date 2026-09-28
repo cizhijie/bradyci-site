@@ -8,6 +8,7 @@ import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomP
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
 import { finalizeCompressorCandidates } from "./tools/compressor-selection-chain.js";
 import { queryReviewedEnvelopePoints } from "./lib/manufacturer-operating-envelope-db.js";
+import { stageEnvelopePoint, reviewEnvelopePoint, promoteReviewedEnvelopePoint } from "./lib/manufacturer-operating-envelope-staging.js";
 import { saveReviewedManufacturerDocument } from "./lib/manufacturer-performance-write.js";
 import { stagePerformanceExtractionRow, listStagedPerformanceRows, reviewStagedPerformanceRow } from "./lib/manufacturer-performance-staging.js";
 import { promoteReviewedStagingRow } from "./lib/manufacturer-staging-promotion.js";
@@ -26,7 +27,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.82";
+const AGENT_VERSION = "v1.83";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -178,6 +179,25 @@ export default {
 
     if (url.pathname === "/api/manufacturer/performance/promote") {
       return json({error:"Direct promotion is disabled. Use staging -> reviewed (with review note) -> staging/promote."},409);
+    }
+
+    if (url.pathname === "/api/manufacturer/envelope/stage") {
+      if (request.method !== "POST") return json({ error:"Method not allowed" },405);
+      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      const result=await stageEnvelopePoint(env,await request.json().catch(()=>({})));
+      return json(result,result.ok?200:400);
+    }
+    if (url.pathname === "/api/manufacturer/envelope/review") {
+      if (request.method !== "POST") return json({ error:"Method not allowed" },405);
+      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      const body=await request.json().catch(()=>({})); const result=await reviewEnvelopePoint(env,body.id,body.status,body.note);
+      return json(result,result.ok?200:400);
+    }
+    if (url.pathname === "/api/manufacturer/envelope/promote") {
+      if (request.method !== "POST") return json({ error:"Method not allowed" },405);
+      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      const body=await request.json().catch(()=>({})); const result=await promoteReviewedEnvelopePoint(env,body.id);
+      return json(result,result.ok?200:400);
     }
 
     if (url.pathname === "/api/manufacturer/performance/select") {
