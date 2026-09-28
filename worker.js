@@ -3,6 +3,7 @@ import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { quickEstimateColdRoom } from "./tools/quick-cold-room-estimate.js";
 import { referenceCompressorBandFromReviewedPerformance } from "./tools/compressor-duty-reference.js";
+import { deriveEngineeringDuty } from "./tools/refrigeration-duty.js";
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
@@ -29,7 +30,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.34";
+const AGENT_VERSION = "v2.35";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -364,10 +365,8 @@ export default {
                 else quickText += " 当前工况下暂无足够的已审核厂家性能点，因此暂不报具体匹数或型号。";
               } else {
                 quickText += " 压缩机进一步选型需要制冷剂和运行工况；这些属于工程参数，不要求普通客户提供。";
-                if(Number.isFinite(p.roomTempC)){
-                  const dutyHint = p.roomTempC <= -15 ? "低温冷冻工况" : "冷藏工况";
-                  quickText += " 当前先按“"+dutyHint+"”进入待定工况，后续由工程选型环节确定 Te、Tc 后再查询厂家性能数据。";
-                }
+                const duty=deriveEngineeringDuty(p);
+                if(duty.ok) quickText += " 工程侧暂按“"+duty.duty+"”建立候选工况：Te约 "+duty.evaporatingTempCRange.min+"～"+duty.evaporatingTempCRange.max+"℃，Tc暂按 "+duty.condensingTempC+"℃；这些是明确标注的工程估算值，正式选型前必须复核。";
               }
               quickText += " 该估算仅用于前期沟通。";
             }\n            const reply="已记录："+known.join("，")+"。"+quickText+"\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做正式负荷核算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
