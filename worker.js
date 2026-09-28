@@ -2,6 +2,7 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { quickEstimateColdRoom } from "./tools/quick-cold-room-estimate.js";
+import { referenceCompressorBandFromReviewedPerformance } from "./tools/compressor-duty-reference.js";
 import { calculateProductLoad } from "./tools/product-load.js";
 import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
@@ -28,7 +29,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.32";
+const AGENT_VERSION = "v2.33";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -349,7 +350,21 @@ export default {
             if(!p.insulation?.material||!Number.isFinite(p.insulation?.thicknessMm))missing.push("库板是什么材料、厚度多少？");
             if(!p.floor?.description)missing.push("冷库是一楼落地还是楼上？地面有没有保温？");
             if(!p.doorUsage?.description)missing.push("每天大约开门多少次、每次多久？主要人工搬运还是叉车进出？");
-            const quick = quickEstimateColdRoom(p);\n            const quickText = quick.ok ? "\n\n工程快速估算参考："+quick.category+"，制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW。当前先不给固定匹数，避免把不同蒸发/冷凝工况下的压缩机能力混为一谈；匹数参考将在工况数据审核后给出。该结果仅用于前期沟通。" : "";\n            const reply="已记录："+known.join("，")+"。"+quickText+"\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做正式负荷核算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
+            const quick = quickEstimateColdRoom(p);
+            let quickText = "";
+            if(quick.ok){
+              quickText = "\n\n工程快速估算参考："+quick.category+"，制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW。";
+              const refrigerant = /R507A?|507/i.test(visitorText) ? "R507A" : /R404A?/i.test(visitorText) ? "R404A" : "";
+              const teMatch = visitorText.match(/(?:Te|蒸发温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
+              const tcMatch = visitorText.match(/(?:Tc|冷凝温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
+              if(refrigerant && teMatch && tcMatch){
+                const perf=await queryManufacturerPerformance(env,{refrigerant,evaporatingTempC:Number(teMatch[1]),condensingTempC:Number(tcMatch[1]),requiredCoolingCapacityKW:quick.refrigerationLoadKW.min});
+                const ref=referenceCompressorBandFromReviewedPerformance(perf,{requiredLoadMinKW:quick.refrigerationLoadKW.min,requiredLoadMaxKW:quick.refrigerationLoadKW.max});
+                if(ref.ok&&ref.candidates.length) quickText += " 在你明确的 "+refrigerant+"、Te "+teMatch[1]+"℃、Tc "+tcMatch[1]+"℃ 条件下，已找到可追溯厂家性能候选，可继续核对具体型号。";
+                else quickText += " 当前工况下暂无足够的已审核厂家性能点，因此暂不报具体匹数或型号。";
+              } else quickText += " 如需进一步给压缩机能力/匹数参考，需要明确制冷剂、Te、Tc，并以已审核厂家性能数据为依据。";
+              quickText += " 该估算仅用于前期沟通。";
+            }\n            const reply="已记录："+known.join("，")+"。"+quickText+"\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做正式负荷核算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
             return sseText(reply,{model:"deterministic-intake",role:"visitor",skill:"refrigeration-intake"});
           }
         }
