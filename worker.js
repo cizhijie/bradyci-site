@@ -7,6 +7,7 @@ import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjec
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
 import { finalizeCompressorCandidates } from "./tools/compressor-selection-chain.js";
+import { queryReviewedEnvelopePoints } from "./lib/manufacturer-operating-envelope-db.js";
 import { saveReviewedManufacturerDocument } from "./lib/manufacturer-performance-write.js";
 import { stagePerformanceExtractionRow, listStagedPerformanceRows, reviewStagedPerformanceRow } from "./lib/manufacturer-performance-staging.js";
 import { promoteReviewedStagingRow } from "./lib/manufacturer-staging-promotion.js";
@@ -25,7 +26,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.81";
+const AGENT_VERSION = "v1.82";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -315,7 +316,7 @@ export default {
           if (manufacturerSelection?.clarify) return sseText(manufacturerSelection.clarify, { model:"deterministic-router", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           if (manufacturerSelection?.query) {
             const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
-            const selectionChain = finalizeCompressorCandidates(selected, []);\n            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query}) + (selectionChain.provisionalCandidates?.length ? "\\n\\n运行范围校验：容量候选尚未通过已审核的官方 Application Limits 运行点校验，因此只能作为候选，不能作为最终型号确认。" : "");
+            const envelopeResult = await queryReviewedEnvelopePoints(env, manufacturerSelection.query);\n            const selectionChain = finalizeCompressorCandidates(selected, envelopeResult.ok ? envelopeResult.points : []);\n            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query}) + (selectionChain.provisionalCandidates?.length ? "\\n\\n运行范围校验：容量候选尚未通过已审核的官方 Application Limits 运行点校验，因此只能作为候选，不能作为最终型号确认。" : "");
             return sseText(selectionText, { model:"deterministic-manufacturer-db", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
