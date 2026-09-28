@@ -31,7 +31,14 @@ export function runRefrigerationTool(input = {}) {
       if(h.ok){
         args.hWm2K=h.hWm2K;args.hReviewStatus="reviewed";args.hSource=typeof h.source==="string"?h.source:JSON.stringify(h.source);args.heatTransferMethod=h.correlationId||"reviewed_supplied_h";args.heatTransferSource=args.hSource;
       }
-      else return {tool:input.tool,result:{ok:false,status:"surface_heat_transfer_unresolved",heatTransfer:h}};
+      else {
+        const guidance={
+          requiredEvidence:["与产品类型和几何相符的已审核表面换热系数 h","或适用范围明确且已审核的 Nu/Re/Pr 传热关联式"],
+          usefulFieldData:["产品实际尺寸/形状","是否裸冻或包装及包装形式","货物摆放/堆码方式","产品表面实际风速","冻结空气温度"],
+          rule:"仅有风速不能自动换算 h；不得借用牛肉饼、胴体、肉片或其他几何的 h 数据。"
+        };
+        return {tool:input.tool,result:{ok:false,status:"surface_heat_transfer_unresolved",heatTransfer:h,guidance}};
+      }
     }
     return { tool: input.tool, result: calculateProductPullDownTime({...args, targetBasis:"product_core", reviewedMethod:reviewedBrickCoreFreezingMethod}) };
   }
