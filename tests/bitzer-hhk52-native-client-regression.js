@@ -5,9 +5,9 @@ export function runBitzerHhk52NativeClientRegression(){
  const ready=buildHhk52DesignCall(base);
  ck(ready.ok&&ready.dll==="HHK52.DLL"&&ready.reviewedInputs.I_T0===-35,"reviewed core inputs build call shape");
  const ts=buildHhk52DesignCall({...base,superheatK:10});
- ck(!ts.ok&&ts.blocked.includes("I_Flags_TS_semantics_not_reviewed"),"TS mapping fails closed until flag review");
+ ck(ts.ok&&ts.reviewedInputs.I_Flags===4&&ts.reviewedInputs.I_TS===10,"superheat uses official flag 4 and I_TS");
  const tl=buildHhk52DesignCall({...base,subcoolingK:5});
- ck(!tl.ok&&tl.blocked.includes("I_Flags_TL_semantics_not_reviewed"),"TL mapping fails closed until flag review");
+ ck(tl.ok&&tl.reviewedInputs.I_Flags===16&&tl.reviewedInputs.I_TL===5,"subcooling uses official flag 16 and I_TL");
  const wrong=buildHhk52DesignCall({...base,family:"ORBIT"});
  ck(!wrong.ok&&wrong.blocked.includes("family_must_be_ECOLINE"),"HHK52 cannot receive ORBIT family");
  return {ok:true,checks:4};
