@@ -1,4 +1,5 @@
 const suites=[
+ ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
  ["forced-air-heat-transfer","./forced-air-heat-transfer-regression.js","runForcedAirHeatTransferRegression"],
  ["core-freezing-language","./core-freezing-language-regression.js","runCoreFreezingLanguageRegression"],
