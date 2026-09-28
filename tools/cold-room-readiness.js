@@ -22,7 +22,7 @@ import { deriveEvaporatingTemperature, deriveCondensingTemperature, assessRefrig
 import { getEvaporatorTDDefault, getAirCooledCondensingApproachDefault } from "../data/refrigeration-design-defaults.js";
 import { assessHeatRejectionCandidates } from "./heat-rejection-strategy.js";
 import { assessCompressorArchitectureCandidates } from "./compressor-architecture.js";
-import { buildManufacturerSelectionRequest } from "./manufacturer-performance.js";
+import { buildManufacturerSelectionRequest, buildArchitectureAwareManufacturerPlan } from "./manufacturer-performance.js";
 
 export function assessColdRoomProject(state = {}) {
   const ready = [];
@@ -454,6 +454,7 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
         reason:"厂家型号查询只在设计冷量、制冷剂、Te、Tc均已形成后启动。"
       };
     }
+    results.manufacturer_query_plan=buildArchitectureAwareManufacturerPlan(results.manufacturer_selection_request,results.compressor_architecture);
   }
   return results;
 }
