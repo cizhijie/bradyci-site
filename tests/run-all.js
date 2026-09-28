@@ -8,6 +8,7 @@ const suites=[
 ["bitzer-selection-bridge","./bitzer-selection-bridge-regression.js","runBitzerSelectionBridgeRegression"],
 ["bitzer-selection-result-bridge","./bitzer-selection-result-bridge-regression.js","runBitzerSelectionResultBridgeRegression"],
 ["bitzer-windows-bridge-core","./bitzer-windows-bridge-core-regression.js","runBitzerWindowsBridgeCoreRegression"],
+["bitzer-hhk52-abi","./bitzer-hhk52-abi-regression.js","runBitzerHhk52AbiRegression"],
  ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
