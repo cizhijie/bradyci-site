@@ -402,18 +402,8 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
       refrigerationRunHoursPerDay:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) ? Number(state.refrigerationRunHoursPerDay) : 24,
       reserveFactor:Number.isFinite(Number(state.reserveFactor)) ? Number(state.reserveFactor) : undefined
     });
-    results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
     results.condition_readiness=assessRefrigerationConditionInputs(state);
     results.heat_rejection_strategy=assessHeatRejectionCandidates(state);
-    const exactTe=results.evaporating_condition?.evaporatingTempC;
-    const exactTc=results.condensing_condition?.condensingTempC;
-    results.manufacturer_selection_request=buildManufacturerSelectionRequest({
-      refrigerant:state.refrigerant,
-      evaporatingTempC:exactTe,
-      condensingTempC:exactTc,
-      requiredCoolingCapacityKW:results.design_capacity?.requiredCapacityRangeKW?.max
-    });
-    results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
     if (results.engineering_mode.id === "estimate") {
       const tdDefault=getEvaporatorTDDefault(state.roomTempC);
       if (!Number.isFinite(Number(state.evaporatingTempC)) && !Number.isFinite(Number(state.evaporatorTDK)) && tdDefault) {
@@ -442,6 +432,16 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
     } else if (state.heatRejectionType && Number.isFinite(Number(state.condenserApproachK))) {
       results.condensing_condition=deriveCondensingTemperature({heatRejectionType:state.heatRejectionType,designAmbientTempC:state.projectOutdoorTempC,condenserApproachK:state.condenserApproachK,designWetBulbC:state.designWetBulbC});
     }
+    results.selection_readiness=assessEquipmentSelectionReadiness(state,results.design_capacity);
+    results.compressor_architecture=assessCompressorArchitectureCandidates(state,results);
+    const exactTe=results.evaporating_condition?.evaporatingTempC;
+    const exactTc=results.condensing_condition?.condensingTempC;
+    results.manufacturer_selection_request=buildManufacturerSelectionRequest({
+      refrigerant:state.refrigerant,
+      evaporatingTempC:exactTe,
+      condensingTempC:exactTc,
+      requiredCoolingCapacityKW:results.design_capacity?.requiredCapacityRangeKW?.max
+    });
   }
   return results;
 }
