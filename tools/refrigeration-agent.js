@@ -25,10 +25,10 @@ export function runRefrigerationTool(input = {}) {
   }
   if (input.tool === "product_core_freezing_time") {
     const args={...(input.args||{})};
+    if(String(args.geometry||"").trim()!=="brick") return {tool:input.tool,result:{ok:false,status:"freezing_geometry_method_mismatch",reason:"reviewed rectangular-brick core-freezing method requires brick geometry; supplied or correlation-derived h does not justify changing slab or other product geometry into a brick."}};
     if(!(Number.isFinite(Number(args.hWm2K))&&Number(args.hWm2K)>0)){
       const h=resolveReviewedSurfaceH(args);
       if(h.ok){
-        if(String(args.geometry||"").trim()!=="brick") return {tool:input.tool,result:{ok:false,status:"freezing_geometry_method_mismatch",reason:"reviewed rectangular-brick core-freezing method requires brick geometry; a reviewed surface-h correlation alone does not justify changing slab or other product geometry into a brick."}};
         args.hWm2K=h.hWm2K;args.hReviewStatus="reviewed";args.hSource=typeof h.source==="string"?h.source:JSON.stringify(h.source);args.heatTransferMethod=h.correlationId||"reviewed_supplied_h";args.heatTransferSource=args.hSource;
       }
       else return {tool:input.tool,result:{ok:false,status:"surface_heat_transfer_unresolved",heatTransfer:h}};
