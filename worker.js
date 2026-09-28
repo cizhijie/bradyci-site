@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.19";
+const AGENT_VERSION = "v2.20";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -331,11 +331,15 @@ export default {
           const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|豆腐|入库|货温|小时|一楼|落地|楼层|地面|保温|开门|次|分钟|室外|环境温度|夏天|夏季|最热|高温|叉车|托盘车|地牛|人工搬运|人员进出|手推车|平方米|平米|㎡|库温)/i.test(currentText);
           if (startsIntake || isProjectFollowup) {
             const patch = extractColdRoomProject(currentText);
-            // A fresh intake with explicit L×W×H is treated as authoritative geometry.
-            // This prevents stale rough area/height/volume from a previous project being mixed in.
-            if (startsIntake && patch.dimensions) {
-              coldRoomState = {};
-            }
+            // A complete intake is authoritative for the whole active project.
+            // Clear the old D1 project before merging so stale product/floor/door facts cannot leak in.
+            const authoritativeIntake = startsIntake && !!patch.dimensions && (
+              !!patch.productCategory ||
+              Number.isFinite(patch.roomTempC) ||
+              Number.isFinite(patch.dailyInboundKg) ||
+              Number.isFinite(patch.entryTempC)
+            );
+            if (authoritativeIntake) coldRoomState = {};
             coldRoomState = mergeColdRoomProjectState(coldRoomState || {}, patch);
             await saveColdRoomProjectState(env, coldRoomState);
             const readiness = assessColdRoomProject(coldRoomState);
