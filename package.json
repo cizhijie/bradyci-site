@@ -1,0 +1,6 @@
+{
+  "name":"brady-agent-regression-suite",
+  "private":true,
+  "type":"module",
+  "scripts":{"test":"node tests/run-all.js"}
+}
