@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.45";
+const AGENT_VERSION = "v2.46";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -347,7 +347,7 @@ export default {
             if(p.insulation?.material)known.push(p.insulation.thicknessMm+"mm "+p.insulation.material+"板");
             if(p.floor?.description)known.push(p.floor.description);
             if(p.doorUsage?.description)known.push(p.doorUsage.description);
-            const freezing = /(?:速冻|冻结)/i.test(visitorText) || /(?:冻结加工|鲜货冻结|常温货冻结)/i.test(p.productCategory||"");
+            const freezing = p.processMode==="freezing" || /(?:速冻|冻结加工|鲜货冻结|常温货冻结)/i.test(visitorText);
             const unknown=new Set(p.unknownFields||[]);
             const missing=[];
             if(!Number.isFinite(p.entryTempC)&&!unknown.has("entryTempC"))missing.push("货物入库时大约多少℃？");
