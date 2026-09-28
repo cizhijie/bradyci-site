@@ -2,7 +2,7 @@ import { routeSkill, splitMemories } from "./skills/index.js";
 import { checkVisitorLimit } from "./lib/visitor-limit.js";
 import { calculateColdStorageLoad, calculateColdStorageLoadRange } from "./tools/cold-storage-load.js";
 import { calculateProductLoad } from "./tools/product-load.js";
-import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
 import { queryManufacturerPerformance } from "./lib/manufacturer-performance-db.js";
@@ -23,7 +23,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v1.66";
+const AGENT_VERSION = "v1.67";
 const VISITOR_MAX_INPUT_CHARS = 1200;
 const VISITOR_MAX_TOKENS = 600;
 
@@ -294,6 +294,13 @@ export default {
 \
 " + calculatedText : "");
             return sseText(intakeReply, { model: "deterministic-intake", role: "owner", skill: activeSkill.id, tool: "cold_room_intake" });
+          }
+          const manufacturerSelection = detectManufacturerSelectionRequest(messages);
+          if (manufacturerSelection?.clarify) return sseText(manufacturerSelection.clarify, { model:"deterministic-router", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
+          if (manufacturerSelection?.query) {
+            const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
+            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query});
+            return sseText(selectionText, { model:"deterministic-manufacturer-db", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
           if (directRequest?.__brady_clarify__) return sseText(directRequest.__brady_clarify__, { model: "deterministic-router", role: "owner", skill: activeSkill.id });
