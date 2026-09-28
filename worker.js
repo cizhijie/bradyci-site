@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.21";
+const AGENT_VERSION = "v2.22";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -58,7 +58,9 @@ export default {
     if (url.pathname === "/api/project/cold-room/reset") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
-      await clearColdRoomProjectState(env);
+      const body = await request.json().catch(() => ({}));
+      if (!body.projectId) return json({ error: "projectId is required" }, 400);
+      await clearColdRoomProjectState(env, body.projectId);
       return json({ ok: true });
     }
 
@@ -282,6 +284,7 @@ export default {
       if (!env.OPENROUTER_API_KEY) return json({ error: "OPENROUTER_API_KEY is not configured" }, 500);
       try {
         const body = await request.json();
+        const projectId = typeof body.projectId === "string" && /^[a-zA-Z0-9-]{8,80}$/.test(body.projectId) ? body.projectId : null;
         const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
         const owner = isOwner(request, env);
@@ -318,8 +321,8 @@ export default {
         if (owner && activeSkill?.id === "refrigeration") {
           const currentText = latestUser?.content || "";
           const startsNewProject = /(?:另一个|新的|新项目|重新做|重新算).{0,8}(?:冷库|项目)|(?:冷库|项目).{0,8}(?:另一个|新的|新项目)/i.test(currentText);
-          if (startsNewProject) await clearColdRoomProjectState(env);
-          let coldRoomState = await loadColdRoomProjectState(env);
+          if (startsNewProject && projectId) await clearColdRoomProjectState(env, projectId);
+          let coldRoomState = projectId ? await loadColdRoomProjectState(env, projectId) : null;
           // Recovery path: after a deployment or older version, rebuild the active project
           // only from explicit cold-room intake messages in the current chat history.
           if (!coldRoomState) {
@@ -331,7 +334,7 @@ export default {
             );
             if (priorIntake) {
               coldRoomState = extractColdRoomProject(priorIntake.content);
-              if (Object.keys(coldRoomState).length) await saveColdRoomProjectState(env, coldRoomState);
+              if (Object.keys(coldRoomState).length) if (projectId) await saveColdRoomProjectState(env, coldRoomState, projectId);
             }
           }
           const startsIntake = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(currentText) && /(?:怎么配|怎么选|方案|看看|配置|选型|负荷|计算|核算)/i.test(currentText);
@@ -348,7 +351,7 @@ export default {
             );
             if (authoritativeIntake) coldRoomState = {};
             coldRoomState = mergeColdRoomProjectState(coldRoomState || {}, patch);
-            await saveColdRoomProjectState(env, coldRoomState);
+            if (projectId) await saveColdRoomProjectState(env, coldRoomState, projectId);
             const readiness = assessColdRoomProject(coldRoomState);
             const readyResults = calculateReadyColdRoomParts(coldRoomState, readiness);
             const calculatedText = formatReadyColdRoomCalculations(readyResults);
