@@ -6,8 +6,8 @@ internal static class Hhk52NativeExecutionGate
     {
         if (!Hhk52OutputAbiReview.Complete)
             return (false, "hhk52_design_output_abi_review_required");
-        if (!Hhk52DesignAbi.Executable)
-            return (false, "hhk52_design_delegate_not_enabled");
+        if (!Hhk52CopyDesignAbi.Executable)
+            return (false, "hhk52_copydesign_delegate_not_enabled");
 
         var preflight = BitzerDllPreflight.CheckHhk52(dllPath);
         return preflight.Ok
