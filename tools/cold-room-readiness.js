@@ -112,25 +112,36 @@ export function formatColdRoomReadiness(a = {}) {
   const lines = [];
   if (a.engineeringMode) {
     lines.push("**当前处理方式：" + a.engineeringMode.label + "**");
-    if (a.engineeringMode.id === "estimate") lines.push("客户暂时不知道的非关键条件，可以采用有依据的工程估算继续，并把估算项单独标明。");
+    if (a.engineeringMode.id === "estimate") lines.push("先按现有资料给出可用的估算和方案方向；不会因为客户不知道专业参数就停止。");
   }
-  const blocked = a.blocked || [];
-  const friendly = [];
-  const map = {
+
+  const readyLabels={
+    product_load:"货物负荷可计算",
+    door_duration_estimate:"开门时间可按宽范围估算",
+    internal_loads_estimate:"内部负荷可按快速估算规则处理"
+  };
+  const ready=(a.ready||[]).map(x=>readyLabels[x.id]||x.label).filter(Boolean);
+  if(ready.length) lines.push("", "**现在已经能做**", ...ready.map(x=>"• "+x));
+
+  const blocked=a.blocked||[];
+  const map={
     envelope_load:"围护结构负荷",
     product_load:"货物负荷",
     infiltration_load:"开门渗透负荷",
     internal_loads:"人员、照明和风机等内部负荷"
   };
-  for (const x of blocked) {
-    if (map[x.id]) friendly.push("• " + map[x.id] + "：" + x.reason);
+  const consequential=blocked.filter(x=>map[x.id] && !/不自动计入|尚未进入确定性核算/.test(String(x.reason||"")));
+  if(consequential.length) lines.push("", "**仍会影响结果的项目**", ...consequential.slice(0,3).map(x=>"• "+map[x.id]+"："+x.reason));
+
+  const questions=(a.customerQuestions||[]).filter(Boolean);
+  if(questions.length){
+    const priority=questions.filter(q=>/室外高温|地面保温|每天大约开门|库门尺寸|货物|入库|处理时间|制冷剂/.test(q));
+    const chosen=(priority.length?priority:questions).slice(0,3);
+    lines.push("", "**接下来优先确认**", ...chosen.map((x,i)=>(i+1)+". "+x));
+    if(questions.length>chosen.length) lines.push("其余低影响信息先不追问，后面需要时再补。");
   }
-  if (friendly.length) lines.push("", "**目前还不能完成的分项**", ...friendly);
-  if (a.customerQuestions?.length) {
-    lines.push("", "**接下来只需要补充这些实际信息**");
-    a.customerQuestions.forEach((x,i)=>lines.push((i+1)+". "+x));
-  }
-  lines.push("", "U值、导热系数、食品比热和潜热等专业参数不需要客户提供；有可靠资料的由系统补全，没有可靠资料的会标明待核定。");
+
+  lines.push("", "U值、导热系数、食品比热、潜热等专业参数由系统从可靠资料补全；客户不需要自己提供。估算项会单独标明，正式选型前再复核关键条件。");
   return lines.join("\n");
 }
 
