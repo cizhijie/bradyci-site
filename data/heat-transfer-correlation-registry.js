@@ -31,6 +31,7 @@ export function matchHeatTransferCorrelation(input={}){
  const d=num(input.diameterMm),v=num(input.airVelocityMs),t=num(input.mediumTempC);
  const thickness=num(input.characteristicThicknessMm);
  const packaging=String(input.packaging||"").trim();
+ const trace=[];
  const candidates=HEAT_TRANSFER_CORRELATIONS.filter(c=>c.reviewStatus==="reviewed"&&c.productGroup===productGroup&&c.medium===medium&&c.geometry===geometry);
  if(!candidates.length)return {status:"no_reviewed_correlation",canCalculateH:false};
  const c=candidates.find(x=>{
@@ -40,6 +41,11 @@ export function matchHeatTransferCorrelation(input={}){
   if(x.characteristicDimension==="patty_thickness"&&!(thickness!==null&&thickness>0))return false;
   return true;
  });
- if(!c)return {status:"outside_applicability",canCalculateH:false,candidateIds:candidates.map(x=>x.id)};
+ if(!c)return {status:"outside_applicability",canCalculateH:false,candidateIds:candidates.map(x=>x.id),
+  diagnostics:candidates.map(x=>({id:x.id,velocity:{value:v,range:x.applicability.velocityMs,ok:optionalInside(v,x.applicability.velocityMs)},
+   temperature:{value:t,range:x.applicability.mediumTempC,ok:optionalInside(t,x.applicability.mediumTempC)},
+   packaging:{value:packaging,required:x.packaging||null,ok:!x.packaging||packaging===x.packaging},
+   diameter:{value:d,range:x.applicability.diameterMm||null,ok:!Array.isArray(x.applicability.diameterMm)||inside(d,x.applicability.diameterMm)},
+   thickness:{value:thickness,required:x.characteristicDimension==="patty_thickness",ok:x.characteristicDimension!=="patty_thickness"||(thickness!==null&&thickness>0)}}))};
  return {status:"reviewed_correlation_matched",canCalculateH:true,correlation:c};
 }
