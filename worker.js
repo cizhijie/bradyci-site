@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.49";
+const AGENT_VERSION = "v2.50";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -453,7 +453,7 @@ export default {
             toolModel = FALLBACK_MODEL;
             toolData = fallbackTurn.ok ? await fallbackTurn.json().catch(() => null) : null;
           }
-          const draft = toolData?.choices?.[0]?.message?.content || "";
+          const draft = cleanFinalAnswer(toolData?.choices?.[0]?.message?.content || "");
           const requestData = parseToolRequest(draft);
           if (requestData) {
             const toolResult = runRefrigerationTool({ tool: requestData.__brady_tool__, args: requestData.args });
@@ -467,7 +467,7 @@ export default {
               "X-Brady-Version": AGENT_VERSION
             }});
           }
-          if (draft) return sseText(draft, { model: toolModel, role: "owner", skill: activeSkill.id });
+          if (draft) return sseText(cleanFinalAnswer(draft), { model: toolModel, role: "owner", skill: activeSkill.id });
         }
         if (!owner) {
           let visitorResponse = await callModelNonStream(env, PRIMARY_MODEL, messages, systemPrompt, VISITOR_MAX_TOKENS);
@@ -491,15 +491,23 @@ export default {
           if (!answer) answer = "这次没有生成完整回答，请重新发送一次问题。";
           return sseText(answer, { model: usedModel, role: "visitor", skill: "general" });
         }
-        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt, maxTokens), usedModel = PRIMARY_MODEL;
-        if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt, maxTokens); usedModel = FALLBACK_MODEL; }
+        let ownerResponse = await callModelNonStream(env, PRIMARY_MODEL, messages, systemPrompt+"\n\n只输出给 Owner 的最终中文答案，不输出英文分析、推理过程、草稿或内部规则。", maxTokens), usedModel = PRIMARY_MODEL;
+        if (!ownerResponse.ok) { ownerResponse = await callModelNonStream(env, FALLBACK_MODEL, messages, systemPrompt+"\n\n只输出给 Owner 的最终中文答案，不输出英文分析、推理过程、草稿或内部规则。", maxTokens); usedModel = FALLBACK_MODEL; }
+        if (!ownerResponse.ok) return json({ error: "回答暂时不可用，请稍后再试。" }, ownerResponse.status);
+        const ownerData=await ownerResponse.json().catch(()=>null);
+        let ownerAnswer=cleanFinalAnswer(ownerData?.choices?.[0]?.message?.content||"");
+        if(!ownerAnswer) ownerAnswer="这次没有生成完整回答，请重新发送一次问题。";
+        return sseText(ownerAnswer,{model:usedModel,role:"owner",skill:activeSkill?.id||"general"});
+        /* legacy streaming path retained below but unreachable */
+        let response = await callModel(env, PRIMARY_MODEL, messages, systemPrompt, maxTokens), usedModelLegacy = PRIMARY_MODEL;
+        if (!response.ok) { response = await callModel(env, FALLBACK_MODEL, messages, systemPrompt, maxTokens); usedModelLegacy = FALLBACK_MODEL; }
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           return json({ error: data?.error?.message || "免费模型暂时不可用，请稍后再试。" }, response.status);
         }
         return new Response(response.body, { status: 200, headers: {
           "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no",
-          "X-Brady-Model": usedModel, "X-Brady-Role": owner ? "owner" : "visitor", "X-Brady-Skill": activeSkill?.id || "general",
+          "X-Brady-Model": usedModelLegacy, "X-Brady-Role": owner ? "owner" : "visitor", "X-Brady-Skill": activeSkill?.id || "general",
           "X-Brady-Version": AGENT_VERSION
         }});
       } catch (error) { return json({ error: error?.message || "Request failed" }, 500); }
@@ -507,6 +515,20 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+
+function cleanFinalAnswer(value="") {
+  let s=String(value||"").trim();
+  if(!s)return "";
+  s=s.replace(/<think>[\s\S]*?<\/think>/gi,"").trim();
+  const markers=[/\n(?:Final answer|Final|Answer|最终答案|答复)\s*[:：]\s*/i,/^(?:Final answer|Final|Answer|最终答案|答复)\s*[:：]\s*/i];
+  for(const re of markers){const parts=s.split(re);if(parts.length>1)s=parts[parts.length-1].trim();}
+  const firstChinese=s.search(/[\u4e00-\u9fff]/);
+  if(firstChinese>0){
+    const prefix=s.slice(0,firstChinese);
+    if(/\b(?:we need|need to|analysis|reasoning|policy|user asks|must|should|let's|let us)\b/i.test(prefix))s=s.slice(firstChinese).trim();
+  }
+  return s;
+}
 
 function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
