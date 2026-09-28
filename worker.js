@@ -29,7 +29,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.33";
+const AGENT_VERSION = "v2.34";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -362,7 +362,13 @@ export default {
                 const ref=referenceCompressorBandFromReviewedPerformance(perf,{requiredLoadMinKW:quick.refrigerationLoadKW.min,requiredLoadMaxKW:quick.refrigerationLoadKW.max});
                 if(ref.ok&&ref.candidates.length) quickText += " 在你明确的 "+refrigerant+"、Te "+teMatch[1]+"℃、Tc "+tcMatch[1]+"℃ 条件下，已找到可追溯厂家性能候选，可继续核对具体型号。";
                 else quickText += " 当前工况下暂无足够的已审核厂家性能点，因此暂不报具体匹数或型号。";
-              } else quickText += " 如需进一步给压缩机能力/匹数参考，需要明确制冷剂、Te、Tc，并以已审核厂家性能数据为依据。";
+              } else {
+                quickText += " 压缩机进一步选型需要制冷剂和运行工况；这些属于工程参数，不要求普通客户提供。";
+                if(Number.isFinite(p.roomTempC)){
+                  const dutyHint = p.roomTempC <= -15 ? "低温冷冻工况" : "冷藏工况";
+                  quickText += " 当前先按“"+dutyHint+"”进入待定工况，后续由工程选型环节确定 Te、Tc 后再查询厂家性能数据。";
+                }
+              }
               quickText += " 该估算仅用于前期沟通。";
             }\n            const reply="已记录："+known.join("，")+"。"+quickText+"\n\n"+(missing.length?"还需要补充：\n"+missing.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\n不知道的项目可以直接说“不知道”，估算项会单独标明。":"基本项目条件已经收齐，可以继续做正式负荷核算；具体设备型号仍需结合可追溯厂家性能数据。")+"\n\n访客体验有使用额度限制，回答采用简洁模式。";
             return sseText(reply,{model:"deterministic-intake",role:"visitor",skill:"refrigeration-intake"});
