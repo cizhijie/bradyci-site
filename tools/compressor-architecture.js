@@ -15,7 +15,7 @@ export function assessCompressorArchitectureCandidates(state={}, results={}){
     lowNoiseRequired:state.lowNoiseRequired ?? null,
     maintenancePreference:state.maintenancePreference || null,
     processMode:state.processMode || null,
-    dailyInboundKg:Number.isFinite(Number(state.dailyInboundKg)) ? Number(state.dailyInboundKg) : null
+    dailyInboundKg:Number.isFinite(Number(state.dailyInboundKg)) ? Number(state.dailyInboundKg) : null,\n    refrigerationRunHoursPerDay:Number.isFinite(Number(state.refrigerationRunHoursPerDay)) ? Number(state.refrigerationRunHoursPerDay) : null,\n    roomCount:Number.isFinite(Number(state.roomCount)) ? Number(state.roomCount) : null
   };
 
   const candidates=[
