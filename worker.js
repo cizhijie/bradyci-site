@@ -315,7 +315,7 @@ export default {
           if (manufacturerSelection?.clarify) return sseText(manufacturerSelection.clarify, { model:"deterministic-router", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           if (manufacturerSelection?.query) {
             const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
-            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query});
+            const selectionChain = finalizeCompressorCandidates(selected, []);\n            const selectionText = formatManufacturerSelectionResult({...selected,...manufacturerSelection.query}) + (selectionChain.provisionalCandidates?.length ? "\\n\\n运行范围校验：容量候选尚未通过已审核的官方 Application Limits 运行点校验，因此只能作为候选，不能作为最终型号确认。" : "");
             return sseText(selectionText, { model:"deterministic-manufacturer-db", role:"owner", skill:activeSkill.id, tool:"manufacturer_selection" });
           }
           const directRequest = detectDeterministicRefrigerationRequest(messages);
