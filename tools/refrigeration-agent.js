@@ -256,7 +256,7 @@ export function formatColdRoomIntake(text = "", existingState = null) {
 export function detectManufacturerSelectionRequest(messages = [], projectState = null) {
   const current=[...messages].reverse().find(m=>m?.role==="user"&&typeof m.content==="string");
   const text=current?.content||"";
-  if(!/(比泽尔|BITZER|压缩机).*(选|选型|怎么配|型号|候选)|(?:选|选型|型号|候选).*(比泽尔|BITZER|压缩机)/i.test(text)) return null;
+  if(!/(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw).*(选|选型|怎么配|型号|候选)|(?:选|选型|型号|候选).*(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw)/i.test(text)) return null;
   const refrigerant=(text.match(/\b(R(?:22|134A|404A|407[ACF]|448A|449A|450A|452A|507A?|513A))\b/i)||[])[1] || projectState?.refrigerant;
   const architecture = /涡旋|scroll/i.test(text) ? "scroll" : /活塞|往复|reciprocating|piston/i.test(text) ? "semi-hermetic-reciprocating" : /螺杆|screw/i.test(text) ? "screw" : "";
   const preferredBrands=[];
