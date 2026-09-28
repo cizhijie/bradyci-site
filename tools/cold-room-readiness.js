@@ -571,10 +571,16 @@ export function formatReadyColdRoomCalculations(results = {}) {
   if(ca?.candidates?.length){
     lines.push("**压缩机方案比较**", "");
     const labels={scroll:"涡旋", "semi-hermetic-reciprocating":"半封闭活塞", screw:"螺杆", "parallel-rack":"并联机组"};
-    const guidance=Array.isArray(ca.guidance)?ca.guidance:[];
-    for(const item of ca.candidates){
-      const g=guidance.find(x=>x.architecture===item.architecture);
-      if(g) lines.push("• **"+(labels[item.architecture]||item.architecture)+"**："+g.when+"；"+g.caution);
+    const assessed=Array.isArray(ca.architectureAssessment)?ca.architectureAssessment:ca.candidates;
+    const preferred=assessed.filter(x=>x.preference==="preferred");
+    const compare=assessed.filter(x=>x.preference!=="preferred");
+    if(preferred.length){
+      lines.push("**优先比较**");
+      for(const item of preferred) lines.push("• **"+(labels[item.architecture]||item.architecture)+"**："+item.reasons.join("；"));
+    }
+    if(compare.length){
+      lines.push("", "**其他可比较方案**");
+      for(const item of compare) lines.push("• "+(labels[item.architecture]||item.architecture)+"："+item.reasons.join("；"));
     }
     if(ca.customerQuestions?.length){
       lines.push("", "最终确定方案时，还要结合负荷波动、备用要求和维护习惯比较，不会只按匹数或单一冷量决定。");
