@@ -73,6 +73,7 @@ export function calculateProductLoad(input = {}) {
       total: round(totalKJ, 1)
     },
     averageLoadKW: round(averageKW, 3),
+    totalEnergyKWh: round(totalKJ / 3600, 3),
     notes: [
       freezing
         ? "冻结负荷已拆分为冻结前显热、冻结潜热、冻结后显热。"
