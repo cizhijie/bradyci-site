@@ -13,18 +13,21 @@ export function clelandEarleSlabFreezingTime(i={}){
  if(Tf<=Tm)throw new Error("initial_freezing_temp_must_exceed_medium_temp");
  const baseSeconds=dH10/(Tf-Tm)*(P*D/h+R*D*D/ks);
  const Tc=i.finalCenterTempC==null?-10:num(i.finalCenterTempC,"finalCenterTempC");
+ const geometryBasis=String(i.geometryBasis||"simple_shape_pr");
  const Tref=-10;
  if(Tc<=Tm)throw new Error("final_center_temp_must_exceed_medium_temp");
  let correctionFactor=1;
  if(Math.abs(Tc-Tref)>1e-12){
+  // Cleland-Earle (1984) empirical final-temperature correction. The 1.65 coefficient carries the conductivity-unit basis of the published SI correlation.
   correctionFactor=1-(1.65*Ste/ks)*Math.log((Tc-Tm)/(Tref-Tm));
   if(!Number.isFinite(correctionFactor)||correctionFactor<=0)throw new Error("invalid_final_temperature_correction");
  }
  const slabSeconds=baseSeconds*correctionFactor;
  const E=i.equivalentHeatTransferDimensionality==null?1:pos(i.equivalentHeatTransferDimensionality,"equivalentHeatTransferDimensionality");
  if(E<1)throw new Error("EHTD_must_be_at_least_1");
+ if(geometryBasis==="rectangular_brick_pr"&&E>1+1e-12)throw new Error("do_not_combine_rectangular_brick_PR_with_EHTD");
  const seconds=slabSeconds/E;
  return {ok:true,status:"reviewed_modified_plank_time",seconds,hours:seconds/3600,
-  referenceCenterTempC:Tref,baseReferenceHours:baseSeconds/3600,correctionFactor,E,
+  referenceCenterTempC:Tref,baseReferenceHours:baseSeconds/3600,correctionFactor,E,geometryBasis,
   note:"deltaH10 must be the volumetric enthalpy change from initial freezing temperature to -10 C; E=1 for an infinite slab."};
 }
