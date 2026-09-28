@@ -1,4 +1,5 @@
 const suites=[
+ ["ashrae-published-numeric-benchmark","./ashrae-published-numeric-benchmark-regression.js","runAshraePublishedNumericBenchmarkRegression"],
  ["ashrae-freezing-benchmark","./ashrae-freezing-benchmark-regression.js","runAshraeFreezingBenchmarkRegression"],
  ["architecture-brand-bridge","./architecture-brand-bridge-regression.js","runArchitectureBrandBridgeRegression"],
  ["architecture-selection","./architecture-selection-regression.js","runArchitectureSelectionRegression"],
