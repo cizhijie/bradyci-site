@@ -51,6 +51,14 @@ internal static class Hhk52InputAbiReview
         return missing.ToArray();
     }
 
+    // Model-specific electrical inputs must come from BITZER's installed data files
+    // (for HHK this is the HHK.csv data path), never from a bridge-wide default.
+    // I_NET identifies the motor/network variant, I_DS the winding/connection mode,
+    // and I_OV the operating voltage in V. The mapper stays fail-closed until the
+    // selected model's permitted combination has been read and validated.
+    internal static bool HasReviewedElectricalInputs(int? net, int? ds, int? ov) =>
+        net.HasValue && ds.HasValue && ov.HasValue && ov.Value > 0;
+
     internal static bool IsCapacityControlPercentInDocumentedRange(float value) =>
         value >= CapacityControlMinPercent && value <= CapacityControlMaxPercent;
 }
