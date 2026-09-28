@@ -6,6 +6,7 @@ const suites=[
  ["direct-manufacturer-request","./direct-manufacturer-request-regression.js","runDirectManufacturerRequestRegression"],
  ["engineering-mode-selection-gate","./engineering-mode-selection-gate-regression.js","runEngineeringModeSelectionGateRegression"],
  ["live-selection-architecture","./live-selection-architecture-regression.js","runLiveSelectionArchitectureRegression"],
+ ["heat-transfer-correlation","./heat-transfer-correlation-regression.js","runHeatTransferCorrelationRegression"],
  ["load-time-basis","./load-time-basis-regression.js","runLoadTimeBasisRegression"],
  ["manufacturer-candidate","./manufacturer-candidate-regression.js","runManufacturerCandidateRegression"],
  ["manufacturer-performance","./manufacturer-performance-regression.js","runManufacturerPerformanceRegression"],
