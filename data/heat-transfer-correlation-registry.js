@@ -34,7 +34,7 @@ export function matchHeatTransferCorrelation(input={}){
  const candidates=HEAT_TRANSFER_CORRELATIONS.filter(c=>c.reviewStatus==="reviewed"&&c.productGroup===productGroup&&c.medium===medium&&c.geometry===geometry);
  if(!candidates.length)return {status:"no_reviewed_correlation",canCalculateH:false};
  const c=candidates.find(x=>{
-  if(!inside(v,x.applicability.velocityMs)||!optionalInside(t,x.applicability.mediumTempC))return false;
+  if(!optionalInside(v,x.applicability.velocityMs)||!optionalInside(t,x.applicability.mediumTempC))return false;
   if(x.packaging&&packaging!==x.packaging)return false;
   if(Array.isArray(x.applicability.diameterMm)&&!inside(d,x.applicability.diameterMm))return false;
   if(x.characteristicDimension==="patty_thickness"&&!(thickness!==null&&thickness>0))return false;
