@@ -393,6 +393,18 @@ export function detectDeterministicRefrigerationRequest(messages = []) {
     }
   }
 
+  const coreIntent=/(?:中心温度|芯温|中心).*(?:达到|降到|冻到|要求)|(?:达到|降到|冻到|要求).*(?:中心温度|芯温)/.test(text);
+  if(coreIntent){
+    const p=extractColdRoomProject(text);
+    const args={};
+    for(const k of ["geometry","productCharacteristicThicknessMm","productDimensionRatios","airVelocityMs","packaging","stacking","pullDownHours"]) if(p[k]!=null) args[k]=p[k];
+    if(Number.isFinite(p.productTargetTempC)) args.finalCenterTempC=p.productTargetTempC;
+    const medium=text.match(/(?:冻结空气温度|空气温度|库温)[^\d-]{0,8}(-?\d+(?:\.\d+)?)/i);
+    if(medium) args.mediumTempC=Number(medium[1]);
+    if(!args.geometry) return {__brady_clarify__:"要判断货物中心温度能否按时达到目标，还需要确认产品实际形状和三维尺寸；不能只按货物总热量代替中心冻结时间。"};
+    return {__brady_tool__:"product_core_freezing_time",args};
+  }
+
   const productIntent = /(货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产|水果|蔬菜).*(负荷|降温|冷却|冻结|速冻)|(负荷|降温|冷却|冻结|速冻).*(货物|货品|食品|牛|猪|羊|鸡|虾|鱼|鲑|鳕|苹果|草莓|水产|水果|蔬菜)/i.test(text);
   const food = findFoodThermalProperties(text);
   const ambiguousFood = findAmbiguousFoodTerm(text);
