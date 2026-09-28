@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.57";
+const AGENT_VERSION = "v2.58";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -421,7 +421,21 @@ export default {
             if (projectId) await saveColdRoomProjectState(env, coldRoomState, projectId);
             const readiness = assessColdRoomProject(coldRoomState);
             const readyResults = calculateReadyColdRoomParts(coldRoomState, readiness);
-            const calculatedText = formatReadyColdRoomCalculations(readyResults);
+            let calculatedText = formatReadyColdRoomCalculations(readyResults);
+            let compressorSelectionText = "";
+            const selectionRequest = readyResults.manufacturer_selection_request;
+            if (selectionRequest?.ok && readyResults.selection_readiness?.readyForManufacturerSelection) {
+              const performance = await queryManufacturerPerformance(env, selectionRequest);
+              const envelope = await queryReviewedEnvelopePoints(env, selectionRequest);
+              const chain = finalizeCompressorCandidates(performance, envelope.ok ? envelope.points : []);
+              if (chain.finalCandidates?.length) {
+                compressorSelectionText = "\n\n**压缩机候选**\n" + chain.finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW。").join("\n") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
+              } else if (performance?.noExactData) {
+                compressorSelectionText = "\n\n**压缩机选型状态**\n当前制冷剂和运行工况下还没有已验证的精确厂家性能点，因此暂不报具体型号，也不会用排量或匹数反推。";
+              } else if (performance?.capacityCandidates?.length) {
+                compressorSelectionText = "\n\n**压缩机选型状态**\n已经找到满足制冷量的厂家性能候选，但运行范围资料还没有完成审核校验，因此暂不作为最终型号。";
+              }
+            }
             const intakeReply = formatColdRoomProjectState(coldRoomState) + "\
 \
 " + formatColdRoomReadiness(readiness) + (calculatedText ? "\
