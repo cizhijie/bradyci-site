@@ -5,9 +5,11 @@ export function resolveReviewedSurfaceH(input={}){
   if(input.hReviewStatus!=="reviewed"||!String(input.hSource||"").trim())return {ok:false,status:"supplied_h_requires_reviewed_source"};
   return {ok:true,status:"reviewed_h_supplied",hWm2K:Number(input.hWm2K),source:String(input.hSource)};
  }
- const m=matchHeatTransferCorrelation(input);
+ const normalized={...input,
+  characteristicThicknessMm:input.characteristicThicknessMm??input.productCharacteristicThicknessMm};
+ const m=matchHeatTransferCorrelation(normalized);
  if(!m.canCalculateH)return {ok:false,status:m.status,candidateIds:m.candidateIds||[],diagnostics:m.diagnostics||[]};
- const h=calculateReviewedCorrelationH(m.correlation,input);
+ const h=calculateReviewedCorrelationH(m.correlation,normalized);
  if(!h.ok)return h;
  return {...h,correlationId:m.correlation.id,source:m.correlation.source};
 }
