@@ -472,6 +472,33 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+
+  // Customer-facing summary first; detailed calculations remain below for traceability.
+  const dc0=results.design_capacity;
+  const ca0=results.compressor_architecture;
+  if(dc0?.ok || ca0?.candidates?.length){
+    lines.push("**初步方案结论**", "");
+    if(dc0?.ok) lines.push(`• 预计设备制冷能力：**${dc0.requiredCapacityRangeKW.min}–${dc0.requiredCapacityRangeKW.max} kW**`);
+    if(ca0?.architectureAssessment?.length){
+      const labels={scroll:"涡旋","semi-hermetic-reciprocating":"半封闭活塞",screw:"螺杆","parallel-rack":"并联机组"};
+      const preferred=ca0.architectureAssessment.filter(x=>x.preference==="preferred");
+      const pool=preferred.length?preferred:ca0.architectureAssessment.filter(x=>x.preference!=="not_recommended");
+      if(pool.length) lines.push("• 压缩机方向："+pool.slice(0,2).map(x=>labels[x.architecture]||x.architecture).join(" / "));
+      const brandGroups=(ca0.manufacturerCandidates||[]).filter(x=>pool.some(p=>p.architecture===x.architecture));
+      const brands=[...new Set(brandGroups.flatMap(x=>(x.brands||[]).slice(0,3).map(b=>b.displayName)))];
+      if(brands.length) lines.push("• 可优先比较品牌："+brands.slice(0,5).join("、")+"（品牌候选不等于已确定具体型号）");
+    }
+    const mode=results.engineering_mode?.id||"estimate";
+    const confidence=mode==="selection"?"正式选型条件核验阶段":mode==="engineering"?"工程核算阶段":"快速估算阶段";
+    lines.push("• 当前可信度："+confidence);
+    const pending=[];
+    if(!results.selection_readiness?.conditionsUsed?.evaporatingTempC) pending.push("蒸发工况");
+    if(!results.selection_readiness?.conditionsUsed?.condensingTempC) pending.push("冷凝工况");
+    if(results.selection_readiness?.missing?.includes("refrigerant")) pending.push("制冷剂");
+    if(results.envelope_partial?.provisional||results.floor_load_estimate?.provisional) pending.push("围护/地面正式边界");
+    if(pending.length) lines.push("• 正式定型号前还需确认："+[...new Set(pending)].join("、"));
+    lines.push("");
+  }
   if (results.engineering_mode) {
     lines.push("**核算模式：" + results.engineering_mode.label + "**", "");
     if (results.engineering_mode.id === "estimate") lines.push("• 当前允许使用审核后的工程默认值/范围继续初算；所有估算项必须单独标注，不能冒充客户实测或正式选型数据。", "");
