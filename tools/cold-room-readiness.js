@@ -567,6 +567,20 @@ export function formatReadyColdRoomCalculations(results = {}) {
     else lines.push("• 当前未额外叠加通用“安全系数”；设备余量应结合实际运行时间、化霜和项目工况单独确定。");
     lines.push("• 这是设备能力需求范围，不等同于压缩机名义匹数。具体型号还要按制冷剂和实际蒸发/冷凝工况核对厂家性能数据。", "");
   }
+  const ca=results.compressor_architecture;
+  if(ca?.candidates?.length){
+    lines.push("**压缩机方案比较**", "");
+    const labels={scroll:"涡旋", "semi-hermetic-reciprocating":"半封闭活塞", screw:"螺杆", "parallel-rack":"并联机组"};
+    const guidance=Array.isArray(ca.guidance)?ca.guidance:[];
+    for(const item of ca.candidates){
+      const g=guidance.find(x=>x.architecture===item.architecture);
+      if(g) lines.push("• **"+(labels[item.architecture]||item.architecture)+"**："+g.when+"；"+g.caution);
+    }
+    if(ca.customerQuestions?.length){
+      lines.push("", "最终确定方案时，还要结合负荷波动、备用要求和维护习惯比较，不会只按匹数或单一冷量决定。");
+    }
+    lines.push("");
+  }
   const p = results.product_load;
   if (p?.ok) {
     lines.push("**货物负荷**", "");
