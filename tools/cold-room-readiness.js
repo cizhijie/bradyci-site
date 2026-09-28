@@ -59,11 +59,12 @@ export function assessColdRoomProject(state = {}) {
   const foodText = state.productCategory || "";
   const ambiguous = findAmbiguousFoodTerm(foodText);
   const food = !ambiguous ? findFoodThermalProperties(foodText) : null;
-  const productFactsReady = Number.isFinite(Number(state.dailyInboundKg)) && Number.isFinite(Number(state.entryTempC)) && hasRoomTemp && Number.isFinite(Number(state.pullDownHours));
+  const isFreezingProcess = state.processMode === "freezing";
+  const productFactsReady = Number.isFinite(Number(state.dailyInboundKg)) && Number.isFinite(Number(state.entryTempC)) && hasRoomTemp && (!isFreezingProcess || Number.isFinite(Number(state.pullDownHours)));
   if (productFactsReady && food) ready.push({ id:"product_load", source:food.source, label:food.label });
   else {
     const reasons = [];
-    if (!productFactsReady) reasons.push("货物质量/入库温度/目标温度/处理时间未齐");
+    if (!productFactsReady) reasons.push(isFreezingProcess ? "冻结项目的货物质量、入库温度或处理时间未齐" : "货物质量或入库温度未齐");
     if (!food) reasons.push("具体食品热物性尚未匹配到审核资料");
     blocked.push({ id:"product_load", reason:reasons.join("；"), sourceReady:!!food });
   }
@@ -91,7 +92,11 @@ export function assessColdRoomProject(state = {}) {
     if (!hasDoorDuration) customerQuestions.push("请把“每次几分钟”尽量改成一个范围，例如“每次2–3分钟”。");
   }
 
-  blocked.push({ id:"internal_loads", reason:"人员、照明、冷风机等内部负荷尚未进入确定性核算；没有明确数据时不自动计入。", sourceReady:false });
+  if (mode.id === "estimate") {
+    ready.push({ id:"internal_loads_estimate", label:"人员、照明和风机等内部负荷按快速估算规则留出工程余量", confidence:"low" });
+  } else {
+    blocked.push({ id:"internal_loads", reason:"人员、照明、冷风机等内部负荷尚未进入确定性核算；没有明确数据时不自动计入。", sourceReady:false });
+  }
 
   return {
     ready,
