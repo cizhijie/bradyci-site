@@ -3,12 +3,14 @@ export function calculateProductLoad(input = {}) {
   const entryTempC = num(input.entryTempC);
   const targetTempC = num(input.targetTempC);
   const pullDownHours = num(input.pullDownHours);
+  const targetBasis = String(input.targetBasis || "").trim();
 
   const missing = [];
   if (massKg === null) missing.push("massKg");
   if (entryTempC === null) missing.push("entryTempC");
   if (targetTempC === null) missing.push("targetTempC");
   if (pullDownHours === null) missing.push("pullDownHours");
+  if (!targetBasis) missing.push("targetBasis");
   if (missing.length) return { ok: false, missing };
 
   if (massKg <= 0 || pullDownHours <= 0) {
@@ -60,7 +62,7 @@ export function calculateProductLoad(input = {}) {
     method: freezing ? "three-stage-freezing-v1" : "sensible-cooling-v1",
     freezing,
     inputs: {
-      massKg, entryTempC, targetTempC, pullDownHours,
+      massKg, entryTempC, targetTempC, pullDownHours, targetBasis,
       freezingPointC, cpAboveKJkgK, latentHeatKJkg, cpBelowKJkgK
     },
     propertyData: input.foodPropertySource ? { label: input.foodPropertyLabel || null, source: input.foodPropertySource, sourceUrl: input.foodPropertySourceUrl || null } : null,
@@ -78,6 +80,8 @@ export function calculateProductLoad(input = {}) {
       input.foodPropertySource
         ? `本次食品热物性采用：${input.foodPropertyLabel || "已审核食品记录"}；来源：${input.foodPropertySource}。`
         : "本次热物性由用户明确提供；工具未自行猜测食品参数。",
+      targetBasis === "product_core" ? "降温时间按货物中心达到目标温度的要求理解。" : "降温时间口径由项目输入明确提供；不得把库内空气降温时间冒充货物中心降温时间。",
+      "这里得到的是基于货物热量的平均负荷；若目标是货物中心温度，实际冻结时间还受货物尺寸、包装、堆码、风速与换热条件影响，不能仅凭集总热量保证中心温度达标。",
       "这里得到的是货物在指定降温时间内的平均负荷，不等同于压缩机型号或名义匹数。"
     ]
   };
