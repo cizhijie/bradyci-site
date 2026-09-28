@@ -42,3 +42,44 @@ export function bitzerPolynomialImportPolicy(){
     rule:"Never infer missing coefficients, operating limits, refrigerants or polynomial conventions."
   };
 }
+
+
+export function parseBitzerPolynomialCsv(csvText="",metadata={}){
+  const lines=String(csvText||"").replace(/^\uFEFF/,"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  if(lines.length<2) return {ok:false,error:"empty_or_incomplete_csv",rows:[]};
+  const delimiter=lines[0].includes(";")?";":",";
+  const cells=line=>line.split(delimiter).map(v=>v.trim().replace(/^"|"$/g,""));
+  const header=cells(lines[0]);
+  const rows=lines.slice(1).map(line=>{
+    const values=cells(line), raw={};
+    header.forEach((h,i)=>raw[h]=values[i]??"");
+    return raw;
+  });
+  return {
+    ok:true,
+    delimiter,
+    header,
+    rows,
+    metadata:{manufacturer:"BITZER",...metadata},
+    reviewStatus:"raw-export",
+    rule:"Parsing preserves exported values only. Header-to-polynomial meaning must be explicitly mapped and reviewed before any coefficient evaluation."
+  };
+}
+
+export function evaluateStandardTenCoefficientPolynomial(coefficients=[],evaporatingTempC,condensingTempC){
+  const c=coefficients.map(Number),te=Number(evaporatingTempC),tc=Number(condensingTempC);
+  if(c.length!==10||c.some(v=>!Number.isFinite(v))||!Number.isFinite(te)||!Number.isFinite(tc)){
+    return {ok:false,error:"ten finite coefficients plus Te and Tc are required"};
+  }
+  const [c1,c2,c3,c4,c5,c6,c7,c8,c9,c10]=c;
+  const value=c1+c2*te+c3*tc+c4*te*te+c5*te*tc+c6*tc*tc+c7*te*te*te+c8*tc*te*te+c9*te*tc*tc+c10*tc*tc*tc;
+  return {
+    ok:true,
+    value,
+    evaporatingTempC:te,
+    condensingTempC:tc,
+    coefficientCount:10,
+    status:"calculated_unverified",
+    rule:"Use only after the imported BITZER CSV explicitly confirms this coefficient order and polynomial convention for the selected quantity."
+  };
+}
