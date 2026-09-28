@@ -552,16 +552,15 @@ export function formatReadyColdRoomCalculations(results = {}) {
   }
   const ls=results.load_summary;
   if (ls?.ok) {
-    lines.push("**当前冷库负荷汇总框架**", "");
-    lines.push(`• 已完成且口径可直接相加的24h平均负荷小计：**${ls.averageSubtotalRangeKW.min}–${ls.averageSubtotalRangeKW.max} kW**`);
-    lines.push("• 当前小计只包含已经完成的货物、开门渗透、人员、照明、风机等可比口径分项。");
-    lines.push("• 暂未并入：完整围护结构负荷、化霜实际制冷负荷、选型裕量/运行时间系数。");
-    lines.push("• 因此这个数字还不是最终冷库总负荷，更不能直接拿来定压缩机匹数。", "");
+    lines.push("**当前负荷汇总**", "");
+    lines.push(`• 当前已完成分项的24小时平均负荷小计：**${ls.averageSubtotalRangeKW.min}–${ls.averageSubtotalRangeKW.max} kW**`);
+    lines.push("• 当前包含已经完成的货物、开门、人员、照明和风机等分项。");
+    lines.push("• 尚未计入的项目会继续单独列出，例如完整围护结构、化霜影响和设备选型余量。");
+    lines.push("• 这个小计不是最终设计冷量；待主要分项齐全后，再形成设备所需制冷量范围。", "");
   }
   const p = results.product_load;
   if (p?.ok) {
-    lines.push("**已自动完成可计算分项**", "");
-    lines.push("⚙ 确定性计算：product_load");
+    lines.push("**货物负荷**", "");
     lines.push(`• 货物降温/冻结平均负荷：**${p.averageLoadKW} kW**`);
     lines.push(`• 总热量：${p.energyKJ.total} kJ`);
     if (p.freezing) {
@@ -571,7 +570,7 @@ export function formatReadyColdRoomCalculations(results = {}) {
     }
     if (p.propertyData?.label) lines.push(`• 食品热物性：${p.propertyData.label}`);
     if (p.propertyData?.source) lines.push(`• 资料来源：${p.propertyData.source}`);
-    lines.push("", "这里是货物分项平均负荷，不是冷库总负荷，也不能直接当作压缩机选型冷量。");
+    lines.push("", "这里是货物这一项的平均负荷，不代表整个冷库的总负荷。");
   }
   return lines.join("\n");
 }
