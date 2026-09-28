@@ -31,7 +31,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v2.41";
+const AGENT_VERSION = "v2.42";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 
 function runtimeReadiness(env){
@@ -358,7 +358,7 @@ export default {
             const quick = quickEstimateColdRoom(p);
             let quickText = "";
             if(quick.ok){
-              quickText = "\n\n工程快速估算参考："+quick.category+"，制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW。";
+              quickText = "\n\n工程快速估算参考："+quick.category+"，制冷量约 "+quick.refrigerationLoadKW.min+"～"+quick.refrigerationLoadKW.max+" kW。"+(quick.estimatedFields?.length?" 其中以下条件未知，已扩大估算范围："+quick.estimatedFields.join("；")+"。":"");
               const allUserText = messages.filter(m=>m?.role==="user").map(m=>String(m.content||"")).join("\n");
               const refrigerant = /R507A?|507/i.test(allUserText) ? "R507A" : /R404A?/i.test(allUserText) ? "R404A" : "";
               const teMatch = allUserText.match(/(?:Te|蒸发温度)\s*[:：]?\s*(-?\d+(?:\.\d+)?)/i);
