@@ -14,7 +14,7 @@ export function validateBitzerEcolineSeedRow(row={}){
   for(const k of ["documentId","model","refrigerant","page","rawRatingCondition","extractionMethod"]) if(!String(row[k]||"").trim()) missing.push(k);
   for(const k of ["evaporatingTempC","condensingTempC","coolingCapacityKW"]) if(!Number.isFinite(Number(row[k]))) missing.push(k);
   if(Number(row.frequencyHz)!==50) missing.push("frequencyHz");
-  if(!Number.isFinite(Number(row.suctionGasTempC))) missing.push("suctionGasTempC");
+  if(row.suctionGasTempC!=null&&!Number.isFinite(Number(row.suctionGasTempC))) missing.push("suctionGasTempC");
   if(!Number.isFinite(Number(row.subcoolingK))) missing.push("subcoolingK");
   return {ok:missing.length===0,missing,reviewStatus:"unreviewed",rule:"Only exact, traceable BITZER rating points may enter staging. Promotion still requires explicit row review; no inferred capacity, interpolation or displacement-based conversion."};
 }
