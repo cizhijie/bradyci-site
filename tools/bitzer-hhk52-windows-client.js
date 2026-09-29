@@ -14,7 +14,8 @@ export function createHhk52WindowsNativeClient({powershell="",dllDirectory="",re
   async design(request={}){
    const call=buildHhk52DesignCall(request);
    if(!call.ok)return {ok:false,vendorCode:null,status:"invalid_hhk52_call",blocked:call.blocked};
-   const payload={...call,request,dllDirectory,refrigerantPath,nameplatePath};\n   const psHost=powershell||((process.env.WINDIR&&process.arch==="x64")?join(process.env.WINDIR,"SysWOW64","WindowsPowerShell","v1.0","powershell.exe"):"powershell.exe");
+   const payload={...call,request,dllDirectory,refrigerantPath,nameplatePath};
+   const psHost=powershell||((process.env.WINDIR&&process.arch==="x64")?join(process.env.WINDIR,"SysWOW64","WindowsPowerShell","v1.0","powershell.exe"):"powershell.exe");
    return await new Promise((resolve,reject)=>{
     const p=spawn(psHost,["-NoProfile","-ExecutionPolicy","Bypass","-File",ps1],{stdio:["pipe","pipe","pipe"],windowsHide:true});
     let out="",err="";
