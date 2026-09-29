@@ -45,8 +45,18 @@ document.querySelector("#ownerLogin").onclick=async()=>{
     ownerAuthenticated=false;setOwnerUI(false);location.reload();return;
   }
   const pin=prompt("请输入 Owner PIN：");if(!pin)return;
-  const r=await fetch("/api/owner/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
-  if(!r.ok){alert("Owner PIN 不正确。");return;}
+  let r;
+  try {
+    r=await fetch("/api/owner/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
+  } catch {
+    alert("Owner 登录请求失败，请检查网络后重试。");return;
+  }
+  if(!r.ok){
+    const data=await r.json().catch(()=>({}));
+    if(r.status===429){alert(data.error||"登录尝试过多，请稍后再试。");return;}
+    if(r.status===503){alert(data.error||"Owner 登录保护暂时不可用，请稍后再试。");return;}
+    alert(data.error||"Owner PIN 不正确。");return;
+  }
   ownerAuthenticated=true;setOwnerUI(true);alert("Owner 身份验证成功。");
 };
 document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{input.value=b.textContent;input.focus()});
