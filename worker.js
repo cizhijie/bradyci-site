@@ -554,8 +554,9 @@ export default {
                   condensingTempC:selectionRequest.request.condensingTempC,
                   ambientTempC:Number.isFinite(coldRoomState?.ambientTempC)?coldRoomState.ambientTempC:null,
                   redundancyRequired:coldRoomState?.redundancyRequired===true,
+                  heatRejectionType:coldRoomState?.heatRejectionType||null,
                   condenserType:coldRoomState?.condenserType||null,
-                  coolingMethod:coldRoomState?.coolingMethod||null,
+                  coolingMethod:coldRoomState?.coolingMethod||coldRoomState?.heatRejectionType||null,
                   receiverVolumeL:coldRoomState?.receiverVolumeL,
                   receiverSizingBasis:coldRoomState?.receiverSizingBasis,
                   oilManagementBasis:coldRoomState?.oilManagementBasis
