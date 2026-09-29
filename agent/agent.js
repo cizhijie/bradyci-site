@@ -87,7 +87,7 @@ input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventD
 document.querySelector("#clear").onclick=async()=>{
   messages.length=0;
   if(ownerAuthenticated){
-    await fetch("/api/project/cold-room/reset",{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Pin":ownerPin},body:JSON.stringify({projectId})}).catch(()=>{});
+    await fetch("/api/project/cold-room/reset",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({projectId})}).catch(()=>{});
     projectId=(globalThis.crypto?.randomUUID?.()||("p-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
   }
   location.reload();
