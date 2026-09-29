@@ -14,7 +14,7 @@ export function calculateCondenserDesignLoad(input={}){
   const totalPower=directPower??(powerEach!==null&&dutyCount!==null?powerEach*dutyCount:null);
 
   if(!(cooling>0)) return {ok:false,status:"cooling_capacity_missing",required:["dutyCoolingCapacityKW"]};
-  if(!(totalPower>=0)) return {
+  if(!(totalPower>0)) return {
     ok:false,status:"compressor_input_power_missing",
     required:["totalCompressorInputPowerKW or inputPowerPerCompressorKW + dutyCompressorCount"],
     rule:"冷凝器排热量不能只用制冷量代替；必须取得同一真实工况下的压缩机输入功率，或使用已审核的厂家排热数据。"
