@@ -5,6 +5,13 @@
 <section id="chat" class="chat"><div class="welcome"><p class="eyebrow" id="roleLabel">VISITOR MODE</p><h1 id="greeting">你好，欢迎使用 Brady Agent。</h1><p id="welcomeText">当前为访客模式。你可以正常使用 AI；Owner 私人记忆不会向访客开放。</p><div class="chips"><button>帮我处理一个制冷问题</button><button>策划一个 AI 视频</button><button>开始今天的英语练习</button><button>整理我的学习计划</button></div></div></section>
 <form id="composer"><textarea id="input" rows="1" placeholder="告诉 Brady Agent 你想做什么…" autofocus></textarea><button id="send" type="submit" aria-label="发送">↑</button></form>
 <p class="note">V0.1 Preview · Brady Agent · <span id="modeNote">访客模式</span></p></main>
+<div id="ownerLoginPanel" class="memory-panel hidden">
+  <form id="ownerLoginForm" class="memory-card" autocomplete="off">
+    <div class="memory-head"><div><strong>Owner 登录</strong><small>PIN 将以密码形式隐藏显示</small></div><button id="ownerLoginClose" type="button" aria-label="关闭">×</button></div>
+    <div class="memory-add"><input id="ownerPinInput" type="password" inputmode="numeric" autocomplete="current-password" placeholder="请输入 Owner PIN" aria-label="Owner PIN"><button id="ownerLoginSubmit" type="submit">登录</button></div>
+    <small id="ownerLoginMessage" aria-live="polite"></small>
+  </form>
+</div>
 <div id="memoryPanel" class="memory-panel hidden">
   <div class="memory-card">
     <div class="memory-head"><div><strong>长期记忆</strong><small>只有 Owner 可以查看和管理</small></div><button id="memoryClose" type="button">×</button></div>
