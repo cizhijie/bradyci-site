@@ -248,19 +248,19 @@ export default {
 
     if (url.pathname === "/api/manufacturer/envelope/stage") {
       if (request.method !== "POST") return json({ error:"Method not allowed" },405);
-      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      if (!(await isOwner(request,env))) return json({ error:"Owner authentication required" },401);
       const result=await stageEnvelopePoint(env,await request.json().catch(()=>({})));
       return json(result,result.ok?200:400);
     }
     if (url.pathname === "/api/manufacturer/envelope/review") {
       if (request.method !== "POST") return json({ error:"Method not allowed" },405);
-      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      if (!(await isOwner(request,env))) return json({ error:"Owner authentication required" },401);
       const body=await request.json().catch(()=>({})); const result=await reviewEnvelopePoint(env,body.id,body.status,body.note);
       return json(result,result.ok?200:400);
     }
     if (url.pathname === "/api/manufacturer/envelope/promote") {
       if (request.method !== "POST") return json({ error:"Method not allowed" },405);
-      if (!isOwner(request,env)) return json({ error:"Owner authentication required" },401);
+      if (!(await isOwner(request,env))) return json({ error:"Owner authentication required" },401);
       const body=await request.json().catch(()=>({})); const result=await promoteReviewedEnvelopePoint(env,body.id);
       return json(result,result.ok?200:400);
     }
