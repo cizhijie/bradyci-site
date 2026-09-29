@@ -62,8 +62,15 @@ export default {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!env.OWNER_PIN) return json({ error: "OWNER_PIN is not configured" }, 500);
       const body = await request.json().catch(() => ({}));
+      const loginKey = await ownerLoginKey(request);
+      const gate = await ownerLoginGate(env, loginKey);
+      if (!gate.ok) return json({ error: "登录尝试过多，请稍后再试" }, 429);
       const ok = safeEqual(String(body.pin || ""), String(env.OWNER_PIN));
-      if (!ok) return json({ error: "Owner PIN 不正确" }, 401);
+      if (!ok) {
+        await recordOwnerLoginFailure(env, loginKey);
+        return json({ error: "Owner PIN 不正确" }, 401);
+      }
+      await clearOwnerLoginFailures(env, loginKey);
       const token = await createOwnerSession(env);
       return jsonWithHeaders({ ok: true, role: "owner" }, 200, {
         "Set-Cookie": ownerCookie(token, OWNER_SESSION_SECONDS)
