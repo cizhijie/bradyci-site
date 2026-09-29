@@ -29,6 +29,7 @@ export function buildCondensingUnitCandidates(input={}){
   const maxCompressors=finite(input.maxCompressors)?Math.max(1,Math.min(8,Math.floor(num(input.maxCompressors)))):4;
   const reserveUnits=finite(input.reserveCompressorCount)?Math.max(0,Math.floor(num(input.reserveCompressorCount))):(input.redundancyRequired===true?1:0);
   const unitCandidates=[];
+  const coolingMethod=input.coolingMethod||input.condenserType||input.heatRejectionType||null;
 
   for(const compressor of compressors){
     const each=candidateCapacity(compressor);
@@ -65,7 +66,7 @@ export function buildCondensingUnitCandidates(input={}){
   unitCandidates.sort((a,b)=>a.dutyMarginPercent-b.dutyMarginPercent||a.installedCompressorCount-b.installedCompressorCount);
   for(const unit of unitCandidates){
     unit.condenserDesign=attachCondenserBasisToUnit(unit,{
-      coolingMethod:input.condenserType||input.coolingMethod,
+      coolingMethod,
       ambientTempC:input.ambientTempC,
       enteringWaterTempC:input.enteringWaterTempC,
       wetBulbTempC:input.wetBulbTempC,
@@ -80,7 +81,7 @@ export function buildCondensingUnitCandidates(input={}){
   }
   const unresolved=[];
   if(!finite(input.condensingTempC)) unresolved.push("condensingTempC");
-  if(!input.condenserType) unresolved.push("condenserType");
+  if(!coolingMethod) unresolved.push("heatRejectionType");
   if(!finite(input.condenserDesignCapacityKW)) unresolved.push("condenserDesignCapacityKW");
   if(!finite(input.receiverVolumeL)) unresolved.push("receiverVolumeL");
   if(!input.oilManagementBasis && unitCandidates.some(x=>x.installedCompressorCount>1)) unresolved.push("oilManagementBasis");
