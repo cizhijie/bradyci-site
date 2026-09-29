@@ -14,6 +14,22 @@ export const BITZER_HHK52_ABI={
    ["I_FI","LongInt"],["I_FCF","Double"],["I_FCV","LongInt"],["I_FCOF","LongInt"],["I_FCMV","LongInt"],["I_OP","LongInt"],["I_CR","Single"]
   ],
   outputs:{
+   // Exact Design() var-parameter order/types from the official BITZER interface manual.
+   // Native runner must allocate writable storage for every entry in this order.
+   signature:[
+    ["O_T1","pAnsiChar"],["O_T2","pAnsiChar"],
+    ["O_OP1","LongInt"],["O_OP2","LongInt"],["O_FCF1","LongInt"],["O_FCF2","LongInt"],
+    ["O_FCFmin1","LongInt"],["O_FCFmin2","LongInt"],["O_FCFmax1","LongInt"],["O_FCFmax2","LongInt"],
+    ["O_Q1","Double"],["O_Q2","Double"],["O_Qmin1","Double"],["O_Qmin2","Double"],
+    ["O_Qmax1","Double"],["O_Qmax2","Double"],["O_QU1","Double"],["O_QU2","Double"],
+    ["O_QN1","Double"],["O_QN2","Double"],["O_QC1","Double"],["O_QC2","Double"],
+    ["O_QH1","Double"],["O_QH2","Double"],["O_P1","Double"],["O_P2","Double"],
+    ["O_I1","Double"],["O_I2","Double"],["O_COS1","Double"],["O_COS2","Double"],
+    ["O_E1","Double"],["O_E2","Double"],["O_EN1","Double"],["O_EN2","Double"],
+    ["O_VG1","Double"],["O_VG2","Double"],["O_M1","Double"],["O_M2","Double"],
+    ["O_TH1","Double"],["O_TH2","Double"],["O_PC1","Double"],["O_PC2","Double"],
+    ["O_Hint1","LongInt"],["O_Hint2","LongInt"],["O_Err","pAnsiChar"]
+   ],
    selectedTypes:["O_T1","O_T2"],
    capacity:["O_Q1","O_Q2"],power:["O_P1","O_P2"],cop:["O_E1","O_E2"],
    massFlow:["O_M1","O_M2"],dischargeTemp:["O_TH1","O_TH2"],hints:["O_Hint1","O_Hint2"],error:"O_Err"
