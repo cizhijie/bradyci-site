@@ -1,4 +1,5 @@
 import { attachCondenserBasisToUnit } from "./condenser-design-load.js";
+import { reviewUnitAccessories } from "./unit-accessory-review.js";
 // Deterministic condensing-unit composition layer.
 // It consumes already verified compressor candidates. It never invents manufacturer package SKUs
 // or silently sizes unresolved components.
@@ -69,6 +70,11 @@ export function buildCondensingUnitCandidates(input={}){
       wetBulbTempC:input.wetBulbTempC,
       condensingTempC:input.condensingTempC,
       auxiliaryHeatToCondenserKW:input.auxiliaryHeatToCondenserKW
+    });
+    unit.accessoryReview=reviewUnitAccessories({
+      ...input,
+      installedCompressorCount:unit.installedCompressorCount,
+      dutyCompressorCount:unit.dutyCompressorCount
     });
   }
   const unresolved=[];
