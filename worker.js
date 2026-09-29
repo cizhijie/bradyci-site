@@ -518,7 +518,11 @@ export default {
                 return sseText("现在已经具备厂家性能查询条件，但还不能可靠判断该优先用涡旋、半封闭活塞还是螺杆。我不会只按 kW/匹数直接定架构。请补充项目用途（冷藏/冷冻/速冻）、库温或工艺、连续运行时间、负荷波动，以及是否多库/需要并联冗余。",{model:"deterministic-architecture-router",role:"owner",skill:activeSkill.id,tool:"manufacturer_selection"});
               }
             }
-            const selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
+            const useBitzerNative = manufacturerSelection.query.architecture === "semi-hermetic-reciprocating" &&
+              (!manufacturerSelection.query.manufacturer || String(manufacturerSelection.query.manufacturer).toUpperCase() === "BITZER");
+            let selected = useBitzerNative ? await queryBitzerNativePerformance(env, manufacturerSelection.query) : await queryManufacturerPerformance(env, manufacturerSelection.query);
+            // Fall back to the legacy reviewed exact-point store until the native corpus has been imported.
+            if (useBitzerNative && selected.ok && selected.noData) selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
             const envelopeResult = await queryReviewedEnvelopePointsForCandidates(env, selected.capacityCandidates||[]);
             const directArchitecture = manufacturerSelection.query.architecture ? [manufacturerSelection.query.architecture] : [];
             const selectionChain = finalizeCompressorCandidates(selected, envelopeResult.ok ? envelopeResult.points : [], { allowedArchitectures: directArchitecture });
