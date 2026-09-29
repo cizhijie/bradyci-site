@@ -64,6 +64,5 @@ for(const [name,path,fn] of suites){
   console.error("FAIL",name,err?.stack||err);
  }
 }
-console.log("
-Suites:",suites.length,"Failed:",failed,"Declared checks:",totalChecks);
+console.log("Suites:",suites.length,"Failed:",failed,"Declared checks:",totalChecks);
 if(failed) process.exitCode=1;
