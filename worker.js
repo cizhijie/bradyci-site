@@ -266,7 +266,6 @@ export default {
       if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
       try {
         const db=env.brady_agent_memory;
-        await db.prepare("CREATE TABLE IF NOT EXISTS bitzer_native_performance (id INTEGER PRIMARY KEY AUTOINCREMENT, model TEXT NOT NULL, refrigerant TEXT NOT NULL, te_c REAL NOT NULL, tc_c REAL NOT NULL, suction_temp_c REAL, cooling_capacity_kw REAL, power_kw REAL, cop REAL, mass_flow_kg_h REAL, displacement_m3_h REAL, discharge_temp_c REAL, return_code INTEGER NOT NULL, result_code INTEGER NOT NULL, hint1 INTEGER NOT NULL DEFAULT 0, hint2 INTEGER NOT NULL DEFAULT 0, motor_code TEXT, motor_number INTEGER, motor_design INTEGER, op_volt INTEGER, voltage_range TEXT, source_version TEXT NOT NULL DEFAULT '7.1.11', UNIQUE(model,refrigerant,te_c,tc_c,suction_temp_c,source_version))").run();
         const total=await db.prepare("SELECT COUNT(*) AS n, SUM(CASE WHEN return_code=0 AND result_code=0 AND cooling_capacity_kw>0 THEN 1 ELSE 0 END) AS valid FROM bitzer_native_performance").first();
         const combos=await db.prepare("SELECT COUNT(*) AS n FROM (SELECT model,refrigerant FROM bitzer_native_performance GROUP BY model,refrigerant)").first();
         return json({ok:true,rows:Number(total?.n||0),validRows:Number(total?.valid||0),combinations:Number(combos?.n||0),expected:{rows:76216,validRows:52301,combinations:644},complete:Number(total?.n||0)===76216&&Number(total?.valid||0)===52301&&Number(combos?.n||0)===644});
