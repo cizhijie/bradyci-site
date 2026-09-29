@@ -38,12 +38,13 @@ function interpolate(rows,te,tc){
   DataSource:"BITZER_NATIVE_INTERPOLATED_VALID_5K_CELL"};
 }
 export function queryBitzerNativeRows(rows=[],q={}){
- const refrigerant=text(q.refrigerant),te=num(q.evaporatingTempC),tc=num(q.condensingTempC),required=num(q.requiredCoolingCapacityKW);
+ const refrigerant=text(q.refrigerant),te=num(q.evaporatingTempC),tc=num(q.condensingTempC),required=num(q.requiredCoolingCapacityKW),requestedModel=text(q.model).toUpperCase();
  if(!refrigerant||te===null||tc===null) return {ok:false,error:"refrigerant, evaporatingTempC and condensingTempC are required"};
  const grouped=new Map();
  for(const r of rows){
   if(text(r.Refrigerant??r.refrigerant).toUpperCase()!==refrigerant.toUpperCase())continue;
   const model=text(r.ProductType??r.model); if(!model)continue;
+  if(requestedModel&&model.toUpperCase()!==requestedModel)continue;
   if(!grouped.has(model))grouped.set(model,[]);
   grouped.get(model).push(r);
  }
