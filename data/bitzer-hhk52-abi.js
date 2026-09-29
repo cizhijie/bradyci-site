@@ -5,7 +5,8 @@ export const BITZER_HHK52_ABI={
  dll:"HHK52.DLL",callingConvention:"stdcall",stringEncoding:"ANSI",
  dependencies:["HHK52A.DLL","HHK52B.DLL","HHK52C.DLL","BNP50.DLL","ASEREP32.DLL","BIREF32.DLL","CO2_LIB32.DLL"],
  design:{
-  exportName:"Design",\n  safeExportName:"CopyDesign",
+  exportName:"Design",
+  safeExportName:"CopyDesign",
   purpose:"performance_for_given_type_or_select_up_to_two_types_by_capacity",
   inputs:[
    ["I_RPath","pAnsiChar"],["I_NPath","pAnsiChar"],["I_Flags","LongInt"],["I_Serie","LongInt"],["I_Mode","LongInt"],
@@ -34,10 +35,12 @@ export const BITZER_HHK52_ABI={
    capacity:["O_Q1","O_Q2"],power:["O_P1","O_P2"],cop:["O_E1","O_E2"],
    massFlow:["O_M1","O_M2"],dischargeTemp:["O_TH1","O_TH2"],hints:["O_Hint1","O_Hint2"],error:"O_Err"
   },
-  returnType:"LongInt",\n  bufferApi:{exportName:"CopyDesign",typeBufferChars:30,errorBufferChars:20,usesDesignDataRecord:true},
+  returnType:"LongInt",
+  bufferApi:{exportName:"CopyDesign",typeBufferChars:30,errorBufferChars:20,usesDesignDataRecord:true},
   declarationStatus:"official_manual_verified",
   declarationNotes:[
-   "Design is exported by HHK52.DLL with StdCall.",\n   "For foreign-language callers, prefer official CopyDesign: fixed caller-owned O_T1/O_T2/O_Err buffers plus a TDesignData record avoid unsafe direct var-pChar marshaling.",
+   "Design is exported by HHK52.DLL with StdCall.",
+   "For foreign-language callers, prefer official CopyDesign: fixed caller-owned O_T1/O_T2/O_Err buffers plus a TDesignData record avoid unsafe direct var-pChar marshaling.",
    "Inputs I_Q through I_TN are Double; I_NET/I_DS/I_OV/I_FI are LongInt; I_FCF is Double; I_FCV/I_FCOF/I_FCMV/I_OP are LongInt; I_CR is Single.",
    "O_T1/O_T2 and O_Err are var pAnsiChar; O_OP/O_FCF groups and O_Hint are var LongInt; performance outputs O_Q through O_PC are var Double."
   ]
