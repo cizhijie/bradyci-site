@@ -32,6 +32,8 @@ export function buildCondensingUnitCandidates(input={}){
   const coolingMethod=input.coolingMethod||input.condenserType||input.heatRejectionType||null;
 
   for(const compressor of compressors){
+    const verification=compressor?.selectionVerification;
+    if(!(verification?.finalSelectable===true && verification?.status)) continue;
     const each=candidateCapacity(compressor);
     if(!(each>0)) continue;
     for(let dutyCount=1;dutyCount<=maxCompressors;dutyCount++){
@@ -57,7 +59,8 @@ export function buildCondensingUnitCandidates(input={}){
         inputPowerPerCompressorKW:finite(compressor.inputPowerKW)?num(compressor.inputPowerKW):null,
         compressorSourceRef:compressor.sourceRef||null,
         compressorSourcePage:compressor.sourcePage||null,
-        compressorDataVerified:true,\n        compressorVerificationStatus:verification.status
+        compressorDataVerified:true,
+        compressorVerificationStatus:verification.status
       });
       break;
     }
