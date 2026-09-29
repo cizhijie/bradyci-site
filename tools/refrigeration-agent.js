@@ -327,6 +327,16 @@ export function detectManufacturerSelectionRequest(messages = [], projectState =
   return {query:{manufacturer:(/比泽尔|BITZER/i.test(text)||bitzerModel)?"BITZER":"",architecture,refrigerant:String(refrigerant).toUpperCase(),evaporatingTempC:Number(te),condensingTempC:Number(tc),...(suction!=null?{suctionGasTempC:Number(suction)}:{}),...(kw!=null?{requiredCoolingCapacityKW:Number(kw)}:{}),...(bitzerModel?{model:bitzerModel.replace(/Y-?\d+[A-Z]?$/i,"")}:{})},preferredBrands,directPerformance};
 }
 
+export function formatBitzerDirectPerformanceResult(result={},query={}) {
+  if(!result.ok) return "BITZER 原生性能数据库查询失败："+(result.error||"未知错误");
+  const matches=(result.matches||[]).filter(x=>!query.model||String(x.model).toUpperCase()===String(query.model).toUpperCase());
+  if(!matches.length) return `BITZER Selection 7.1.11 原生性能库中没有找到 ${query.model||"该型号"} / ${query.refrigerant||""} 在 Te=${query.evaporatingTempC}℃、Tc=${query.condensingTempC}℃ 的可用数据点；不会猜测、外推或改用其他型号。`;
+  const x=matches[0];
+  const exact=x.dataSource==="BITZER_NATIVE_EXACT";
+  const f=(v,d=3)=>Number.isFinite(Number(v))?Number(v).toFixed(d):"—";
+  return `**BITZER 原生性能数据**\n型号：${x.model}\n制冷剂：${x.refrigerant}\n工况：Te ${x.evaporatingTempC}℃ / Tc ${x.condensingTempC}℃${Number.isFinite(Number(query.suctionGasTempC))?` / 吸气温度 ${query.suctionGasTempC}℃`:""}\n制冷量 Q₀：${f(x.coolingCapacityKW)} kW\n输入功率 P：${f(x.inputPowerKW)} kW\nCOP：${f(x.cop)}\n质量流量：${f(x.massFlowKgH,2)} kg/h\n排气温度：${f(x.dischargeTempC,2)}℃\n\n数据来源：BITZER Selection 7.1.11 / BitzerNative HHK_Design。\n数据类型：${exact?"数据库精确工况点":"仅在四角均为有效原生点且网格≤5 K时的受限插值"}。\n原生提示：Hint1=${x.hint1??0}，Hint2=${x.hint2??0}（仅保留原始提示值，不自行解释位含义）。\n\n说明：原生性能计算成功不等同于已完成官方 Application Limits 运行范围校验。`;
+}
+
 export function formatManufacturerSelectionResult(result={}) {
   if(!result.ok) return "厂家性能数据库查询失败："+(result.error||"未知错误");
   if(result.noExactData) return `当前 Verified 厂家性能库中没有 ${result.refrigerant||"该制冷剂"} 在该精确 Te/Tc 工况的可用性能点，因此暂不能报具体型号。不会用排量换算制冷量，也不会静默插值或外推。需要补入对应官方性能表或 BITZER SOFTWARE 可追溯数据后再选型。`;
