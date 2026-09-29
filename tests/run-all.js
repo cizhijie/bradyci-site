@@ -10,7 +10,12 @@ const suites=[
 ["bitzer-windows-bridge-core","./bitzer-windows-bridge-core-regression.js","runBitzerWindowsBridgeCoreRegression"],
 ["bitzer-hhk52-abi","./bitzer-hhk52-abi-regression.js","runBitzerHhk52AbiRegression"],
 ["bitzer-hhk52-native-client","./bitzer-hhk52-native-client-regression.js","runBitzerHhk52NativeClientRegression"],
- ["bitzer-hhk52-windows-client","./bitzer-hhk52-windows-client-regression.js","runBitzerHhk52WindowsClientRegression"],\n ["bitzer-polynomial-import","./bitzer-polynomial-import-regression.js","runBitzerPolynomialImportRegression"],\n ["bitzer-polynomial-evaluator","./bitzer-polynomial-evaluator-regression.js","runBitzerPolynomialEvaluatorRegression"],\n ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
+ ["bitzer-hhk52-windows-client","./bitzer-hhk52-windows-client-regression.js","runBitzerHhk52WindowsClientRegression"],
+ ["bitzer-native-performance","./bitzer-native-performance-regression.js","runBitzerNativePerformanceRegression"],
+ ["bitzer-native-performance-db","./bitzer-native-performance-db-regression.js","runBitzerNativePerformanceDbRegression"],
+ ["bitzer-polynomial-import","./bitzer-polynomial-import-regression.js","runBitzerPolynomialImportRegression"],
+ ["bitzer-polynomial-evaluator","./bitzer-polynomial-evaluator-regression.js","runBitzerPolynomialEvaluatorRegression"],
+ ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
  ["forced-air-heat-transfer","./forced-air-heat-transfer-regression.js","runForcedAirHeatTransferRegression"],
@@ -59,5 +64,6 @@ for(const [name,path,fn] of suites){
   console.error("FAIL",name,err?.stack||err);
  }
 }
-console.log("\nSuites:",suites.length,"Failed:",failed,"Declared checks:",totalChecks);
+console.log("
+Suites:",suites.length,"Failed:",failed,"Declared checks:",totalChecks);
 if(failed) process.exitCode=1;
