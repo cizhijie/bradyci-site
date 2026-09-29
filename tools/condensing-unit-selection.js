@@ -82,10 +82,12 @@ export function buildCondensingUnitCandidates(input={}){
   const unresolved=[];
   if(!finite(input.condensingTempC)) unresolved.push("condensingTempC");
   if(!coolingMethod) unresolved.push("heatRejectionType");
-  if(!finite(input.condenserDesignCapacityKW)) unresolved.push("condenserDesignCapacityKW");
-  if(!finite(input.receiverVolumeL)) unresolved.push("receiverVolumeL");
+  if(!unitCandidates.some(x=>x.condenserDesign?.status==="condenser_design_basis_ready")) unresolved.push("condenserDesignBasis");
+  if(!(finite(input.receiverVolumeL)&&input.receiverSizingBasis)) unresolved.push("receiverSizingBasis");
   if(!input.oilManagementBasis && unitCandidates.some(x=>x.installedCompressorCount>1)) unresolved.push("oilManagementBasis");
 
+  const bestCondenserReady=unitCandidates.some(x=>x.condenserDesign?.status==="condenser_design_basis_ready");
+  const receiverBasisReady=finite(input.receiverVolumeL)&&!!input.receiverSizingBasis;
   const result={
     ok:true,
     status:unitCandidates.length?(unresolved.length?"unit_composition_ready_components_unresolved":"unit_composition_ready"):"verified_capacity_insufficient",
@@ -93,8 +95,8 @@ export function buildCondensingUnitCandidates(input={}){
     unitCandidates,
     unresolved,
     componentChecks:{
-      condenser:{status:finite(input.condenserDesignCapacityKW)?"provided_for_review":"unresolved",note:"冷凝器必须按项目 Tc、环境/冷却介质及总排热量校核；当前层不以制冷量直接冒充冷凝负荷。"},
-      receiver:{status:finite(input.receiverVolumeL)?"provided_for_review":"unresolved",note:"储液器容积必须依据系统制冷剂充注/容纳需求或可靠厂家方法确定，不能按压缩机匹数猜测。"},
+      condenser:{status:bestCondenserReady?"design_basis_ready":"unresolved",requiredHeatRejectionKW:unitCandidates[0]?.condenserDesign?.requiredHeatRejectionKW??null,note:"冷凝器必须按项目 Tc、环境/冷却介质及总排热量校核；厂家具体型号仍需对应评级数据复核。"},
+      receiver:{status:receiverBasisReady?"provided_for_review":"unresolved",note:"储液器容积必须依据系统制冷剂充注/容纳需求或可靠厂家方法确定，不能按压缩机匹数猜测。"},
       oilManagement:{status:input.oilManagementBasis?"provided_for_review":(unitCandidates.some(x=>x.installedCompressorCount>1)?"unresolved":"review_if_required"),note:"并联系统必须单独校核均油/油分/油位控制方案。"}
     },
     rule:"本层只组合已验证的压缩机真实工况能力。冷凝器、储液器、油管理等没有可靠输入或厂家数据时保持 unresolved，不编造型号或容量。"
