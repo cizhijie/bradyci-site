@@ -38,6 +38,8 @@ const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 const AGENT_VERSION = "v3.00";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];\nconst OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_COOKIE = "brady_owner_session";
+const OWNER_LOGIN_MAX_FAILURES = 5;
+const OWNER_LOGIN_WINDOW_SECONDS = 15 * 60;
 
 function runtimeReadiness(env){
   const missing=REQUIRED_RUNTIME_BINDINGS.filter(name=>!env[name]);
