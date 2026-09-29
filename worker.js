@@ -523,10 +523,19 @@ export default {
               const plannedQueries = readyResults.manufacturer_query_plan?.queries?.length ? readyResults.manufacturer_query_plan.queries : [selectionRequest.request];
               const architectureRuns = [];
               for (const manufacturerQuery of plannedQueries) {
-                const performance = await queryManufacturerPerformance(env, manufacturerQuery);
+                const useBitzerNative = manufacturerQuery.architecture === "semi-hermetic-reciprocating" &&
+                  (!manufacturerQuery.manufacturer || String(manufacturerQuery.manufacturer).toUpperCase() === "BITZER");
+                let performance = useBitzerNative
+                  ? await queryBitzerNativePerformance(env, manufacturerQuery)
+                  : await queryManufacturerPerformance(env, manufacturerQuery);
+                // Native BITZER Selection data is the primary source for ECOLINE operating-point performance.
+                // Fall back only when the native corpus has no usable point/cell for this condition.
+                if (useBitzerNative && performance.ok && performance.noData) {
+                  performance = await queryManufacturerPerformance(env, manufacturerQuery);
+                }
                 const envelope = await queryReviewedEnvelopePointsForCandidates(env, performance.capacityCandidates||[]);
                 const chain = finalizeCompressorCandidates(performance, envelope.ok ? envelope.points : [], { allowedArchitectures: manufacturerQuery.architecture ? [manufacturerQuery.architecture] : [] });
-                architectureRuns.push({ query:manufacturerQuery, performance, chain });
+                architectureRuns.push({ query:manufacturerQuery, performance, chain, performanceSource:useBitzerNative&&!performance.exactConditionOnly?"bitzer-native":"reviewed-performance" });
               }
               const rankedCandidates = architectureRuns.flatMap((run,architectureRank)=>(run.chain.finalCandidates||[]).map(candidate=>({...candidate,architecture:run.query.architecture||candidate.architecture||null,architectureRank,capacityMarginKW:Number(candidate.coolingCapacityKW)-Number(run.query.requiredCoolingCapacityKW)}))).sort((a,b)=>a.architectureRank-b.architectureRank || a.capacityMarginKW-b.capacityMarginKW);
               const bestArchitectureRank = rankedCandidates.length ? rankedCandidates[0].architectureRank : null;
