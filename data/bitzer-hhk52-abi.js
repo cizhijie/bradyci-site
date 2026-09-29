@@ -34,7 +34,13 @@ export const BITZER_HHK52_ABI={
    capacity:["O_Q1","O_Q2"],power:["O_P1","O_P2"],cop:["O_E1","O_E2"],
    massFlow:["O_M1","O_M2"],dischargeTemp:["O_TH1","O_TH2"],hints:["O_Hint1","O_Hint2"],error:"O_Err"
   },
-  returnType:"LongInt"
+  returnType:"LongInt",
+  declarationStatus:"official_manual_verified",
+  declarationNotes:[
+   "Design is exported by HHK52.DLL with StdCall.",
+   "Inputs I_Q through I_TN are Double; I_NET/I_DS/I_OV/I_FI are LongInt; I_FCF is Double; I_FCV/I_FCOF/I_FCMV/I_OP are LongInt; I_CR is Single.",
+   "O_T1/O_T2 and O_Err are var pAnsiChar; O_OP/O_FCF groups and O_Hint are var LongInt; performance outputs O_Q through O_PC are var Double."
+  ]
  },
  flagValues:{
   ipUnits:1,capacityGiven:2,superheatInput:4,usefulSuperheat:8,subcoolingInput:16,
