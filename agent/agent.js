@@ -39,26 +39,36 @@ async function verifyStoredPin(){
   ownerAuthenticated=!!r?.ok;
   setOwnerUI(ownerAuthenticated);
 }
+const ownerLoginPanel=document.querySelector("#ownerLoginPanel"),ownerLoginForm=document.querySelector("#ownerLoginForm"),ownerPinInput=document.querySelector("#ownerPinInput"),ownerLoginMessage=document.querySelector("#ownerLoginMessage");
+function closeOwnerLogin(){ownerPinInput.value="";ownerLoginMessage.textContent="";ownerLoginPanel.classList.add("hidden");}
+document.querySelector("#ownerLoginClose").onclick=closeOwnerLogin;
 document.querySelector("#ownerLogin").onclick=async()=>{
   if(ownerAuthenticated){
     await fetch("/api/owner/logout",{method:"POST",credentials:"same-origin"}).catch(()=>{});
     ownerAuthenticated=false;setOwnerUI(false);location.reload();return;
   }
-  const pin=prompt("请输入 Owner PIN：");if(!pin)return;
+  ownerPinInput.value="";ownerLoginMessage.textContent="";ownerLoginPanel.classList.remove("hidden");ownerPinInput.focus();
+};
+ownerLoginForm.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const pin=ownerPinInput.value;if(!pin)return;
+  const submit=document.querySelector("#ownerLoginSubmit");submit.disabled=true;ownerLoginMessage.textContent="正在验证…";
   let r;
   try {
     r=await fetch("/api/owner/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
   } catch {
-    alert("Owner 登录请求失败，请检查网络后重试。");return;
+    ownerLoginMessage.textContent="Owner 登录请求失败，请检查网络后重试。";submit.disabled=false;ownerPinInput.select();return;
   }
+  ownerPinInput.value="";
   if(!r.ok){
     const data=await r.json().catch(()=>({}));
-    if(r.status===429){alert(data.error||"登录尝试过多，请稍后再试。");return;}
-    if(r.status===503){alert(data.error||"Owner 登录保护暂时不可用，请稍后再试。");return;}
-    alert(data.error||"Owner PIN 不正确。");return;
+    if(r.status===429) ownerLoginMessage.textContent=data.error||"登录尝试过多，请稍后再试。";
+    else if(r.status===503) ownerLoginMessage.textContent=data.error||"Owner 登录保护暂时不可用，请稍后再试。";
+    else ownerLoginMessage.textContent=data.error||"Owner PIN 不正确。";
+    submit.disabled=false;ownerPinInput.focus();return;
   }
-  ownerAuthenticated=true;setOwnerUI(true);alert("Owner 身份验证成功。");
-};
+  ownerAuthenticated=true;setOwnerUI(true);submit.disabled=false;closeOwnerLogin();alert("Owner 身份验证成功。");
+});
 document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{input.value=b.textContent;input.focus()});
 form.addEventListener("submit",async e=>{
   e.preventDefault();const t=input.value.trim();if(!t||send.disabled)return;
