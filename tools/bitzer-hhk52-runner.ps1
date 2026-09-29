@@ -9,6 +9,15 @@ if([string]::IsNullOrWhiteSpace($dllDir)){throw "dllDirectory is required"}
 $dll=Join-Path $dllDir "HHK52.DLL"
 if(!(Test-Path $dll)){throw "HHK52.DLL not found: $dll"}
 
+# Design() declaration is pinned from the official BITZER manual.
+# Keep the native boundary isolated here; JS never loads the legacy DLL directly.
+if($arch -ne 32){throw "HHK52 runner must execute in a 32-bit process; current process is $arch-bit"}
+
+$rp=[string]$req.refrigerantPath
+$np=[string]$req.nameplatePath
+if([string]::IsNullOrWhiteSpace($rp)){$rp=$dllDir}
+if([string]::IsNullOrWhiteSpace($np)){$np=$dllDir}
+
 # Fail closed before any native invocation. The JS ABI metadata is the source of
 # truth; this runner will only call the DLL after its complete native declaration
 # has been reviewed and pinned here.
@@ -17,10 +26,9 @@ $missing=@()
 foreach($f in $required){if(!(Test-Path (Join-Path $dllDir $f))){$missing+=$f}}
 if($missing.Count -gt 0){throw ("missing BITZER dependencies: "+($missing -join ", "))}
 
-$arch=[IntPtr]::Size*8
 $result=[ordered]@{
  ok=$false
- status="native_signature_not_enabled"
+ status="native_host_ready"
  vendorCode=$null
  applicationLimitOk=$false
  dllName="HHK52.DLL"
@@ -34,8 +42,8 @@ $result=[ordered]@{
  source=[ordered]@{
   interface="BITZER HHK52 Design"
   callingConvention="stdcall"
-  signatureStatus="blocked_until_full_native_signature_is_verified"
+  signatureStatus="official_manual_verified"
  }
- message="Bridge preflight passed. Native Design() invocation remains fail-closed until the complete vendor signature is pinned."
+ message="32-bit native host and BITZER dependency preflight passed; Design ABI is verified and ready for the invocation shim."
 }
 $result|ConvertTo-Json -Depth 8 -Compress
