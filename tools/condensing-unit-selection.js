@@ -16,6 +16,14 @@ function requiredCapacity(input={}){
   return null;
 }
 
+function sameText(a,b){ return String(a??"").trim().toUpperCase()===String(b??"").trim().toUpperCase(); }
+function operatingPointMatches(candidate={},input={}){
+  if(input.refrigerant&&candidate.refrigerant&&!sameText(input.refrigerant,candidate.refrigerant)) return false;
+  if(finite(input.evaporatingTempC)&&finite(candidate.evaporatingTempC)&&num(input.evaporatingTempC)!==num(candidate.evaporatingTempC)) return false;
+  if(finite(input.condensingTempC)&&finite(candidate.condensingTempC)&&num(input.condensingTempC)!==num(candidate.condensingTempC)) return false;
+  return true;
+}
+
 function candidateCapacity(candidate={}){
   return finite(candidate.coolingCapacityKW)?num(candidate.coolingCapacityKW):null;
 }
@@ -29,11 +37,13 @@ export function buildCondensingUnitCandidates(input={}){
   const maxCompressors=finite(input.maxCompressors)?Math.max(1,Math.min(8,Math.floor(num(input.maxCompressors)))):4;
   const reserveUnits=finite(input.reserveCompressorCount)?Math.max(0,Math.floor(num(input.reserveCompressorCount))):(input.redundancyRequired===true?1:0);
   const unitCandidates=[];
+  const rejectedCompressorCandidates=[];
   const coolingMethod=input.coolingMethod||input.condenserType||input.heatRejectionType||null;
 
   for(const compressor of compressors){
     const verification=compressor?.selectionVerification;
-    if(!(verification?.finalSelectable===true && verification?.status)) continue;
+    if(!(verification?.finalSelectable===true && verification?.status)){ rejectedCompressorCandidates.push({model:compressor?.model||null,reason:"compressor_verification_missing"}); continue; }
+    if(!operatingPointMatches(compressor,input)){ rejectedCompressorCandidates.push({model:compressor?.model||null,reason:"compressor_operating_point_mismatch",candidate:{refrigerant:compressor?.refrigerant??null,evaporatingTempC:compressor?.evaporatingTempC??null,condensingTempC:compressor?.condensingTempC??null},project:{refrigerant:input.refrigerant??null,evaporatingTempC:input.evaporatingTempC??null,condensingTempC:input.condensingTempC??null}}); continue; }
     const each=candidateCapacity(compressor);
     if(!(each>0)) continue;
     for(let dutyCount=1;dutyCount<=maxCompressors;dutyCount++){
@@ -96,6 +106,7 @@ export function buildCondensingUnitCandidates(input={}){
     status:unitCandidates.length?(unresolved.length?"unit_composition_ready_components_unresolved":"unit_composition_ready"):"verified_capacity_insufficient",
     requiredCoolingCapacityKW:round(required),
     unitCandidates,
+    rejectedCompressorCandidates,
     unresolved,
     componentChecks:{
       condenser:{status:bestCondenserReady?"design_basis_ready":"unresolved",requiredHeatRejectionKW:unitCandidates[0]?.condenserDesign?.requiredHeatRejectionKW??null,note:"冷凝器必须按项目 Tc、环境/冷却介质及总排热量校核；厂家具体型号仍需对应评级数据复核。"},

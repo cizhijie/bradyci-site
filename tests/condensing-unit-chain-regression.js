@@ -25,6 +25,22 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(forgedUnit.unitCandidates.length,0); checks++;
  assert.equal(forgedUnit.status,"verified_capacity_insufficient"); checks++;
 
+ // A verified candidate is valid only at the exact project refrigerant / Te / Tc.
+ const wrongTc=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:40,
+  condenserType:"air",ambientTempC:35
+ });
+ assert.equal(wrongTc.unitCandidates.length,0); checks++;
+ assert.equal(wrongTc.rejectedCompressorCandidates[0].reason,"compressor_operating_point_mismatch"); checks++;
+ const wrongRefrigerant=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R507",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35
+ });
+ assert.equal(wrongRefrigerant.unitCandidates.length,0); checks++;
+ assert.equal(wrongRefrigerant.rejectedCompressorCandidates[0].reason,"compressor_operating_point_mismatch"); checks++;
+
  // Invalid native operating point must fail closed and never reach final candidate.
  const invalid=queryBitzerNativeRows([row(-25,45,20,8,1,0)],{refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,requiredCoolingCapacityKW:18});
  assert.equal(invalid.capacityCandidates.length,0); checks++;
