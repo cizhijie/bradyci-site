@@ -1,5 +1,6 @@
 import { attachCondenserBasisToUnit } from "./condenser-design-load.js";
 import { reviewUnitAccessories } from "./unit-accessory-review.js";
+import { reviewCondensingUnitCandidates } from "./condensing-unit-review.js";
 // Deterministic condensing-unit composition layer.
 // It consumes already verified compressor candidates. It never invents manufacturer package SKUs
 // or silently sizes unresolved components.
@@ -84,7 +85,7 @@ export function buildCondensingUnitCandidates(input={}){
   if(!finite(input.receiverVolumeL)) unresolved.push("receiverVolumeL");
   if(!input.oilManagementBasis && unitCandidates.some(x=>x.installedCompressorCount>1)) unresolved.push("oilManagementBasis");
 
-  return {
+  const result={
     ok:true,
     status:unitCandidates.length?(unresolved.length?"unit_composition_ready_components_unresolved":"unit_composition_ready"):"verified_capacity_insufficient",
     requiredCoolingCapacityKW:round(required),
@@ -97,4 +98,5 @@ export function buildCondensingUnitCandidates(input={}){
     },
     rule:"本层只组合已验证的压缩机真实工况能力。冷凝器、储液器、油管理等没有可靠输入或厂家数据时保持 unresolved，不编造型号或容量。"
   };
+  return reviewCondensingUnitCandidates(result,input);
 }
