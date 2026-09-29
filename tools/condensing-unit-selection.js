@@ -1,3 +1,4 @@
+import { buildUnitSelectionTrace } from "./unit-selection-trace.js";
 import { presentCondensingUnitResult } from "./condensing-unit-presentation.js";
 import { assessCapacityControl } from "./unit-capacity-control.js";
 import { attachCondenserBasisToUnit } from "./condenser-design-load.js";
@@ -122,5 +123,6 @@ export function buildCondensingUnitCandidates(input={}){
     rule:"本层只组合已验证的压缩机真实工况能力。冷凝器、储液器、油管理等没有可靠输入或厂家数据时保持 unresolved，不编造型号或容量。"
   };
   const reviewed=reviewCondensingUnitCandidates(result,input);
+  reviewed.unitCandidates.forEach(unit=>{unit.selectionTrace=buildUnitSelectionTrace(unit,{...input,requiredCoolingCapacityKW:required});});
   return {...reviewed,presentation:presentCondensingUnitResult(reviewed)};
 }

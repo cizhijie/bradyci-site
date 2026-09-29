@@ -67,6 +67,10 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(unit.presentation.solutions[0].capacity.marginPercent,11.1); checks++;
  assert.equal(unit.presentation.solutions[0].finalSelectable,false); checks++;
  assert.ok(unit.presentation.solutions[0].note.includes("工程候选")); checks++;
+ assert.equal(unit.unitCandidates[0].selectionTrace.evidence[0].type,"manufacturer_fact"); checks++;
+ assert.equal(unit.unitCandidates[0].selectionTrace.evidence[0].value.coolingCapacityKW,20); checks++;
+ assert.equal(unit.unitCandidates[0].selectionTrace.evidence[1].type,"calculation"); checks++;
+ assert.ok(unit.unitCandidates[0].selectionTrace.rule.includes("工程判断")); checks++;
 
  // Missing compressor input power must not be replaced by a guessed condenser factor.
  const noPower={...chain.finalCandidates[0],inputPowerKW:null};
@@ -93,6 +97,7 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(parallel.unitCandidates[0].capacityControlReview.strategies[0].status,"available_by_composition"); checks++;
  assert.equal(parallel.unitCandidates[0].capacityControlReview.strategies[1].status,"manufacturer_verification_required"); checks++;
  assert.ok(parallel.unitCandidates[0].unitReview.warnings.some(x=>x.code==="staged_capacity_control_review")); checks++;
+ assert.ok(parallel.unitCandidates[0].selectionTrace.engineeringJudgments.some(x=>x.includes("多机"))); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.oilManagement.status,"required_unresolved"); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.oil_management.level,"required"); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.suction_accumulator.level,"recommended"); checks++;
