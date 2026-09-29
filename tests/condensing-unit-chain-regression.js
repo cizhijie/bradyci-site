@@ -41,5 +41,52 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(noPowerUnit.unitCandidates[0].condenserDesign.status,"compressor_input_power_missing"); checks++;
  assert.equal(noPowerUnit.unitCandidates[0].condenserDesign.requiredHeatRejectionKW,undefined); checks++;
 
+ // Parallel composition must require an explicit oil-management basis.
+ const parallel=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:35,
+  compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35,
+  receiverVolumeL:30,receiverSizingBasis:"reviewed system charge basis"
+ });
+ assert.equal(parallel.unitCandidates[0].dutyCompressorCount,2); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.oilManagement.status,"required_unresolved"); checks++;
+ assert.equal(parallel.unitCandidates[0].unitReview.finalSelectable,false); checks++;
+ assert.ok(parallel.unitCandidates[0].unitReview.blockers.some(x=>x.code==="parallel_oil_management_unresolved")); checks++;
+
+ // Receiver volume alone is not a sizing basis and must not pass the final gate.
+ const receiverNoBasis=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,
+  compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35,receiverVolumeL:30
+ });
+ assert.equal(receiverNoBasis.unitCandidates[0].accessoryReview.receiver.status,"unresolved"); checks++;
+ assert.ok(receiverNoBasis.unitCandidates[0].unitReview.blockers.some(x=>x.code==="receiver_unresolved")); checks++;
+
+ // Redundancy request creates a reserve compressor but does not count it as duty capacity.
+ const redundant=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,
+  compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35,redundancyRequired:true
+ });
+ assert.equal(redundant.unitCandidates[0].dutyCompressorCount,1); checks++;
+ assert.equal(redundant.unitCandidates[0].reserveCompressorCount,1); checks++;
+ assert.equal(redundant.unitCandidates[0].dutyCoolingCapacityKW,20); checks++;
+ assert.equal(redundant.unitCandidates[0].installedCoolingCapacityKW,40); checks++;
+
+ // Even with compressor/condenser/receiver/oil bases, unresolved package components keep the result non-final.
+ const nearlyComplete=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,
+  compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35,
+  receiverVolumeL:30,receiverSizingBasis:"reviewed system charge basis",
+  oilManagementBasis:"manufacturer reviewed single-compressor basis"
+ });
+ assert.equal(nearlyComplete.finalUnitCandidates.length,0); checks++;
+ assert.equal(nearlyComplete.status,"engineering_unit_candidates_only"); checks++;
+
  return {checks};
 }
