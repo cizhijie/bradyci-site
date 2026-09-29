@@ -1,11 +1,11 @@
-import {normalizeBitzerPolynomialRow,importBitzerPolynomialRows} from "../tools/bitzer-polynomial-import.js";
+import {normalizeBitzerPolynomialExport,bitzerPolynomialImportPolicy} from "../tools/bitzer-polynomial-import.js";
 const ck=(v,m)=>{if(!v)throw new Error(m)};
 export function runBitzerPolynomialImportRegression(){
- const a=normalizeBitzerPolynomialRow({Model:"4NES-20Y",Refrigerant:"R404A",Quantity:"cooling_capacity",C1:"1",C2:"2"});
- ck(a.ok&&a.record.model==="4NES-20Y"&&a.record.refrigerant==="R404A","normalizes BITZER polynomial row");
- const b=normalizeBitzerPolynomialRow({Model:"4NES-20Y",Refrigerant:"R404A"});
- ck(!b.ok&&b.missing.includes("quantity")&&b.missing.includes("coefficients"),"incomplete export fails closed");
- const c=importBitzerPolynomialRows([{Model:"4NES-20Y",Refrigerant:"R404A",Quantity:"power",C1:1},{x:1}]);
- ck(c.count===1&&c.rejected.length===1,"batch import separates rejected rows");
+ const good=normalizeBitzerPolynomialExport({model:"4NES-20Y",refrigerant:"R404A",softwareVersion:"7.1.11",exportFileName:"bitzer.csv",polynomialStandard:"BITZER_EXPORT",quantity:"cooling_capacity",coefficients:[1,2,3,4,5,6,7,8,9,10],sourceRef:"BITZER SOFTWARE"});
+ ck(good.ok&&good.row.model==="4NES-20Y"&&good.row.refrigerant==="R404A","normalizes complete BITZER polynomial export");
+ const bad=normalizeBitzerPolynomialExport({model:"4NES-20Y",refrigerant:"R404A"});
+ ck(!bad.ok&&bad.missing.includes("coefficients"),"incomplete export fails closed");
+ const policy=bitzerPolynomialImportPolicy();
+ ck(policy.directVerifiedWrite===false&&policy.stages.includes("reviewed-convention"),"import policy requires review before verification");
  return {ok:true,checks:3};
 }
