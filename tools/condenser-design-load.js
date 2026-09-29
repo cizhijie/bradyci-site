@@ -3,7 +3,7 @@
 // It does not choose a manufacturer condenser model.
 
 const n=v=>Number(v);
-const f=v=>Number.isFinite(n(v));
+const f=v=>v!==null&&v!==undefined&&v!==""&&Number.isFinite(n(v));
 const r=(v,d=2)=>Math.round(n(v)*10**d)/10**d;
 
 export function calculateCondenserDesignLoad(input={}){
