@@ -1,7 +1,7 @@
 const chat=document.querySelector("#chat"),input=document.querySelector("#input"),form=document.querySelector("#composer"),welcome=document.querySelector(".welcome"),send=document.querySelector("#send");
 const messages=[];
 const MAX_CHAT_MESSAGES=12;
-let ownerPin=sessionStorage.getItem("bradyOwnerPin")||"";
+let ownerAuthenticated=false;\nsessionStorage.removeItem("bradyOwnerPin");
 let projectId=(globalThis.crypto?.randomUUID?.()||("p-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
@@ -34,24 +34,26 @@ function setOwnerUI(isOwner){
   document.querySelector("#memoryBtn").classList.toggle("hidden",!isOwner);
 }
 async function verifyStoredPin(){
-  if(!ownerPin){setOwnerUI(false);return;}
-  const r=await fetch("/api/owner/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:ownerPin})});
-  if(!r.ok){ownerPin="";sessionStorage.removeItem("bradyOwnerPin");setOwnerUI(false);return;}
-  setOwnerUI(true);
+  const r=await fetch("/api/owner/session",{credentials:"same-origin"}).catch(()=>null);
+  ownerAuthenticated=!!r?.ok;
+  setOwnerUI(ownerAuthenticated);
 }
 document.querySelector("#ownerLogin").onclick=async()=>{
-  if(ownerPin){ownerPin="";sessionStorage.removeItem("bradyOwnerPin");setOwnerUI(false);location.reload();return;}
+  if(ownerAuthenticated){
+    await fetch("/api/owner/logout",{method:"POST",credentials:"same-origin"}).catch(()=>{});
+    ownerAuthenticated=false;setOwnerUI(false);location.reload();return;
+  }
   const pin=prompt("请输入 Owner PIN：");if(!pin)return;
-  const r=await fetch("/api/owner/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
+  const r=await fetch("/api/owner/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
   if(!r.ok){alert("Owner PIN 不正确。");return;}
-  ownerPin=pin;sessionStorage.setItem("bradyOwnerPin",pin);setOwnerUI(true);alert("Owner 身份验证成功。");
+  ownerAuthenticated=true;setOwnerUI(true);alert("Owner 身份验证成功。");
 };
 document.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{input.value=b.textContent;input.focus()});
 form.addEventListener("submit",async e=>{
   e.preventDefault();const t=input.value.trim();if(!t||send.disabled)return;
   add(t,"user");messages.push({role:"user",content:t});input.value="";send.disabled=true;const bubble=add("正在连接…","assistant");let reply="";
   try{
-    const headers={"Content-Type":"application/json"};if(ownerPin)headers["X-Owner-Pin"]=ownerPin;
+    const headers={"Content-Type":"application/json"};
     const r=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:messages.slice(-MAX_CHAT_MESSAGES),projectId})});
     if(!r.ok){const data=await r.json().catch(()=>({}));throw new Error(data.error||"请求失败");}
     const toolUsed=r.headers.get("X-Brady-Tool")||"";
@@ -83,7 +85,7 @@ form.addEventListener("submit",async e=>{
 input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
 document.querySelector("#clear").onclick=async()=>{
   messages.length=0;
-  if(ownerPin){
+  if(ownerAuthenticated){
     await fetch("/api/project/cold-room/reset",{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Pin":ownerPin},body:JSON.stringify({projectId})}).catch(()=>{});
     projectId=(globalThis.crypto?.randomUUID?.()||("p-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
   }
@@ -92,7 +94,7 @@ document.querySelector("#clear").onclick=async()=>{
 verifyStoredPin();
 
 const memoryPanel=document.querySelector("#memoryPanel"),memoryList=document.querySelector("#memoryList");
-function ownerHeaders(){return {"Content-Type":"application/json","X-Owner-Pin":ownerPin};}
+function ownerHeaders(){return {"Content-Type":"application/json"};}
 function memoryCategoryName(c){return ({general:"一般",profile:"个人",preference:"偏好",project:"项目",work:"工作",learning:"学习"})[c]||c;}
 async function loadMemoryManager(){
   memoryList.innerHTML="<p class='memory-empty'>正在读取…</p>";
