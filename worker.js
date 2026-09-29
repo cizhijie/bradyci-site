@@ -6,7 +6,7 @@ import { referenceCompressorBandFromReviewedPerformance } from "./tools/compress
 import { deriveEngineeringDuty } from "./tools/refrigeration-duty.js";
 import { queryProvisionalDutyCandidates } from "./tools/provisional-compressor-search.js";
 import { calculateProductLoad } from "./tools/product-load.js";
-import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
+import { runRefrigerationTool, REFRIGERATION_TOOL_PROTOCOL, detectDeterministicRefrigerationRequest, detectManufacturerSelectionRequest, formatManufacturerSelectionResult, formatBitzerDirectPerformanceResult, formatColdRoomIntake, extractColdRoomProject, formatColdRoomProjectState } from "./tools/refrigeration-agent.js";
 import { formatCoreFreezingFailure } from "./tools/core-freezing-result-formatter.js";
 import { loadColdRoomProjectState, saveColdRoomProjectState, clearColdRoomProjectState, mergeColdRoomProjectState } from "./lib/cold-room-project-state.js";
 import { assessColdRoomProject, formatColdRoomReadiness, calculateReadyColdRoomParts, formatReadyColdRoomCalculations } from "./tools/cold-room-readiness.js";
@@ -535,6 +535,10 @@ export default {
             let selected = useBitzerNative ? await queryBitzerNativePerformance(env, manufacturerSelection.query) : await queryManufacturerPerformance(env, manufacturerSelection.query);
             // Fall back to the legacy reviewed exact-point store until the native corpus has been imported.
             if (useBitzerNative && selected.ok && selected.noData) selected = await queryManufacturerPerformance(env, manufacturerSelection.query);
+            if (manufacturerSelection.directPerformance && manufacturerSelection.query.model && useBitzerNative) {
+              const directText=formatBitzerDirectPerformanceResult(selected,manufacturerSelection.query);
+              return sseText(directText,{model:"deterministic-bitzer-native",role:"owner",skill:activeSkill.id,tool:"bitzer_direct_performance"});
+            }
             const envelopeResult = await queryReviewedEnvelopePointsForCandidates(env, selected.capacityCandidates||[]);
             const directArchitecture = manufacturerSelection.query.architecture ? [manufacturerSelection.query.architecture] : [];
             const selectionChain = finalizeCompressorCandidates(selected, envelopeResult.ok ? envelopeResult.points : [], { allowedArchitectures: directArchitecture });
