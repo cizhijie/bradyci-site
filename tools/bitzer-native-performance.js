@@ -3,7 +3,7 @@
 
 const num=v=>{if(v===null||v===undefined||v==="") return null;const n=Number(v);return Number.isFinite(n)?n:null;};
 const text=v=>String(v??"").trim();
-const valid=r=>Number(r?.ReturnCode??r?.returnCode)===0&&Number(r?.ResultCode??r?.resultCode)===0&&Number(r?.CoolingCapacity_kW??r?.coolingCapacityKW)>0;
+const valid=r=>num(r?.ReturnCode??r?.returnCode)===0&&num(r?.ResultCode??r?.resultCode)===0&&qOf(r)>0&&pOf(r)>0;
 const teOf=r=>num(r.Te_C??r.evaporatingTempC), tcOf=r=>num(r.Tc_C??r.condensingTempC);
 const qOf=r=>num(r.CoolingCapacity_kW??r.coolingCapacityKW), pOf=r=>num(r.Power_kW??r.inputPowerKW);
 const field=(r,a,b)=>num(r[a]??r[b]);
@@ -30,7 +30,8 @@ function interpolate(rows,te,tc){
   return getter(get(loTe,loTc))*(1-x)*(1-y)+getter(get(hiTe,loTc))*x*(1-y)+getter(get(loTe,hiTc))*(1-x)*y+getter(get(hiTe,hiTc))*x*y;
  };
  const q=interp(qOf),p=interp(pOf);
- return {CoolingCapacity_kW:q,Power_kW:p,COP:p>0?q/p:null,
+ if(!(q>0&&p>0)) return null;
+ return {CoolingCapacity_kW:q,Power_kW:p,COP:q/p,
   MassFlow_kg_h:interp(r=>field(r,"MassFlow_kg_h","massFlowKgH")),
   DischargeTemp_C:interp(r=>field(r,"DischargeTemp_C","dischargeTempC")),
   Hint1:Math.max(...corners.map(r=>Number(r.Hint1??r.hint1??0))),
