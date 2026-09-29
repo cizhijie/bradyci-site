@@ -10,5 +10,7 @@ export async function runBitzerNativePerformanceRegression(){
  const broken=rows.map(x=>({...x})); broken.find(x=>x.ProductType==="A"&&x.Te_C===5&&x.Tc_C===45).ReturnCode=-31; broken.find(x=>x.ProductType==="A"&&x.Te_C===5&&x.Tc_C===45).ResultCode=-31;
  r=queryBitzerNativeRows(broken,{refrigerant:"R134a",evaporatingTempC:2.5,condensingTempC:42.5,requiredCoolingCapacityKW:10});
  assert.equal(r.matches.some(x=>x.model==="A"),false); assert.equal(r.matches.some(x=>x.model==="B"),true);
- return {ok:true,checks:6};
+ r=queryBitzerNativeRows(rows,{model:"A",refrigerant:"R134a",evaporatingTempC:0,condensingTempC:45});
+ assert.equal(r.matches.length,1); assert.equal(r.matches[0].model,"A");
+ return {ok:true,checks:8};
 }
