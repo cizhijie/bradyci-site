@@ -1,3 +1,4 @@
+import { attachCondenserBasisToUnit } from "./condenser-design-load.js";
 // Deterministic condensing-unit composition layer.
 // It consumes already verified compressor candidates. It never invents manufacturer package SKUs
 // or silently sizes unresolved components.
@@ -60,6 +61,16 @@ export function buildCondensingUnitCandidates(input={}){
   }
 
   unitCandidates.sort((a,b)=>a.dutyMarginPercent-b.dutyMarginPercent||a.installedCompressorCount-b.installedCompressorCount);
+  for(const unit of unitCandidates){
+    unit.condenserDesign=attachCondenserBasisToUnit(unit,{
+      coolingMethod:input.condenserType||input.coolingMethod,
+      ambientTempC:input.ambientTempC,
+      enteringWaterTempC:input.enteringWaterTempC,
+      wetBulbTempC:input.wetBulbTempC,
+      condensingTempC:input.condensingTempC,
+      auxiliaryHeatToCondenserKW:input.auxiliaryHeatToCondenserKW
+    });
+  }
   const unresolved=[];
   if(!finite(input.condensingTempC)) unresolved.push("condensingTempC");
   if(!input.condenserType) unresolved.push("condenserType");
