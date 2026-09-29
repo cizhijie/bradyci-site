@@ -1,3 +1,4 @@
+import { assessCapacityControl } from "./unit-capacity-control.js";
 import { attachCondenserBasisToUnit } from "./condenser-design-load.js";
 import { reviewUnitAccessories } from "./unit-accessory-review.js";
 import { reviewCondensingUnitCandidates } from "./condensing-unit-review.js";
@@ -72,14 +73,15 @@ export function buildCondensingUnitCandidates(input={}){
         compressorSourceRef:compressor.sourceRef||null,
         compressorSourcePage:compressor.sourcePage||null,
         compressorDataVerified:true,
-        compressorVerificationStatus:verification.status
+        compressorVerificationStatus:verification.status,
+        capacityControlVerification:compressor.capacityControlVerification||null
       });
       break;
     }
   }
 
   unitCandidates.sort((a,b)=>a.dutyMarginPercent-b.dutyMarginPercent||a.dutyCompressorCount-b.dutyCompressorCount||a.installedCompressorCount-b.installedCompressorCount);
-  unitCandidates.forEach((unit,index)=>{ unit.combinationRank=index+1; unit.capacityCombinationStatus=unit.dutyMarginPercent>25?"large_margin_review_required":unit.dutyCompressorCount>1?"staged_capacity_available":"single_stage"; });
+  unitCandidates.forEach((unit,index)=>{ unit.combinationRank=index+1; unit.capacityCombinationStatus=unit.dutyMarginPercent>25?"large_margin_review_required":unit.dutyCompressorCount>1?"staged_capacity_available":"single_stage"; unit.capacityControlReview=assessCapacityControl(unit,unit.capacityControlVerification||{}); });
   for(const unit of unitCandidates){
     unit.condenserDesign=attachCondenserBasisToUnit(unit,{
       coolingMethod,
