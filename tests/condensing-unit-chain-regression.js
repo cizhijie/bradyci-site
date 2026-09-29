@@ -98,16 +98,20 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(airCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
  assert.ok(!airCn.unresolved.includes("heatRejectionType")); checks++;
 
+ const waterNative=queryBitzerNativeRows([row(-25,40,21,7.5)],{refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:40,requiredCoolingCapacityKW:18});
+ const waterChain=finalizeCompressorCandidates(waterNative,[],{allowedArchitectures:["semi-hermetic-reciprocating"]});
  const waterCn=buildCondensingUnitCandidates({
-  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  requiredCoolingCapacityKW:18,compressorCandidates:waterChain.finalCandidates,
   refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:40,
   heatRejectionType:"水冷",enteringWaterTempC:30
  });
  assert.equal(waterCn.unitCandidates[0].condenserDesign.coolingMethod,"water"); checks++;
  assert.equal(waterCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
 
+ const evapNative=queryBitzerNativeRows([row(-25,36,22,7)],{refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:36,requiredCoolingCapacityKW:18});
+ const evapChain=finalizeCompressorCandidates(evapNative,[],{allowedArchitectures:["semi-hermetic-reciprocating"]});
  const evapCn=buildCondensingUnitCandidates({
-  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  requiredCoolingCapacityKW:18,compressorCandidates:evapChain.finalCandidates,
   refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:36,
   heatRejectionType:"蒸发冷",wetBulbTempC:26
  });
