@@ -114,5 +114,30 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(evapCn.unitCandidates[0].condenserDesign.coolingMethod,"evaporative"); checks++;
  assert.equal(evapCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
 
+ // Missing numeric values must stay missing all the way through the engineering chain.
+ const nullPower={...chain.finalCandidates[0],inputPowerKW:null};
+ const nullPowerResult=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:[nullPower],
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  heatRejectionType:"风冷",ambientTempC:35
+ });
+ assert.equal(nullPowerResult.unitCandidates[0].condenserDesign.status,"compressor_input_power_missing"); checks++;
+
+ const emptyReceiver=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  heatRejectionType:"风冷",ambientTempC:35,
+  receiverVolumeL:"",receiverSizingBasis:"reviewed basis"
+ });
+ assert.equal(emptyReceiver.unitCandidates[0].accessoryReview.receiver.volumeL,null); checks++;
+ assert.equal(emptyReceiver.unitCandidates[0].accessoryReview.receiver.status,"unresolved"); checks++;
+
+ const missingTc=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:[{...chain.finalCandidates[0],condensingTempC:null}],
+  refrigerant:"R404A",evaporatingTempC:-25,
+  heatRejectionType:"风冷",ambientTempC:35
+ });
+ assert.ok(missingTc.unresolved.includes("condensingTempC")); checks++;
+
  return {checks};
 }
