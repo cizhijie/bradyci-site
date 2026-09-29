@@ -660,9 +660,8 @@ function cleanFinalAnswer(value="") {
 }
 
 async function ownerLoginKey(request) {
-  const ip=request.headers.get("CF-Connecting-IP")||"unknown";
-  const ua=request.headers.get("User-Agent")||"";
-  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+"|"+ua));
+  const ip=(request.headers.get("CF-Connecting-IP")||"unknown").trim();
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("owner-login|"+ip));
   return b64url(digest);
 }
 async function ownerLoginGate(env,key) {
