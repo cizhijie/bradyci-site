@@ -88,5 +88,31 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(nearlyComplete.finalUnitCandidates.length,0); checks++;
  assert.equal(nearlyComplete.status,"engineering_unit_candidates_only"); checks++;
 
+ // Heat-rejection method aliases must normalize consistently through the unit chain.
+ const airCn=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  heatRejectionType:"风冷",ambientTempC:35
+ });
+ assert.equal(airCn.unitCandidates[0].condenserDesign.coolingMethod,"air"); checks++;
+ assert.equal(airCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
+ assert.ok(!airCn.unresolved.includes("heatRejectionType")); checks++;
+
+ const waterCn=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:40,
+  heatRejectionType:"水冷",enteringWaterTempC:30
+ });
+ assert.equal(waterCn.unitCandidates[0].condenserDesign.coolingMethod,"water"); checks++;
+ assert.equal(waterCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
+
+ const evapCn=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:36,
+  heatRejectionType:"蒸发冷",wetBulbTempC:26
+ });
+ assert.equal(evapCn.unitCandidates[0].condenserDesign.coolingMethod,"evaporative"); checks++;
+ assert.equal(evapCn.unitCandidates[0].condenserDesign.approachK,10); checks++;
+
  return {checks};
 }
