@@ -37,6 +37,7 @@ const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 const AGENT_VERSION = "v3.00";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];\nconst OWNER_SESSION_SECONDS = 8 * 60 * 60;
+const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
 const OWNER_COOKIE = "brady_owner_session";
 const OWNER_LOGIN_MAX_FAILURES = 5;
 const OWNER_LOGIN_WINDOW_SECONDS = 15 * 60;
@@ -61,16 +62,19 @@ export default {
     if (url.pathname === "/api/owner/login") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!env.OWNER_PIN) return json({ error: "OWNER_PIN is not configured" }, 500);
+      if (!env.brady_agent_memory) return json({ error: "Owner login protection is not configured" }, 503);
       const body = await request.json().catch(() => ({}));
       const loginKey = await ownerLoginKey(request);
       const gate = await ownerLoginGate(env, loginKey);
       if (!gate.ok) return json({ error: "登录尝试过多，请稍后再试" }, 429);
       const ok = safeEqual(String(body.pin || ""), String(env.OWNER_PIN));
       if (!ok) {
-        await recordOwnerLoginFailure(env, loginKey);
+        const recorded = await recordOwnerLoginFailure(env, loginKey);
+        if (!recorded) return json({ error: "Owner login protection is unavailable" }, 503);
         return json({ error: "Owner PIN 不正确" }, 401);
       }
-      await clearOwnerLoginFailures(env, loginKey);
+      const cleared = await clearOwnerLoginFailures(env, loginKey);
+      if (!cleared) return json({ error: "Owner login protection is unavailable" }, 503);
       const token = await createOwnerSession(env);
       return jsonWithHeaders({ ok: true, role: "owner" }, 200, {
         "Set-Cookie": ownerCookie(token, OWNER_SESSION_SECONDS)
@@ -671,15 +675,16 @@ async function ownerLoginGate(env,key) {
   } catch { return {ok:false}; }
 }
 async function recordOwnerLoginFailure(env,key) {
-  if(!env.brady_agent_memory) return;
+  if(!env.brady_agent_memory) return false;
   const now=Math.floor(Date.now()/1000);
   try {
     await env.brady_agent_memory.prepare("INSERT INTO owner_login_attempts(login_key,failures,window_started,updated_at) VALUES(?,1,?,?) ON CONFLICT(login_key) DO UPDATE SET failures=CASE WHEN ?-window_started>=? THEN 1 ELSE failures+1 END,window_started=CASE WHEN ?-window_started>=? THEN ? ELSE window_started END,updated_at=?").bind(key,now,now,now,OWNER_LOGIN_WINDOW_SECONDS,now,OWNER_LOGIN_WINDOW_SECONDS,now,now).run();
-  } catch {}
+  } catch { return false; }
+  return true;
 }
 async function clearOwnerLoginFailures(env,key) {
-  if(!env.brady_agent_memory) return;
-  try { await env.brady_agent_memory.prepare("DELETE FROM owner_login_attempts WHERE login_key=?").bind(key).run(); } catch {}
+  if(!env.brady_agent_memory) return false;
+  try { await env.brady_agent_memory.prepare("DELETE FROM owner_login_attempts WHERE login_key=?").bind(key).run(); return true; } catch { return false; }
 }
 async function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
@@ -721,7 +726,8 @@ async function createOwnerSession(env) {
 async function verifyOwnerSession(env, token) {
   try {
     const parts=String(token).split("."); if(parts.length!==3) return false;
-    const exp=Number(parts[0]); if(!Number.isFinite(exp)||exp<Math.floor(Date.now()/1000)) return false;
+    const now=Math.floor(Date.now()/1000);
+    const exp=Number(parts[0]); if(!Number.isFinite(exp)||exp<now||exp>now+OWNER_SESSION_SECONDS+OWNER_SESSION_FUTURE_SKEW_SECONDS) return false;
     const payload=parts[0]+"."+parts[1];
     return crypto.subtle.verify("HMAC",await ownerSessionKey(env),fromB64url(parts[2]),new TextEncoder().encode(payload));
   } catch { return false; }
