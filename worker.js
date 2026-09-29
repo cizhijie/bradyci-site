@@ -704,7 +704,8 @@ async function ownerSessionKey(env) {
 }
 function b64url(bytes) {
   let s=""; for (const b of new Uint8Array(bytes)) s+=String.fromCharCode(b);
-  return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+  const base=btoa(s);
+  return base.split("+").join("-").split("/").join("_").replace(/=+$/,"");
 }
 function fromB64url(s) {
   const x=s.replace(/-/g,"+").replace(/_/g,"/"); const padded=x+"=".repeat((4-x.length%4)%4);
