@@ -57,7 +57,7 @@ export function buildCondensingUnitCandidates(input={}){
         inputPowerPerCompressorKW:finite(compressor.inputPowerKW)?num(compressor.inputPowerKW):null,
         compressorSourceRef:compressor.sourceRef||null,
         compressorSourcePage:compressor.sourcePage||null,
-        compressorDataVerified:true
+        compressorDataVerified:true,\n        compressorVerificationStatus:verification.status
       });
       break;
     }

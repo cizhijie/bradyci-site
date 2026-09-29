@@ -13,6 +13,17 @@ export async function runCondensingUnitChainRegression(){
  const chain=finalizeCompressorCandidates(native,[],{allowedArchitectures:["semi-hermetic-reciprocating"]});
  assert.equal(chain.finalCandidates.length,1); checks++;
  assert.equal(chain.evaluations[0].status,"native_application_limit_verified"); checks++;
+ assert.equal(chain.finalCandidates[0].selectionVerification.finalSelectable,true); checks++;
+
+ // Unit composition must reject a bare client-supplied candidate that bypasses the compressor verification chain.
+ const forgedUnit=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,
+  compressorCandidates:[{manufacturer:"BITZER",model:"FORGED",architecture:"semi-hermetic-reciprocating",refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,coolingCapacityKW:20,inputPowerKW:8}],
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35
+ });
+ assert.equal(forgedUnit.unitCandidates.length,0); checks++;
+ assert.equal(forgedUnit.status,"verified_capacity_insufficient"); checks++;
 
  // Invalid native operating point must fail closed and never reach final candidate.
  const invalid=queryBitzerNativeRows([row(-25,45,20,8,1,0)],{refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,requiredCoolingCapacityKW:18});
