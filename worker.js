@@ -36,7 +36,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 const AGENT_VERSION = "v3.00";
-const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
+const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];\nconst OWNER_SESSION_SECONDS = 8 * 60 * 60;\nconst OWNER_COOKIE = "brady_owner_session";
 
 function runtimeReadiness(env){
   const missing=REQUIRED_RUNTIME_BINDINGS.filter(name=>!env[name]);
@@ -60,12 +60,26 @@ export default {
       if (!env.OWNER_PIN) return json({ error: "OWNER_PIN is not configured" }, 500);
       const body = await request.json().catch(() => ({}));
       const ok = safeEqual(String(body.pin || ""), String(env.OWNER_PIN));
-      return ok ? json({ ok: true, role: "owner" }) : json({ error: "Owner PIN 不正确" }, 401);
+      if (!ok) return json({ error: "Owner PIN 不正确" }, 401);
+      const token = await createOwnerSession(env);
+      return jsonWithHeaders({ ok: true, role: "owner" }, 200, {
+        "Set-Cookie": ownerCookie(token, OWNER_SESSION_SECONDS)
+      });
+    }
+
+    if (url.pathname === "/api/owner/session") {
+      if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+      return (await isOwner(request, env)) ? json({ ok: true, role: "owner" }) : json({ ok: false }, 401);
+    }
+
+    if (url.pathname === "/api/owner/logout") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      return jsonWithHeaders({ ok: true }, 200, { "Set-Cookie": ownerCookie("", 0) });
     }
 
     if (url.pathname === "/api/project/cold-room/reset") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       const body = await request.json().catch(() => ({}));
       if (!body.projectId) return json({ error: "projectId is required" }, 400);
       await clearColdRoomProjectState(env, body.projectId);
@@ -73,7 +87,7 @@ export default {
     }
 
     if (url.pathname === "/api/memory") {
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       if (!env.brady_agent_memory) return json({ error: "Memory database is not configured" }, 500);
 
       if (request.method === "GET") {
@@ -114,7 +128,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/polynomial/inspect") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body=await request.json();
         const csvText=String(body?.csvText||"");
@@ -126,19 +140,19 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/ecoline") {
       if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       return json({ ok: true, catalogue: BITZER_ECOLINE_CATALOGUE });
     }
 
     if (url.pathname === "/api/manufacturer/bitzer/source") {
       if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       return json({ ok: true, source: BITZER_SOURCE_REGISTRY });
     }
 
     if (url.pathname === "/api/manufacturer/bitzer/bootstrap") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const documentResult=await saveReviewedManufacturerDocument(env,BITZER_ECOLINE_OFFICIAL_STAGING_BATCH.document);
         if(!documentResult.ok) return json(documentResult,400);
@@ -154,7 +168,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/bootstrap-r404a-lt") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const staged=[];
         for (const row of BITZER_R404A_LT_POINTS) {
@@ -168,7 +182,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/stage") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const normalized = normalizeBitzerPerformanceRow(await request.json().catch(() => ({})));
         if (!normalized.ok) return json(normalized, 400);
@@ -178,7 +192,7 @@ export default {
     }
 
     if (url.pathname === "/api/manufacturer/staging") {
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         if (request.method === "GET") return json(await listStagedPerformanceRows(env, url.searchParams.get("documentId") || ""));
         if (request.method === "POST") {
@@ -191,7 +205,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/staging/review") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json().catch(() => ({}));
         const result = await reviewStagedPerformanceRow(env, body.id, body.status, body.note);
@@ -201,7 +215,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/staging/promote") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json().catch(() => ({}));
         const result = await promoteReviewedStagingRow(env, body.id);
@@ -211,7 +225,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/document") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const result = await saveReviewedManufacturerDocument(env, await request.json().catch(() => ({})));
         return json(result, result.ok ? 200 : 400);
@@ -243,7 +257,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/native/import") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body=await request.json().catch(()=>({}));
         const rows=Array.isArray(body)?body:body.rows;
@@ -254,7 +268,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/native/query") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const result=await queryBitzerNativePerformance(env,await request.json().catch(()=>({})));
         return json(result,result.ok?200:400);
@@ -263,7 +277,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/bitzer/native/status") {
       if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const db=env.brady_agent_memory;
         const total=await db.prepare("SELECT COUNT(*) AS n, SUM(CASE WHEN return_code=0 AND result_code=0 AND cooling_capacity_kw>0 THEN 1 ELSE 0 END) AS valid FROM bitzer_native_performance").first();
@@ -274,7 +288,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/performance/select") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json().catch(() => ({}));
         const result = await queryManufacturerPerformance(env, body);
@@ -285,7 +299,7 @@ export default {
 
     if (url.pathname === "/api/manufacturer/performance/query") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json().catch(() => ({}));
         const result = await queryManufacturerPerformance(env, body);
@@ -296,7 +310,7 @@ export default {
     }
     if (url.pathname === "/api/tools/cold-storage-load") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json();
         const result = calculateColdStorageLoad(body);
@@ -308,7 +322,7 @@ export default {
 
     if (url.pathname === "/api/tools/cold-storage-load-range") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json();
         const result = calculateColdStorageLoadRange(body);
@@ -320,7 +334,7 @@ export default {
 
     if (url.pathname === "/api/tools/product-load") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-      if (!isOwner(request, env)) return json({ error: "Owner authentication required" }, 401);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body = await request.json();
         const result = calculateProductLoad(body);
@@ -338,7 +352,7 @@ export default {
         const projectId = typeof body.projectId === "string" && /^[a-zA-Z0-9-]{8,80}$/.test(body.projectId) ? body.projectId : null;
         const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
         if (!messages.length) return json({ error: "No messages supplied" }, 400);
-        const owner = isOwner(request, env);
+        const owner = await isOwner(request, env);
         const latestUser = [...messages].reverse().find((m) => m?.role === "user" && typeof m.content === "string");
         if (!owner) {
           if (!latestUser || latestUser.content.length > VISITOR_MAX_INPUT_CHARS) {
@@ -630,9 +644,51 @@ function cleanFinalAnswer(value="") {
   return s;
 }
 
-function isOwner(request, env) {
+async function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
-  return safeEqual(request.headers.get("X-Owner-Pin") || "", String(env.OWNER_PIN));
+  const legacy = request.headers.get("X-Owner-Pin") || "";
+  if (legacy && safeEqual(legacy, String(env.OWNER_PIN))) return true;
+  const token = readCookie(request, OWNER_COOKIE);
+  if (!token) return false;
+  return verifyOwnerSession(env, token);
+}
+function readCookie(request, name) {
+  const raw = request.headers.get("Cookie") || "";
+  for (const part of raw.split(";")) {
+    const i = part.indexOf("=");
+    if (i < 0) continue;
+    if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return "";
+}
+function ownerCookie(value, maxAge) {
+  return OWNER_COOKIE + "=" + encodeURIComponent(value) + "; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=" + maxAge;
+}
+async function ownerSessionKey(env) {
+  return crypto.subtle.importKey("raw", new TextEncoder().encode(String(env.OWNER_PIN)), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+}
+function b64url(bytes) {
+  let s=""; for (const b of new Uint8Array(bytes)) s+=String.fromCharCode(b);
+  return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+}
+function fromB64url(s) {
+  const x=s.replace(/-/g,"+").replace(/_/g,"/"); const padded=x+"=".repeat((4-x.length%4)%4);
+  const raw=atob(padded); return Uint8Array.from(raw,ch=>ch.charCodeAt(0));
+}
+async function createOwnerSession(env) {
+  const exp=Math.floor(Date.now()/1000)+OWNER_SESSION_SECONDS;
+  const nonce=crypto.getRandomValues(new Uint8Array(16));
+  const payload=exp+"."+b64url(nonce);
+  const sig=await crypto.subtle.sign("HMAC",await ownerSessionKey(env),new TextEncoder().encode(payload));
+  return payload+"."+b64url(sig);
+}
+async function verifyOwnerSession(env, token) {
+  try {
+    const parts=String(token).split("."); if(parts.length!==3) return false;
+    const exp=Number(parts[0]); if(!Number.isFinite(exp)||exp<Math.floor(Date.now()/1000)) return false;
+    const payload=parts[0]+"."+parts[1];
+    return crypto.subtle.verify("HMAC",await ownerSessionKey(env),fromB64url(parts[2]),new TextEncoder().encode(payload));
+  } catch { return false; }
 }
 function safeEqual(a, b) {
   if (a.length !== b.length) return false;
@@ -763,5 +819,8 @@ function callModel(env, model, messages, systemPrompt, maxTokens = 900) {
     "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json",
     "HTTP-Referer": "https://bradyci.com", "X-Title": "Brady Agent"
   }, body: JSON.stringify({ model, stream: true, max_tokens: maxTokens, temperature: 0.6, messages: [{ role: "system", content: systemPrompt }, ...messages] }) });
+}
+function jsonWithHeaders(data, status=200, extra={}) {
+  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...extra } });
 }
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8" } }); }
