@@ -537,6 +537,33 @@ export default {
               const hasExactData = architectureRuns.some(x=>!x.performance.noExactData);
               if (finalCandidates.length) {
                 compressorSelectionText = "\n\n**压缩机候选**\n" + finalCandidates.map(x => "• " + x.manufacturer + " " + x.model + "：已验证厂家性能点制冷量 " + x.coolingCapacityKW + " kW" + (x.architecture ? "；架构 " + x.architecture : "") + "。").join("\n") + (higherPriorityUnverified.length ? "\n\n说明：工程判断中还有优先级更高的架构（" + higherPriorityUnverified.join("、") + "），但当前数据库缺少足够的已验证厂家性能/运行范围数据；这里显示的是目前资料闭环后可确认的候选，不代表工程上否定前述架构。" : "") + (fallbackVerifiedCandidates.length ? "\n\n其他架构也有通过校验的候选，当前不混入主候选；需要做方案对比时再展开。" : "") + "\n\n以上候选已通过当前精确性能点和已审核运行范围校验，最终仍需结合电气、机组结构及现场要求确认。";
+                const unitResult=buildCondensingUnitCandidates({
+                  requiredCoolingCapacityKW:selectionRequest.request.requiredCoolingCapacityKW,
+                  compressorCandidates:finalCandidates,
+                  refrigerant:selectionRequest.request.refrigerant,
+                  evaporatingTempC:selectionRequest.request.evaporatingTempC,
+                  condensingTempC:selectionRequest.request.condensingTempC,
+                  ambientTempC:Number.isFinite(coldRoomState?.ambientTempC)?coldRoomState.ambientTempC:null,
+                  redundancyRequired:coldRoomState?.redundancyRequired===true,
+                  condenserType:coldRoomState?.condenserType||null,
+                  coolingMethod:coldRoomState?.coolingMethod||null,
+                  receiverVolumeL:coldRoomState?.receiverVolumeL,
+                  receiverSizingBasis:coldRoomState?.receiverSizingBasis,
+                  oilManagementBasis:coldRoomState?.oilManagementBasis
+                });
+                if(unitResult.unitCandidates?.length){
+                  const bestUnit=unitResult.unitCandidates[0];
+                  compressorSelectionText += "\n\n**机组方案进度**\n";
+                  compressorSelectionText += "已按上述真实工况压缩机能力进入机组组合：工作压缩机 "+bestUnit.dutyCompressorCount+" 台"+(bestUnit.reserveCompressorCount?"，备用 "+bestUnit.reserveCompressorCount+" 台":"")+"，工作组合冷量 "+bestUnit.dutyCoolingCapacityKW+" kW，冷量裕量 "+bestUnit.dutyMarginPercent+"%。";
+                  if(bestUnit.condenserDesign?.requiredHeatRejectionKW!=null) compressorSelectionText += " 当前工况计算冷凝排热需求约 "+bestUnit.condenserDesign.requiredHeatRejectionKW+" kW。";
+                  if(bestUnit.unitReview?.finalSelectable) compressorSelectionText += "\n该候选的整机设计依据已经闭环，可进入最终机组方案。";
+                  else {
+                    const blockers=(bestUnit.unitReview?.blockers||[]).map(x=>x.message);
+                    const fields=unitResult.unresolved||[];
+                    const pending=[...new Set([...blockers,...fields])];
+                    compressorSelectionText += "\n当前仍属于工程候选，不能冒充完整厂家机组。"+(pending.length?" 待补/待校核："+pending.join("；")+"。":"");
+                  }
+                }
               } else if (!hasExactData) {
                 compressorSelectionText = "\n\n**压缩机选型状态**\n当前候选架构在该制冷剂和运行工况下还没有已验证的精确厂家性能点，因此暂不报具体型号，也不会跨架构用排量或匹数反推。";
               } else if (capacityCandidates.length) {
