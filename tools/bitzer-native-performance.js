@@ -1,7 +1,7 @@
 // Query policy for locally extracted BITZER Selection 7.1.11 ECOLINE native performance rows.
 // This module is deterministic and fail-closed at invalid/missing operating-boundary points.
 
-const num=v=>{const n=Number(v);return Number.isFinite(n)?n:null;};
+const num=v=>{if(v===null||v===undefined||v==="") return null;const n=Number(v);return Number.isFinite(n)?n:null;};
 const text=v=>String(v??"").trim();
 const valid=r=>Number(r?.ReturnCode??r?.returnCode)===0&&Number(r?.ResultCode??r?.resultCode)===0&&Number(r?.CoolingCapacity_kW??r?.coolingCapacityKW)>0;
 const teOf=r=>num(r.Te_C??r.evaporatingTempC), tcOf=r=>num(r.Tc_C??r.condensingTempC);
