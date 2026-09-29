@@ -654,6 +654,33 @@ function cleanFinalAnswer(value="") {
   return s;
 }
 
+async function ownerLoginKey(request) {
+  const ip=request.headers.get("CF-Connecting-IP")||"unknown";
+  const ua=request.headers.get("User-Agent")||"";
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+"|"+ua));
+  return b64url(digest);
+}
+async function ownerLoginGate(env,key) {
+  if(!env.brady_agent_memory) return {ok:false};
+  try {
+    const row=await env.brady_agent_memory.prepare("SELECT failures, window_started FROM owner_login_attempts WHERE login_key=?").bind(key).first();
+    if(!row) return {ok:true};
+    const age=Math.floor(Date.now()/1000)-Number(row.window_started||0);
+    if(age>=OWNER_LOGIN_WINDOW_SECONDS) return {ok:true};
+    return {ok:Number(row.failures||0)<OWNER_LOGIN_MAX_FAILURES};
+  } catch { return {ok:false}; }
+}
+async function recordOwnerLoginFailure(env,key) {
+  if(!env.brady_agent_memory) return;
+  const now=Math.floor(Date.now()/1000);
+  try {
+    await env.brady_agent_memory.prepare("INSERT INTO owner_login_attempts(login_key,failures,window_started,updated_at) VALUES(?,1,?,?) ON CONFLICT(login_key) DO UPDATE SET failures=CASE WHEN ?-window_started>=? THEN 1 ELSE failures+1 END,window_started=CASE WHEN ?-window_started>=? THEN ? ELSE window_started END,updated_at=?").bind(key,now,now,now,OWNER_LOGIN_WINDOW_SECONDS,now,OWNER_LOGIN_WINDOW_SECONDS,now,now).run();
+  } catch {}
+}
+async function clearOwnerLoginFailures(env,key) {
+  if(!env.brady_agent_memory) return;
+  try { await env.brady_agent_memory.prepare("DELETE FROM owner_login_attempts WHERE login_key=?").bind(key).run(); } catch {}
+}
 async function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
   const legacy = request.headers.get("X-Owner-Pin") || "";
