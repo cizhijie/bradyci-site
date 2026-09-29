@@ -355,7 +355,7 @@ export default {
             return json({ error: message }, 429);
           }
         }
-        if (owner && latestUser) await processMemoryCandidate(env, latestUser.content);
+        if (owner && latestUser) { try { await processMemoryCandidate(env, latestUser.content); } catch (error) { console.warn("memory write skipped:", error?.message || error); } }
 
         const memories = owner ? await loadMemories(env) : [];
         const activeSkill = owner && latestUser ? routeSkill(latestUser.content, memories) : null;
