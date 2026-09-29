@@ -9,14 +9,14 @@ import {buildHhk52DesignCall} from "./bitzer-hhk52-native-client.js";
 const here=dirname(fileURLToPath(import.meta.url));
 const ps1=join(here,"bitzer-hhk52-runner.ps1");
 
-export function createHhk52WindowsNativeClient({powershell="powershell.exe",dllDirectory=""}={}){
+export function createHhk52WindowsNativeClient({powershell="",dllDirectory="",refrigerantPath="",nameplatePath=""}={}){
  return {
   async design(request={}){
    const call=buildHhk52DesignCall(request);
    if(!call.ok)return {ok:false,vendorCode:null,status:"invalid_hhk52_call",blocked:call.blocked};
-   const payload={...call,request,dllDirectory};
+   const payload={...call,request,dllDirectory,refrigerantPath,nameplatePath};\n   const psHost=powershell||((process.env.WINDIR&&process.arch==="x64")?join(process.env.WINDIR,"SysWOW64","WindowsPowerShell","v1.0","powershell.exe"):"powershell.exe");
    return await new Promise((resolve,reject)=>{
-    const p=spawn(powershell,["-NoProfile","-ExecutionPolicy","Bypass","-File",ps1],{stdio:["pipe","pipe","pipe"],windowsHide:true});
+    const p=spawn(psHost,["-NoProfile","-ExecutionPolicy","Bypass","-File",ps1],{stdio:["pipe","pipe","pipe"],windowsHide:true});
     let out="",err="";
     p.stdout.setEncoding("utf8"); p.stderr.setEncoding("utf8");
     p.stdout.on("data",d=>out+=d); p.stderr.on("data",d=>err+=d);
