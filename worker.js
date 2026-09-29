@@ -683,8 +683,6 @@ async function clearOwnerLoginFailures(env,key) {
 }
 async function isOwner(request, env) {
   if (!env.OWNER_PIN) return false;
-  const legacy = request.headers.get("X-Owner-Pin") || "";
-  if (legacy && safeEqual(legacy, String(env.OWNER_PIN))) return true;
   const token = readCookie(request, OWNER_COOKIE);
   if (!token) return false;
   return verifyOwnerSession(env, token);
