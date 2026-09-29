@@ -6,7 +6,7 @@ import { reviewCondensingUnitCandidates } from "./condensing-unit-review.js";
 // or silently sizes unresolved components.
 
 const num=v=>Number(v);
-const finite=v=>Number.isFinite(num(v));
+const finite=v=>v!==null&&v!==undefined&&v!==""&&Number.isFinite(num(v));
 const round=(v,d=2)=>Math.round(num(v)*10**d)/10**d;
 
 function requiredCapacity(input={}){
