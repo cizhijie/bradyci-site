@@ -1,3 +1,4 @@
+import { assessUnitAccessoryRequirements } from "./unit-accessory-requirements.js";
 // Deterministic receiver / oil-management review layer.
 // This layer deliberately does NOT estimate receiver volume from horsepower or cooling capacity.
 
@@ -47,16 +48,18 @@ export function reviewUnitAccessories(input={}){
     rule:"并联机组必须把油管理作为独立设计项，不能仅因压缩机型号相同就视为可直接并联。"
   };
 
+  const requirementReview=assessUnitAccessoryRequirements({...input,installedCompressorCount:installed,dutyCompressorCount:duty});
+
   const componentChecks=[
-    {component:"liquid_receiver",status:receiver.status},
-    {component:"oil_management",status:oilManagement.status},
-    {component:"suction_accumulator",status:input.suctionAccumulatorBasis?"provided_for_review":"engineering_review_required"},
-    {component:"oil_separator",status:input.oilSeparatorBasis?"provided_for_review":"engineering_review_required"},
-    {component:"filter_drier",status:input.filterDrierBasis?"provided_for_review":"manufacturer_selection_required"},
-    {component:"sight_glass",status:input.sightGlassBasis?"provided_for_review":"manufacturer_selection_required"},
-    {component:"solenoid_valve",status:input.solenoidValveBasis?"provided_for_review":"system_control_review_required"},
-    {component:"expansion_device",status:input.expansionDeviceBasis?"provided_for_review":"evaporator_and_refrigerant_selection_required"},
-    {component:"hp_lp_protection",status:input.pressureProtectionBasis?"provided_for_review":"control_and_safety_review_required"}
+    {component:"liquid_receiver",requirement:requirementReview.requirements.liquid_receiver?.level||"project_review",status:receiver.status},
+    {component:"oil_management",requirement:requirementReview.requirements.oil_management?.level||"project_review",status:oilManagement.status},
+    {component:"suction_accumulator",requirement:requirementReview.requirements.suction_accumulator?.level||"project_review",status:input.suctionAccumulatorBasis?"provided_for_review":"engineering_review_required"},
+    {component:"oil_separator",requirement:requirementReview.requirements.oil_separator?.level||"project_review",status:input.oilSeparatorBasis?"provided_for_review":"engineering_review_required"},
+    {component:"filter_drier",requirement:requirementReview.requirements.filter_drier?.level||"project_review",status:input.filterDrierBasis?"provided_for_review":"manufacturer_selection_required"},
+    {component:"sight_glass",requirement:requirementReview.requirements.sight_glass?.level||"project_review",status:input.sightGlassBasis?"provided_for_review":"manufacturer_selection_required"},
+    {component:"solenoid_valve",requirement:requirementReview.requirements.solenoid_valve?.level||"project_review",status:input.solenoidValveBasis?"provided_for_review":"system_control_review_required"},
+    {component:"expansion_device",requirement:requirementReview.requirements.expansion_device?.level||"project_review",status:input.expansionDeviceBasis?"provided_for_review":"evaporator_and_refrigerant_selection_required"},
+    {component:"hp_lp_protection",requirement:requirementReview.requirements.hp_lp_protection?.level||"project_review",status:input.pressureProtectionBasis?"provided_for_review":"control_and_safety_review_required"}
   ];
 
   const unresolved=uniq([

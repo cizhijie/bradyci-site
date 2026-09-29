@@ -62,8 +62,22 @@ export async function runCondensingUnitChainRegression(){
  });
  assert.equal(parallel.unitCandidates[0].dutyCompressorCount,2); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.oilManagement.status,"required_unresolved"); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.oil_management.level,"required"); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.suction_accumulator.level,"recommended"); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.filter_drier.level,"required"); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.expansion_device.level,"required"); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.hp_lp_protection.level,"required"); checks++;
  assert.equal(parallel.unitCandidates[0].unitReview.finalSelectable,false); checks++;
  assert.ok(parallel.unitCandidates[0].unitReview.blockers.some(x=>x.code==="parallel_oil_management_unresolved")); checks++;
+
+ // Pump-down control makes receiver and liquid-line solenoid explicit system requirements.
+ const pumpDown=buildCondensingUnitCandidates({
+  requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,
+  refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,
+  condenserType:"air",ambientTempC:35,pumpDownRequired:true
+ });
+ assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.liquid_receiver.level,"required"); checks++;
+ assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.solenoid_valve.level,"required"); checks++;
 
  // Receiver volume alone is not a sizing basis and must not pass the final gate.
  const receiverNoBasis=buildCondensingUnitCandidates({
