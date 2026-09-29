@@ -10,7 +10,7 @@ const suites=[
 ["bitzer-windows-bridge-core","./bitzer-windows-bridge-core-regression.js","runBitzerWindowsBridgeCoreRegression"],
 ["bitzer-hhk52-abi","./bitzer-hhk52-abi-regression.js","runBitzerHhk52AbiRegression"],
 ["bitzer-hhk52-native-client","./bitzer-hhk52-native-client-regression.js","runBitzerHhk52NativeClientRegression"],
- ["bitzer-hhk52-windows-client","./bitzer-hhk52-windows-client-regression.js","runBitzerHhk52WindowsClientRegression"],\n ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
+ ["bitzer-hhk52-windows-client","./bitzer-hhk52-windows-client-regression.js","runBitzerHhk52WindowsClientRegression"],\n ["bitzer-polynomial-import","./bitzer-polynomial-import-regression.js","runBitzerPolynomialImportRegression"],\n ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
  ["core-freezing-auto-h","./core-freezing-auto-h-regression.js","runCoreFreezingAutoHRegression"],
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
  ["forced-air-heat-transfer","./forced-air-heat-transfer-regression.js","runForcedAirHeatTransferRegression"],
