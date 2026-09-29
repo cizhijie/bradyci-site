@@ -201,3 +201,26 @@ export function inspectBitzerPolynomialCsv(csvText="",metadata={}){
     nextStep:mapped.ok?"Review the detected BITZER field convention and coefficient order before evaluation.":"Use the real BITZER SOFTWARE CSV header to extend aliases; do not guess missing mappings."
   };
 }
+
+
+export function buildBitzerPlatformDataset({products=[],productRefrigerants=[],coefficients=[],coefficientTables={},limitsData=[]}={}){
+ const byProduct=new Map(products.map(x=>[x.Id,x]));
+ const byCoeff=new Map(coefficients.map(x=>[x.Id,x]));
+ const out=[],rejected=[];
+ for(const pr of productRefrigerants){
+  const p=byProduct.get(pr.ProductId),co=byCoeff.get(pr.CoefficientsId);
+  if(!p||!co){rejected.push({ProductId:pr.ProductId,CoefficientsId:pr.CoefficientsId,reason:!p?"product_not_found":"coefficient_header_not_found"});continue;}
+  const families={};
+  for(const [family,rows] of Object.entries(coefficientTables)){
+   const singular=family.replace(/Coefficients$/,"Coefficient");
+   const idField=singular+"Id";
+   const id=co[idField];
+   if(id==null)continue;
+   const row=rows.find(x=>x.Id===id);
+   if(row)families[family]=row;
+  }
+  const limits=limitsData.filter(x=>x.ProductId===pr.ProductId&&String(x.RefrigerantCode)===String(pr.RefrigerantCode)&&Number(x.OperatingMode)===Number(pr.OperatingMode));
+  out.push({manufacturer:"BITZER",productId:p.Id,model:p.ProductName,series:p.Series,seriesCode:p.SeriesCode,refrigerantCode:pr.RefrigerantCode,operatingMode:pr.OperatingMode,visible:pr.IsVisible,coefficientsId:pr.CoefficientsId,coefficientFamilies:families,limits,technical:{nominalRPM:p.NominalRPM,minFrequency:p.MinFrequency,maxFrequency:p.MaxFrequency,numberOfCylinders:p.NumberOfCylinders,nominalDisplacement:p.NominalDisplacement,maxPowerConsumptionAt50Hz:p.MaxPowerConsumptionAt50Hz,fiType:p.FIType},sourceType:"bitzer-platform-database"});
+ }
+ return {schemaVersion:"brady-bitzer-platform-v1",records:out,rejected,count:out.length};
+}
