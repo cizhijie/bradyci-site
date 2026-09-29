@@ -61,6 +61,12 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(unit.unitCandidates[0].capacityCombinationStatus,"single_stage"); checks++;
  assert.equal(unit.unitCandidates[0].capacityControlReview.strategies[0].method,"cylinder_unloading"); checks++;
  assert.equal(unit.unitCandidates[0].capacityControlReview.strategies[0].status,"manufacturer_verification_required"); checks++;
+ assert.equal(unit.presentation.solutions[0].title,"工程候选方案"); checks++;
+ assert.equal(unit.presentation.solutions[0].compressor,"BITZER 4NES-20Y"); checks++;
+ assert.equal(unit.presentation.solutions[0].capacity.dutyTotalKW,20); checks++;
+ assert.equal(unit.presentation.solutions[0].capacity.marginPercent,11.1); checks++;
+ assert.equal(unit.presentation.solutions[0].finalSelectable,false); checks++;
+ assert.ok(unit.presentation.solutions[0].note.includes("工程候选")); checks++;
 
  // Missing compressor input power must not be replaced by a guessed condenser factor.
  const noPower={...chain.finalCandidates[0],inputPowerKW:null};
