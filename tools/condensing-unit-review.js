@@ -1,7 +1,7 @@
 // Whole-unit deterministic readiness review.
 // A unit may be a useful engineering candidate without being safe to present as a finalized package.
 
-const f=v=>Number.isFinite(Number(v));
+const f=v=>v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number(v));
 
 export function reviewCondensingUnitCandidate(unit={},input={}){
   const blockers=[];
