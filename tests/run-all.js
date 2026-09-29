@@ -13,6 +13,7 @@ const suites=[
  ["bitzer-hhk52-windows-client","./bitzer-hhk52-windows-client-regression.js","runBitzerHhk52WindowsClientRegression"],
  ["bitzer-native-performance","./bitzer-native-performance-regression.js","runBitzerNativePerformanceRegression"],
  ["bitzer-native-performance-db","./bitzer-native-performance-db-regression.js","runBitzerNativePerformanceDbRegression"],
+ ["condensing-unit-chain","./condensing-unit-chain-regression.js","runCondensingUnitChainRegression"],
  ["bitzer-polynomial-import","./bitzer-polynomial-import-regression.js","runBitzerPolynomialImportRegression"],
  ["bitzer-polynomial-evaluator","./bitzer-polynomial-evaluator-regression.js","runBitzerPolynomialEvaluatorRegression"],
  ["core-freezing-result-formatter","./core-freezing-result-formatter-regression.js","runCoreFreezingResultFormatterRegression"],
