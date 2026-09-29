@@ -1,3 +1,4 @@
+import { isTrustedCompressorCandidate } from "../lib/verified-compressor-candidate.js";
 import { buildUnitSelectionTrace } from "./unit-selection-trace.js";
 import { presentCondensingUnitResult } from "./condensing-unit-presentation.js";
 import { assessCapacityControl } from "./unit-capacity-control.js";
@@ -45,7 +46,7 @@ export function buildCondensingUnitCandidates(input={}){
 
   for(const compressor of compressors){
     const verification=compressor?.selectionVerification;
-    if(!(verification?.finalSelectable===true && verification?.status)){ rejectedCompressorCandidates.push({model:compressor?.model||null,reason:"compressor_verification_missing"}); continue; }
+    if(!isTrustedCompressorCandidate(compressor)||!(verification?.finalSelectable===true && verification?.status)){ rejectedCompressorCandidates.push({model:compressor?.model||null,reason:"compressor_verification_missing"}); continue; }
     if(!operatingPointMatches(compressor,input)){ rejectedCompressorCandidates.push({model:compressor?.model||null,reason:"compressor_operating_point_mismatch",candidate:{refrigerant:compressor?.refrigerant??null,evaporatingTempC:compressor?.evaporatingTempC??null,condensingTempC:compressor?.condensingTempC??null},project:{refrigerant:input.refrigerant??null,evaporatingTempC:input.evaporatingTempC??null,condensingTempC:input.condensingTempC??null}}); continue; }
     const each=candidateCapacity(compressor);
     if(!(each>0)) continue;

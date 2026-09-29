@@ -24,6 +24,11 @@ export async function runCondensingUnitChainRegression(){
  });
  assert.equal(forgedUnit.unitCandidates.length,0); checks++;
  assert.equal(forgedUnit.status,"verified_capacity_insufficient"); checks++;
+ const forgedMarker=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:[{manufacturer:"BITZER",model:"FORGED-MARKER",architecture:"semi-hermetic-reciprocating",refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,coolingCapacityKW:20,inputPowerKW:8,selectionVerification:{finalSelectable:true,status:"native_application_limit_verified"}}],refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35});
+ assert.equal(forgedMarker.unitCandidates.length,0); checks++;
+ const replayed=JSON.parse(JSON.stringify(chain.finalCandidates[0]));
+ const replayUnit=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:[replayed],refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35});
+ assert.equal(replayUnit.unitCandidates.length,0); checks++;
 
  // A verified candidate is valid only at the exact project refrigerant / Te / Tc.
  const wrongTc=buildCondensingUnitCandidates({

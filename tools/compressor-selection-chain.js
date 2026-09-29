@@ -1,3 +1,4 @@
+import { markVerifiedCompressorCandidate } from "../lib/verified-compressor-candidate.js";
 import { gateCapacityCandidateByEnvelope, evaluateReviewedEnvelopePoint } from "../lib/manufacturer-operating-envelope.js";
 
 const norm=v=>String(v??"").trim().toLowerCase();
@@ -62,15 +63,7 @@ export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvel
     if(states.size>1) return {ok:true,status:"application_limit_conflict",finalSelectable:false,candidate,envelopeChecks:matches,note:"Conflicting reviewed Application Limits records exist for this exact operating point; fail closed until the source conflict is resolved."};
     return evaluateReviewedEnvelopePoint(candidate,matches[0]);
   });
-  const finalCandidates=evaluations.filter(x=>x.finalSelectable).map(x=>({
-    ...x.candidate,
-    selectionVerification:{
-      status:x.status,
-      finalSelectable:true,
-      sourceType:x.candidate.sourceType||null,
-      dataSource:x.candidate.dataSource||null
-    }
-  }));
+  const finalCandidates=evaluations.filter(x=>x.finalSelectable).map(x=>markVerifiedCompressorCandidate(x.candidate,{status:x.status,sourceType:x.candidate.sourceType||null,dataSource:x.candidate.dataSource||null}));
   const provisionalCandidates=[...architectureRejected,...evaluations.filter(x=>!x.finalSelectable)];
   const status=finalCandidates.length?"application_limit_verified":architectureRejected.length&&!architectureEligible.length?"architecture_mismatch":"application_limit_verification_required";
   return {ok:true,status,allowedArchitectures,architectureRejected,finalCandidates,provisionalCandidates,evaluations};
