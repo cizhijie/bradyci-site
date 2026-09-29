@@ -57,6 +57,8 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(unit.unitCandidates.length,1); checks++;
  assert.equal(unit.unitCandidates[0].condenserDesign.requiredHeatRejectionKW,28); checks++; // selected compressor is 20 kW + 8 kW input
  assert.equal(unit.unitCandidates[0].condenserDesign.approachK,10); checks++;
+ assert.equal(unit.unitCandidates[0].combinationRank,1); checks++;
+ assert.equal(unit.unitCandidates[0].capacityCombinationStatus,"single_stage"); checks++;
 
  // Missing compressor input power must not be replaced by a guessed condenser factor.
  const noPower={...chain.finalCandidates[0],inputPowerKW:null};
@@ -77,6 +79,9 @@ export async function runCondensingUnitChainRegression(){
   receiverVolumeL:30,receiverSizingBasis:"reviewed system charge basis"
  });
  assert.equal(parallel.unitCandidates[0].dutyCompressorCount,2); checks++;
+ assert.equal(parallel.unitCandidates[0].capacityStagePercent,50); checks++;
+ assert.equal(parallel.unitCandidates[0].capacityCombinationStatus,"staged_capacity_available"); checks++;
+ assert.ok(parallel.unitCandidates[0].unitReview.warnings.some(x=>x.code==="staged_capacity_control_review")); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.oilManagement.status,"required_unresolved"); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.oil_management.level,"required"); checks++;
  assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.suction_accumulator.level,"recommended"); checks++;

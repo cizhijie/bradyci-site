@@ -41,6 +41,7 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
 
   if(unit.reserveCompressorCount>0) warnings.push({code:"redundancy_present",message:"方案包含备用压缩机；需在控制逻辑中明确轮换、故障切换和检修隔离。"});
   if(unit.dutyMarginPercent>25) warnings.push({code:"large_capacity_margin",message:"工作组合相对设计冷量裕量较大，应复核部分负荷运行与容量调节，不能只以“够冷”为判断。"});
+  if(unit.dutyCompressorCount>1) warnings.push({code:"staged_capacity_control_review",message:"多压缩机工作组合具备分级容量条件；需复核启停级差、最低负荷、回油和短循环风险。",capacityStagePercent:unit.capacityStagePercent});
 
   const finalSelectable=blockers.length===0 && unresolvedComponents.length===0;
   const status=finalSelectable?"final_unit_basis_ready":blockers.length?"engineering_candidate_not_final":"component_selection_required";

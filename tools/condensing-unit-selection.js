@@ -66,6 +66,8 @@ export function buildCondensingUnitCandidates(input={}){
         installedCoolingCapacityKW:round(each*installedCount),
         dutyMarginKW:round(dutyCapacity-required),
         dutyMarginPercent:round((dutyCapacity/required-1)*100,1),
+        capacityStagePercent:round(each/dutyCapacity*100,1),
+        minimumOnCapacityPercent:round(each/dutyCapacity*100,1),
         inputPowerPerCompressorKW:finite(compressor.inputPowerKW)?num(compressor.inputPowerKW):null,
         compressorSourceRef:compressor.sourceRef||null,
         compressorSourcePage:compressor.sourcePage||null,
@@ -76,7 +78,8 @@ export function buildCondensingUnitCandidates(input={}){
     }
   }
 
-  unitCandidates.sort((a,b)=>a.dutyMarginPercent-b.dutyMarginPercent||a.installedCompressorCount-b.installedCompressorCount);
+  unitCandidates.sort((a,b)=>a.dutyMarginPercent-b.dutyMarginPercent||a.dutyCompressorCount-b.dutyCompressorCount||a.installedCompressorCount-b.installedCompressorCount);
+  unitCandidates.forEach((unit,index)=>{ unit.combinationRank=index+1; unit.capacityCombinationStatus=unit.dutyMarginPercent>25?"large_margin_review_required":unit.dutyCompressorCount>1?"staged_capacity_available":"single_stage"; });
   for(const unit of unitCandidates){
     unit.condenserDesign=attachCondenserBasisToUnit(unit,{
       coolingMethod,
