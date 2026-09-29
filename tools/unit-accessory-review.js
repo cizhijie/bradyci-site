@@ -2,7 +2,7 @@
 // This layer deliberately does NOT estimate receiver volume from horsepower or cooling capacity.
 
 const n=v=>Number(v);
-const f=v=>Number.isFinite(n(v));
+const f=v=>v!==null&&v!==undefined&&v!==""&&Number.isFinite(n(v));
 const uniq=a=>[...new Set(a.filter(Boolean))];
 
 export function reviewUnitAccessories(input={}){
