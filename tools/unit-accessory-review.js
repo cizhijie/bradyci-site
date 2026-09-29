@@ -73,6 +73,7 @@ export function reviewUnitAccessories(input={}){
     status:unresolved.length?"accessory_design_incomplete":"accessory_basis_ready",
     receiver,
     oilManagement,
+    requirementReview,
     componentChecks,
     unresolved,
     rule:"本层输出机组附件的工程核对状态，不在缺少厂家资料/系统设计依据时编造具体型号、口径或容积。"
