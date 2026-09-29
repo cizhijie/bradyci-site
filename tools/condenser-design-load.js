@@ -23,27 +23,28 @@ export function calculateCondenserDesignLoad(input={}){
   const baseHeatRejection=cooling+totalPower;
   const auxiliaryHeat=f(input.auxiliaryHeatToCondenserKW)?Math.max(0,n(input.auxiliaryHeatToCondenserKW)):0;
   const heatRejection=baseHeatRejection+auxiliaryHeat;
-  const method=String(input.coolingMethod||"").trim().toLowerCase();
+  const rawMethod=String(input.coolingMethod||"").trim().toLowerCase();
+  const method=/风冷|air/.test(rawMethod)?"air":/水冷|water/.test(rawMethod)?"water":/蒸发冷|evaporative/.test(rawMethod)?"evaporative":rawMethod;
   const ambient=f(input.ambientTempC)?n(input.ambientTempC):null;
   const tc=f(input.condensingTempC)?n(input.condensingTempC):null;
   const enteringWater=f(input.enteringWaterTempC)?n(input.enteringWaterTempC):null;
   const wetBulb=f(input.wetBulbTempC)?n(input.wetBulbTempC):null;
 
   let approach=null, approachBasis=null;
-  if(method==="air"||method==="air_cooled"){
+  if(method==="air"){
     if(ambient!==null&&tc!==null){approach=tc-ambient;approachBasis="Tc - outdoor dry-bulb";}
-  } else if(method==="water"||method==="water_cooled"){
+  } else if(method==="water"){
     if(enteringWater!==null&&tc!==null){approach=tc-enteringWater;approachBasis="Tc - entering condenser water";}
-  } else if(method==="evaporative"||method==="evaporative_cooled"){
+  } else if(method==="evaporative"){
     if(wetBulb!==null&&tc!==null){approach=tc-wetBulb;approachBasis="Tc - outdoor wet-bulb";}
   }
 
   const unresolved=[];
   if(!method) unresolved.push("coolingMethod");
   if(tc===null) unresolved.push("condensingTempC");
-  if((method==="air"||method==="air_cooled")&&ambient===null) unresolved.push("ambientTempC");
-  if((method==="water"||method==="water_cooled")&&enteringWater===null) unresolved.push("enteringWaterTempC");
-  if((method==="evaporative"||method==="evaporative_cooled")&&wetBulb===null) unresolved.push("wetBulbTempC");
+  if(method==="air"&&ambient===null) unresolved.push("ambientTempC");
+  if(method==="water"&&enteringWater===null) unresolved.push("enteringWaterTempC");
+  if(method==="evaporative"&&wetBulb===null) unresolved.push("wetBulbTempC");
 
   return {
     ok:true,
