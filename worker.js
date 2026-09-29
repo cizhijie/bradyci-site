@@ -25,6 +25,7 @@ import { BITZER_ECOLINE_OFFICIAL_STAGING_BATCH, validateBitzerEcolineSeedRow } f
 import { BITZER_R404A_LT_POINTS } from "./data/bitzer-r404a-lt-staging.js";
 import { inspectBitzerPolynomialCsv } from "./tools/bitzer-polynomial-import.js";
 import { importBitzerNativeRows, queryBitzerNativePerformance } from "./lib/bitzer-native-performance-db.js";
+import { buildCondensingUnitCandidates } from "./tools/condensing-unit-selection.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。介绍能力、功能分类或回答“你能做什么”时，不要给各分类标题添加 1.、2. 等编号，直接使用简洁小标题。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -323,6 +324,18 @@ export default {
         return json({ error: error?.message || "Manufacturer performance query failed" }, 500);
       }
     }
+    if (url.pathname === "/api/tools/condensing-unit/select") {
+      if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+      if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
+      try {
+        const body=await request.json().catch(()=>({}));
+        const result=buildCondensingUnitCandidates(body);
+        return json(result,result.ok?200:400);
+      } catch (error) {
+        return json({ error:error?.message || "Condensing unit selection failed" },500);
+      }
+    }
+
     if (url.pathname === "/api/tools/cold-storage-load") {
       if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
       if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
