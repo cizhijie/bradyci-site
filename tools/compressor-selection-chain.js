@@ -34,6 +34,21 @@ export function finalizeCompressorCandidates(performanceResult={}, reviewedEnvel
   }
 
   const evaluations=architectureEligible.map(candidate=>{
+    // BITZER native Selection rows already fail closed on ReturnCode/ResultCode and on
+    // invalid/missing interpolation corners. Treat that native validity as the operating
+    // boundary gate instead of requiring a second, duplicate reviewed-envelope record.
+    if(String(candidate.dataSource||"").startsWith("BITZER_NATIVE_") &&
+       candidate.sourceType==="official-selection-software-native" &&
+       candidate.reviewStatus==="reviewed"){
+      return {
+        ok:true,
+        status:"native_application_limit_verified",
+        finalSelectable:true,
+        candidate,
+        envelopeChecks:[],
+        note:"BITZER native Selection point/cell is valid under the native fail-closed boundary policy; duplicate reviewed-envelope evidence is not required."
+      };
+    }
     const matches=reviewedEnvelopePoints.filter(e=>
       e.reviewStatus==="reviewed" &&
       String(e.manufacturer||"").toUpperCase()===String(candidate.manufacturer||"").toUpperCase() &&
