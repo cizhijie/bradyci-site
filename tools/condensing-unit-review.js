@@ -23,6 +23,11 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
   else if(Array.isArray(condenser.unresolved)&&condenser.unresolved.length) blockers.push({code:"condenser_rating_condition_unresolved",message:"冷凝器评级工况未完整",fields:condenser.unresolved});
   else verified.push("condenser_design_basis");
 
+  const condenserSelection=unit.condenserSelection||{};
+  if(condenserSelection.status!=="verified_condenser_candidates_ready"||!Array.isArray(condenserSelection.candidates)||!condenserSelection.candidates.length){
+    blockers.push({code:"condenser_model_unverified",message:"尚无与项目评级工况一致的已审核厂家冷凝器候选"});
+  } else verified.push("condenser_manufacturer_candidate");
+
   const accessories=unit.accessoryReview||{};
   if(!accessories.ok) blockers.push({code:"accessory_review_failed",message:"机组附件审核失败"});
   if(accessories.receiver?.status!=="provided_for_review") blockers.push({code:"receiver_unresolved",message:"储液器选型依据未完成"});
@@ -53,8 +58,8 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
     warnings,
     provenance:{
       compressor:{manufacturer:unit.manufacturer||null,model:unit.compressorModel||null,sourceRef:unit.compressorSourceRef||null,sourcePage:unit.compressorSourcePage||null},
-      condenser:{equations:condenser.equations||null,requiredHeatRejectionKW:condenser.requiredHeatRejectionKW??null},
-      rule:"最终机组方案必须能追溯到压缩机真实工况数据、冷凝器设计基础和附件选型依据；任一关键项 unresolved 时只能作为工程候选，不能包装成厂家完整机组型号。"
+      condenser:{equations:condenser.equations||null,requiredHeatRejectionKW:condenser.requiredHeatRejectionKW??null,manufacturerCandidates:(condenserSelection.candidates||[]).map(x=>({manufacturer:x.manufacturer||null,model:x.model||null,sourceRef:x.sourceRef||null,ratedHeatRejectionKW:x.ratedHeatRejectionKW??null}))},
+      rule:"最终机组方案必须能追溯到压缩机真实工况数据、冷凝器设计基础、已审核厂家冷凝器候选和附件选型依据；任一关键项 unresolved 时只能作为工程候选，不能包装成厂家完整机组型号。"
     }
   };
 }

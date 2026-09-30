@@ -63,6 +63,7 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(unit.unitCandidates[0].condenserDesign.requiredHeatRejectionKW,28); checks++; // selected compressor is 20 kW + 8 kW input
  assert.equal(unit.unitCandidates[0].condenserDesign.approachK,10); checks++;
  assert.equal(unit.unitCandidates[0].condenserSelection.status,"manufacturer_condenser_data_required"); checks++;
+ assert.ok(unit.unitCandidates[0].unitReview.blockers.some(x=>x.code==="condenser_model_unverified")); checks++;
  assert.equal(unit.unitCandidates[0].combinationRank,1); checks++;
  assert.equal(unit.unitCandidates[0].capacityCombinationStatus,"single_stage"); checks++;
  assert.equal(unit.unitCandidates[0].capacityControlReview.strategies[0].method,"cylinder_unloading"); checks++;
@@ -81,6 +82,8 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(withCondenser.unitCandidates[0].condenserSelection.status,"verified_condenser_candidates_ready"); checks++;
  assert.equal(withCondenser.unitCandidates[0].condenserSelection.candidates[0].model,"C30"); checks++;
  assert.equal(withCondenser.unitCandidates[0].condenserSelection.candidates[0].marginPercent,7.1); checks++;
+ assert.ok(withCondenser.unitCandidates[0].unitReview.verified.includes("condenser_manufacturer_candidate")); checks++;
+ assert.ok(!withCondenser.unitCandidates[0].unitReview.blockers.some(x=>x.code==="condenser_model_unverified")); checks++;
  const wrongRating=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,condenserManufacturerRows:[{manufacturer:"TEST",model:"WRONG",coolingMethod:"air",ratedHeatRejectionKW:40,condensingTempC:45,ambientTempC:30,reviewStatus:"reviewed"}]});
  assert.equal(wrongRating.unitCandidates[0].condenserSelection.status,"no_verified_condenser_match"); checks++;
 
