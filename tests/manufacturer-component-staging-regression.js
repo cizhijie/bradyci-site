@@ -1,0 +1,2 @@
+import assert from "node:assert/strict";import fs from "node:fs";
+export function runManufacturerComponentStagingRegression(){const s=fs.readFileSync(new URL("../lib/manufacturer-component-staging.js",import.meta.url),"utf8");assert.ok(s.includes("review note is required before promotion"));assert.ok(s.includes("staging_row_not_reviewed"));assert.ok(s.includes("'unreviewed'"));assert.ok(s.includes("'reviewed'"));return 4;}
