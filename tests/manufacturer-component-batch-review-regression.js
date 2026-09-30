@@ -1,0 +1,2 @@
+import assert from "node:assert/strict";import fs from "node:fs";
+export function runManufacturerComponentBatchReviewRegression(){const s=fs.readFileSync(new URL("../worker.js",import.meta.url),"utf8");assert.ok(s.includes("/api/manufacturer/components/review-batch"));assert.ok(s.includes("/api/manufacturer/components/promote-batch"));assert.ok(s.includes("reviewStagedManufacturerComponentBatch"));assert.ok(s.includes("promoteReviewedManufacturerComponentBatch"));return 4;}

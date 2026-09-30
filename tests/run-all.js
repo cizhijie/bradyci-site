@@ -1,3 +1,4 @@
+import { runManufacturerComponentBatchReviewRegression } from "./manufacturer-component-batch-review-regression.js";
 import { runManufacturerComponentBatchApiRegression } from "./manufacturer-component-batch-api-regression.js";
 import { runManufacturerComponentApiRegression } from "./manufacturer-component-api-regression.js";
 import { runManufacturerComponentStagingRegression } from "./manufacturer-component-staging-regression.js";
