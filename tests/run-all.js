@@ -1,3 +1,4 @@
+import { runManufacturerComponentApiRegression } from "./manufacturer-component-api-regression.js";
 import { runManufacturerComponentStagingRegression } from "./manufacturer-component-staging-regression.js";
 import { runCondensingUnitTrustedDbWiringRegression } from "./condensing-unit-trusted-db-wiring-regression.js";
 import { runCondensingUnitApiTrustRegression } from "./condensing-unit-api-trust-regression.js";

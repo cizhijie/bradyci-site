@@ -1,0 +1,2 @@
+import assert from "node:assert/strict";import fs from "node:fs";
+export function runManufacturerComponentApiRegression(){const s=fs.readFileSync(new URL("../worker.js",import.meta.url),"utf8");for(const p of ["/api/manufacturer/components/stage","/api/manufacturer/components/review","/api/manufacturer/components/promote"])assert.ok(s.includes(p));assert.ok(s.includes("stageManufacturerComponent"));assert.ok(s.includes("reviewStagedManufacturerComponent"));assert.ok(s.includes("promoteReviewedManufacturerComponent"));return 6;}
