@@ -121,6 +121,10 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(parallel.unitCandidates[0].accessoryReview.requirementReview.requirements.hp_lp_protection.level,"required"); checks++;
  assert.equal(parallel.unitCandidates[0].unitReview.finalSelectable,false); checks++;
  assert.ok(parallel.unitCandidates[0].unitReview.blockers.some(x=>x.code==="parallel_oil_management_unresolved")); checks++;
+ assert.equal(parallel.unitCandidates[0].accessoryReview.oilManagement.manufacturerSelection.status,"parallel_oil_design_incomplete"); checks++;
+ const oilReady=buildCondensingUnitCandidates({requiredCoolingCapacityKW:35,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,oilManagementBasis:"reviewed",manufacturerParallelApproval:"BITZER reviewed",oilSeparatorBasis:"reviewed",oilReservoirBasis:"reviewed",oilLevelControlBasis:"reviewed",pipingOilReturnBasis:"reviewed",oilManagementManufacturerRows:[{manufacturer:"TEST",system:"OIL-2",parallelApproved:true,maxCompressorCount:2,reviewStatus:"reviewed",sourceRef:"catalogue"}]});
+ assert.equal(oilReady.unitCandidates[0].accessoryReview.oilManagement.manufacturerSelection.status,"verified_oil_management_candidates_ready"); checks++;
+ assert.ok(oilReady.unitCandidates[0].unitReview.verified.includes("oil_management_manufacturer_candidate")); checks++;
 
  // Pump-down control makes receiver and liquid-line solenoid explicit system requirements.
  const pumpDown=buildCondensingUnitCandidates({

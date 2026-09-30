@@ -39,6 +39,11 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
   if(accessories.oilManagement?.parallelSystem&&accessories.oilManagement?.status!=="provided_for_review"){
     blockers.push({code:"parallel_oil_management_unresolved",message:"并联机组油管理方案未完成"});
   } else if(accessories.oilManagement) verified.push("oil_management_review");
+  const oilSelection=accessories.oilManagement?.manufacturerSelection||{};
+  if(accessories.oilManagement?.parallelSystem){
+    if(oilSelection.status!=="verified_oil_management_candidates_ready"||!Array.isArray(oilSelection.candidates)||!oilSelection.candidates.length) blockers.push({code:"oil_management_model_unverified",message:"并联机组尚无已审核厂家油管理方案候选"});
+    else verified.push("oil_management_manufacturer_candidate");
+  }
 
   const componentChecks=Array.isArray(accessories.componentChecks)?accessories.componentChecks:[];
   const unresolvedComponents=componentChecks.filter(x=>x.status!=="provided_for_review");

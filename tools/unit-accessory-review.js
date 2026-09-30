@@ -1,3 +1,4 @@
+import { reviewOilManagementSelection } from "./oil-management-selection.js";
 import { sizeLiquidReceiver, selectLiquidReceiverCandidates } from "./liquid-receiver-selection.js";
 import { assessUnitAccessoryRequirements } from "./unit-accessory-requirements.js";
 // Deterministic receiver / oil-management review layer.
@@ -33,6 +34,7 @@ export function reviewUnitAccessories(input={}){
     rule:"不得按压缩机匹数、制冷量或经验 L/HP 自动猜储液器容积。"
   };
 
+  const oilSelection=reviewOilManagementSelection({...input,installedCompressorCount:installed,dutyCompressorCount:duty});
   const oilManagement={
     status:parallel?(oilBasis?"provided_for_review":"required_unresolved"):"review_if_required",
     parallelSystem:parallel,
@@ -50,6 +52,7 @@ export function reviewUnitAccessories(input={}){
       "长立管/低负荷运行时的回油能力",
       "低温系统及特殊管路条件"
     ],
+    manufacturerSelection:oilSelection,
     rule:"并联机组必须把油管理作为独立设计项，不能仅因压缩机型号相同就视为可直接并联。"
   };
 
