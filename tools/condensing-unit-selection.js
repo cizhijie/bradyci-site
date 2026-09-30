@@ -1,3 +1,4 @@
+import { selectCondenserCandidates } from "./condenser-selection.js";
 import { isTrustedCompressorCandidate } from "../lib/verified-compressor-candidate.js";
 import { buildUnitSelectionTrace } from "./unit-selection-trace.js";
 import { presentCondensingUnitResult } from "./condensing-unit-presentation.js";
@@ -94,6 +95,7 @@ export function buildCondensingUnitCandidates(input={}){
       condensingTempC:input.condensingTempC,
       auxiliaryHeatToCondenserKW:input.auxiliaryHeatToCondenserKW
     });
+    unit.condenserSelection=selectCondenserCandidates(unit.condenserDesign,input.condenserManufacturerRows);
     unit.accessoryReview=reviewUnitAccessories({
       ...input,
       installedCompressorCount:unit.installedCompressorCount,
