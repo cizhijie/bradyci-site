@@ -1,0 +1,2 @@
+import assert from "node:assert/strict";import fs from "node:fs";
+export function runManufacturerComponentBatchApiRegression(){const s=fs.readFileSync(new URL("../worker.js",import.meta.url),"utf8");assert.ok(s.includes("/api/manufacturer/components/stage-batch"));assert.ok(s.includes("/api/manufacturer/components/staged"));assert.ok(s.includes("stageManufacturerComponentBatch"));assert.ok(s.includes("listStagedManufacturerComponents"));return 4;}
