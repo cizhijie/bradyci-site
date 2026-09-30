@@ -1,3 +1,4 @@
+import { runCondensingUnitTrustedDbWiringRegression } from "./condensing-unit-trusted-db-wiring-regression.js";
 import { runCondensingUnitApiTrustRegression } from "./condensing-unit-api-trust-regression.js";
 const suites=[
  ["worker-core-freezing-formatter-wiring","./worker-core-freezing-formatter-wiring-regression.js","runWorkerCoreFreezingFormatterWiringRegression"],

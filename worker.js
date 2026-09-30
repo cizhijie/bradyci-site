@@ -26,6 +26,7 @@ import { BITZER_R404A_LT_POINTS } from "./data/bitzer-r404a-lt-staging.js";
 import { inspectBitzerPolynomialCsv } from "./tools/bitzer-polynomial-import.js";
 import { importBitzerNativeRows, queryBitzerNativePerformance } from "./lib/bitzer-native-performance-db.js";
 import { buildCondensingUnitCandidates } from "./tools/condensing-unit-selection.js";
+import { queryReviewedManufacturerComponents } from "./lib/manufacturer-component-db.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。介绍能力、功能分类或回答“你能做什么”时，不要给各分类标题添加 1.、2. 等编号，直接使用简洁小标题。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -333,7 +334,16 @@ export default {
         const forbiddenManufacturerEvidence=["condenserManufacturerRows","receiverManufacturerRows","oilManagementManufacturerRows","accessoryManufacturerRows"];
         const injected=forbiddenManufacturerEvidence.filter(key=>Object.prototype.hasOwnProperty.call(body,key));
         if(injected.length) return json({ok:false,error:"manufacturer_evidence_injection_rejected",fields:injected,rule:"厂家已审核数据必须由服务端可信数据源取得，不能由客户端 JSON 声明 reviewed 后进入最终机组选型。"},400);
-        const result=buildCondensingUnitCandidates(body);
+        const componentTypes=["condenser","liquid_receiver","oil_management","filter_drier","sight_glass","solenoid_valve","expansion_device","hp_lp_protection"];
+        const componentResults=await Promise.all(componentTypes.map(componentType=>queryReviewedManufacturerComponents(env,{componentType})));
+        const byType=Object.fromEntries(componentTypes.map((type,i)=>[type,componentResults[i]?.rows||[]]));
+        const trustedInput={...body,
+          condenserManufacturerRows:byType.condenser,
+          receiverManufacturerRows:byType.liquid_receiver,
+          oilManagementManufacturerRows:byType.oil_management,
+          accessoryManufacturerRows:["filter_drier","sight_glass","solenoid_valve","expansion_device","hp_lp_protection"].flatMap(type=>byType[type]||[])
+        };
+        const result=buildCondensingUnitCandidates(trustedInput);
         return json(result,result.ok?200:400);
       } catch (error) {
         return json({ error:error?.message || "Condensing unit selection failed" },500);
