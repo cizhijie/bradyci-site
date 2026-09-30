@@ -45,6 +45,13 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
     else verified.push("oil_management_manufacturer_candidate");
   }
 
+  const requiredVerifiedAccessories=["filter_drier","sight_glass","solenoid_valve","expansion_device","hp_lp_protection"];
+  for(const component of requiredVerifiedAccessories){
+    const selection=accessories.verifiedSelections?.[component];
+    if(selection?.status!=="verified_accessory_candidates_ready") blockers.push({code:"accessory_model_unverified",component,message:"机组关键附件尚无已审核厂家型号候选"});
+    else verified.push("accessory_manufacturer_candidate:"+component);
+  }
+
   const componentChecks=Array.isArray(accessories.componentChecks)?accessories.componentChecks:[];
   const unresolvedComponents=componentChecks.filter(x=>x.status!=="provided_for_review");
   if(unresolvedComponents.length) warnings.push({

@@ -134,6 +134,11 @@ export async function runCondensingUnitChainRegression(){
  });
  assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.liquid_receiver.level,"required"); checks++;
  assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.solenoid_valve.level,"required"); checks++;
+ assert.equal(pumpDown.unitCandidates[0].accessoryReview.verifiedSelections.solenoid_valve.status,"manufacturer_accessory_data_required"); checks++;
+ const accessoryRows=["filter_drier","sight_glass","solenoid_valve","expansion_device","hp_lp_protection"].map((component,i)=>({component,manufacturer:"TEST",model:"A"+i,refrigerants:["R404A"],reviewStatus:"reviewed",sourceRef:"catalogue"}));
+ const accessoryVerified=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,accessoryManufacturerRows:accessoryRows});
+ assert.equal(accessoryVerified.unitCandidates[0].accessoryReview.verifiedSelections.filter_drier.candidates[0].model,"A0"); checks++;
+ assert.ok(accessoryVerified.unitCandidates[0].unitReview.verified.includes("accessory_manufacturer_candidate:expansion_device")); checks++;
 
  // Receiver volume alone is not a sizing basis and must not pass the final gate.
  const receiverNoBasis=buildCondensingUnitCandidates({

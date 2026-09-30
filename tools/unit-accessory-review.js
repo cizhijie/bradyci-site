@@ -1,3 +1,4 @@
+import { selectVerifiedAccessoryCandidates } from "./package-accessory-selection.js";
 import { reviewOilManagementSelection } from "./oil-management-selection.js";
 import { sizeLiquidReceiver, selectLiquidReceiverCandidates } from "./liquid-receiver-selection.js";
 import { assessUnitAccessoryRequirements } from "./unit-accessory-requirements.js";
@@ -58,6 +59,15 @@ export function reviewUnitAccessories(input={}){
 
   const requirementReview=assessUnitAccessoryRequirements({...input,installedCompressorCount:installed,dutyCompressorCount:duty});
 
+  const accessoryRows=input.accessoryManufacturerRows;
+  const verifiedSelections={
+    filter_drier:selectVerifiedAccessoryCandidates("filter_drier",input,accessoryRows),
+    sight_glass:selectVerifiedAccessoryCandidates("sight_glass",input,accessoryRows),
+    solenoid_valve:selectVerifiedAccessoryCandidates("solenoid_valve",input,accessoryRows),
+    expansion_device:selectVerifiedAccessoryCandidates("expansion_device",input,accessoryRows),
+    hp_lp_protection:selectVerifiedAccessoryCandidates("hp_lp_protection",input,accessoryRows)
+  };
+
   const componentChecks=[
     {component:"liquid_receiver",requirement:requirementReview.requirements.liquid_receiver?.level||"project_review",status:receiver.status},
     {component:"oil_management",requirement:requirementReview.requirements.oil_management?.level||"project_review",status:oilManagement.status},
@@ -82,6 +92,7 @@ export function reviewUnitAccessories(input={}){
     receiver,
     oilManagement,
     requirementReview,
+    verifiedSelections,
     componentChecks,
     unresolved,
     rule:"本层输出机组附件的工程核对状态，不在缺少厂家资料/系统设计依据时编造具体型号、口径或容积。"
