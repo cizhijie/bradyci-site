@@ -139,6 +139,11 @@ export async function runCondensingUnitChainRegression(){
   condenserType:"air",ambientTempC:35,receiverVolumeL:30
  });
  assert.equal(receiverNoBasis.unitCandidates[0].accessoryReview.receiver.status,"unresolved"); checks++;
+ assert.equal(receiverNoBasis.unitCandidates[0].accessoryReview.receiver.calculatedSizing.status,"receiver_liquid_mass_basis_required"); checks++;
+ const receiverCalc=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,systemRefrigerantChargeKg:24,receiverMustHoldFullCharge:true,refrigerantLiquidDensityKgM3:1200,receiverMaxFillFraction:0.8,receiverManufacturerRows:[{manufacturer:"TEST",model:"R30",geometricVolumeL:30,reviewStatus:"reviewed"}]});
+ assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.calculatedSizing.minimumGeometricVolumeL,25); checks++;
+ assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.manufacturerSelection.status,"verified_receiver_candidates_ready"); checks++;
+ assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.manufacturerSelection.candidates[0].model,"R30"); checks++;
  assert.ok(receiverNoBasis.unitCandidates[0].unitReview.blockers.some(x=>x.code==="receiver_unresolved")); checks++;
 
  // Redundancy request creates a reserve compressor but does not count it as duty capacity.

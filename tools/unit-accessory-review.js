@@ -1,3 +1,4 @@
+import { sizeLiquidReceiver, selectLiquidReceiverCandidates } from "./liquid-receiver-selection.js";
 import { assessUnitAccessoryRequirements } from "./unit-accessory-requirements.js";
 // Deterministic receiver / oil-management review layer.
 // This layer deliberately does NOT estimate receiver volume from horsepower or cooling capacity.
@@ -15,6 +16,8 @@ export function reviewUnitAccessories(input={}){
   const receiverBasis=String(input.receiverSizingBasis||"").trim();
   const oilBasis=String(input.oilManagementBasis||"").trim();
 
+  const receiverSizing=sizeLiquidReceiver(input);
+  const receiverSelection=selectLiquidReceiverCandidates(receiverSizing,input.receiverManufacturerRows);
   const receiver={
     status:receiverVolume!==null&&receiverBasis?"provided_for_review":"unresolved",
     volumeL:receiverVolume,
@@ -25,6 +28,8 @@ export function reviewUnitAccessories(input={}){
       "储液器允许充注率、设计压力和制冷剂兼容性",
       "泵-down/检修时是否要求容纳特定系统液量"
     ],
+    calculatedSizing:receiverSizing,
+    manufacturerSelection:receiverSelection,
     rule:"不得按压缩机匹数、制冷量或经验 L/HP 自动猜储液器容积。"
   };
 
