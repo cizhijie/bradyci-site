@@ -329,6 +329,10 @@ export default {
       if (!(await isOwner(request, env))) return json({ error: "Owner authentication required" }, 401);
       try {
         const body=await request.json().catch(()=>({}));
+        // Manufacturer verification evidence is server-owned. Raw HTTP callers may not inject reviewed catalogue rows.
+        const forbiddenManufacturerEvidence=["condenserManufacturerRows","receiverManufacturerRows","oilManagementManufacturerRows","accessoryManufacturerRows"];
+        const injected=forbiddenManufacturerEvidence.filter(key=>Object.prototype.hasOwnProperty.call(body,key));
+        if(injected.length) return json({ok:false,error:"manufacturer_evidence_injection_rejected",fields:injected,rule:"厂家已审核数据必须由服务端可信数据源取得，不能由客户端 JSON 声明 reviewed 后进入最终机组选型。"},400);
         const result=buildCondensingUnitCandidates(body);
         return json(result,result.ok?200:400);
       } catch (error) {

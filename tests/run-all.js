@@ -1,3 +1,4 @@
+import { runCondensingUnitApiTrustRegression } from "./condensing-unit-api-trust-regression.js";
 const suites=[
  ["worker-core-freezing-formatter-wiring","./worker-core-freezing-formatter-wiring-regression.js","runWorkerCoreFreezingFormatterWiringRegression"],
 ["product-geometry-inference","./product-geometry-inference-regression.js","runProductGeometryInferenceRegression"],
