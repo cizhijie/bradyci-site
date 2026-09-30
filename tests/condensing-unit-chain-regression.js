@@ -144,6 +144,9 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.calculatedSizing.minimumGeometricVolumeL,25); checks++;
  assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.manufacturerSelection.status,"verified_receiver_candidates_ready"); checks++;
  assert.equal(receiverCalc.unitCandidates[0].accessoryReview.receiver.manufacturerSelection.candidates[0].model,"R30"); checks++;
+ assert.ok(receiverCalc.unitCandidates[0].unitReview.verified.includes("receiver_manufacturer_candidate")); checks++;
+ assert.ok(!receiverCalc.unitCandidates[0].unitReview.blockers.some(x=>x.code==="receiver_model_unverified")); checks++;
+ assert.ok(receiverNoBasis.unitCandidates[0].unitReview.blockers.some(x=>x.code==="receiver_model_unverified")); checks++;
  assert.ok(receiverNoBasis.unitCandidates[0].unitReview.blockers.some(x=>x.code==="receiver_unresolved")); checks++;
 
  // Redundancy request creates a reserve compressor but does not count it as duty capacity.

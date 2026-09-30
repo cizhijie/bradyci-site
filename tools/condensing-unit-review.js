@@ -30,8 +30,12 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
 
   const accessories=unit.accessoryReview||{};
   if(!accessories.ok) blockers.push({code:"accessory_review_failed",message:"机组附件审核失败"});
+  const receiverSelection=accessories.receiver?.manufacturerSelection||{};
   if(accessories.receiver?.status!=="provided_for_review") blockers.push({code:"receiver_unresolved",message:"储液器选型依据未完成"});
   else verified.push("receiver_basis");
+  if(receiverSelection.status!=="verified_receiver_candidates_ready"||!Array.isArray(receiverSelection.candidates)||!receiverSelection.candidates.length){
+    blockers.push({code:"receiver_model_unverified",message:"尚无满足计算容积要求的已审核厂家储液器候选"});
+  } else verified.push("receiver_manufacturer_candidate");
   if(accessories.oilManagement?.parallelSystem&&accessories.oilManagement?.status!=="provided_for_review"){
     blockers.push({code:"parallel_oil_management_unresolved",message:"并联机组油管理方案未完成"});
   } else if(accessories.oilManagement) verified.push("oil_management_review");
@@ -59,7 +63,8 @@ export function reviewCondensingUnitCandidate(unit={},input={}){
     provenance:{
       compressor:{manufacturer:unit.manufacturer||null,model:unit.compressorModel||null,sourceRef:unit.compressorSourceRef||null,sourcePage:unit.compressorSourcePage||null},
       condenser:{equations:condenser.equations||null,requiredHeatRejectionKW:condenser.requiredHeatRejectionKW??null,manufacturerCandidates:(condenserSelection.candidates||[]).map(x=>({manufacturer:x.manufacturer||null,model:x.model||null,sourceRef:x.sourceRef||null,ratedHeatRejectionKW:x.ratedHeatRejectionKW??null}))},
-      rule:"最终机组方案必须能追溯到压缩机真实工况数据、冷凝器设计基础、已审核厂家冷凝器候选和附件选型依据；任一关键项 unresolved 时只能作为工程候选，不能包装成厂家完整机组型号。"
+      receiver:{minimumGeometricVolumeL:accessories.receiver?.calculatedSizing?.minimumGeometricVolumeL??null,manufacturerCandidates:(receiverSelection.candidates||[]).map(x=>({manufacturer:x.manufacturer||null,model:x.model||null,geometricVolumeL:x.geometricVolumeL??null,sourceRef:x.sourceRef||null}))},
+      rule:"最终机组方案必须能追溯到压缩机真实工况数据、已审核厂家冷凝器候选、储液器计算依据及已审核厂家储液器候选和附件选型依据；任一关键项 unresolved 时只能作为工程候选，不能包装成厂家完整机组型号。"
     }
   };
 }
