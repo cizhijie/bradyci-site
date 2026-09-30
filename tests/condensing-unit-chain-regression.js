@@ -135,10 +135,14 @@ export async function runCondensingUnitChainRegression(){
  assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.liquid_receiver.level,"required"); checks++;
  assert.equal(pumpDown.unitCandidates[0].accessoryReview.requirementReview.requirements.solenoid_valve.level,"required"); checks++;
  assert.equal(pumpDown.unitCandidates[0].accessoryReview.verifiedSelections.solenoid_valve.status,"manufacturer_accessory_data_required"); checks++;
- const accessoryRows=["filter_drier","sight_glass","solenoid_valve","expansion_device","hp_lp_protection"].map((component,i)=>({component,manufacturer:"TEST",model:"A"+i,refrigerants:["R404A"],reviewStatus:"reviewed",sourceRef:"catalogue"}));
- const accessoryVerified=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,accessoryManufacturerRows:accessoryRows});
+ const accessoryRows=["filter_drier","sight_glass","hp_lp_protection"].map((component,i)=>({component,manufacturer:"TEST",model:"A"+i,refrigerants:["R404A"],reviewStatus:"reviewed",sourceRef:"catalogue"}));
+ accessoryRows.push({component:"solenoid_valve",manufacturer:"TEST",model:"SV",refrigerants:["R404A"],connectionSize:"7/8",maxWorkingPressureBar:45,reviewStatus:"reviewed"});
+ accessoryRows.push({component:"expansion_device",manufacturer:"TEST",model:"TXV",refrigerants:["R404A"],ratedCapacityKW:20,evaporatingTempC:-25,condensingTempC:45,reviewStatus:"reviewed"});
+ const accessoryVerified=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,liquidLineSize:"7/8",designHighPressureBar:40,accessoryManufacturerRows:accessoryRows});
  assert.equal(accessoryVerified.unitCandidates[0].accessoryReview.verifiedSelections.filter_drier.candidates[0].model,"A0"); checks++;
  assert.ok(accessoryVerified.unitCandidates[0].unitReview.verified.includes("accessory_manufacturer_candidate:expansion_device")); checks++;
+ const badAccessory=buildCondensingUnitCandidates({requiredCoolingCapacityKW:18,compressorCandidates:chain.finalCandidates,refrigerant:"R404A",evaporatingTempC:-25,condensingTempC:45,condenserType:"air",ambientTempC:35,liquidLineSize:"5/8",designHighPressureBar:50,accessoryManufacturerRows:accessoryRows});
+ assert.equal(badAccessory.unitCandidates[0].accessoryReview.verifiedSelections.solenoid_valve.candidates.length,0); checks++;
 
  // Receiver volume alone is not a sizing basis and must not pass the final gate.
  const receiverNoBasis=buildCondensingUnitCandidates({

@@ -98,6 +98,10 @@ export function buildCondensingUnitCandidates(input={}){
     unit.condenserSelection=selectCondenserCandidates(unit.condenserDesign,input.condenserManufacturerRows);
     unit.accessoryReview=reviewUnitAccessories({
       ...input,
+      requiredCoolingCapacityKW:required,
+      refrigerant:unit.refrigerant,
+      evaporatingTempC:unit.evaporatingTempC,
+      condensingTempC:unit.condensingTempC,
       installedCompressorCount:unit.installedCompressorCount,
       dutyCompressorCount:unit.dutyCompressorCount
     });
