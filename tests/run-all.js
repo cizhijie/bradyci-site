@@ -1,3 +1,4 @@
+import { runManufacturerComponentSupersedeApiRegression } from "./manufacturer-component-supersede-api-regression.js";
 import { runManufacturerComponentVersionRegression } from "./manufacturer-component-version-regression.js";
 import { runManufacturerComponentDedupRegression } from "./manufacturer-component-dedup-regression.js";
 import { runManufacturerComponentBatchReviewRegression } from "./manufacturer-component-batch-review-regression.js";

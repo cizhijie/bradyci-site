@@ -27,7 +27,7 @@ import { inspectBitzerPolynomialCsv } from "./tools/bitzer-polynomial-import.js"
 import { importBitzerNativeRows, queryBitzerNativePerformance } from "./lib/bitzer-native-performance-db.js";
 import { buildCondensingUnitCandidates } from "./tools/condensing-unit-selection.js";
 import { queryReviewedManufacturerComponents } from "./lib/manufacturer-component-db.js";
-import { stageManufacturerComponent, stageManufacturerComponentBatch, listStagedManufacturerComponents, reviewStagedManufacturerComponent, reviewStagedManufacturerComponentBatch, promoteReviewedManufacturerComponent, promoteReviewedManufacturerComponentBatch } from "./lib/manufacturer-component-staging.js";
+import { stageManufacturerComponent, stageManufacturerComponentBatch, listStagedManufacturerComponents, reviewStagedManufacturerComponent, reviewStagedManufacturerComponentBatch, promoteReviewedManufacturerComponent, promoteReviewedManufacturerComponentBatch, supersedeManufacturerComponentVersion } from "./lib/manufacturer-component-staging.js";
 
 const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台。请使用中文为主，回答直接、清楚、实用。默认先给简洁答案，除非用户明确要求详细展开。介绍能力、功能分类或回答“你能做什么”时，不要给各分类标题添加 1.、2. 等编号，直接使用简洁小标题。遇到制冷工程计算时，不编造厂家参数或具体型号；缺少关键数据时明确指出。你也可以协助 AI 影像、内容创作、英语学习和日常工作。
 
@@ -350,6 +350,13 @@ export default {
       if (!(await isOwner(request,env))) return json({error:"Owner authentication required"},401);
       try { const body=await request.json().catch(()=>({})); const result=await promoteReviewedManufacturerComponentBatch(env,body.ids); return json(result,result.ok?200:207); }
       catch(error){ return json({error:error?.message||"Component batch promotion failed"},500); }
+    }
+
+    if (url.pathname === "/api/manufacturer/components/supersede") {
+      if (request.method !== "POST") return json({error:"Method not allowed"},405);
+      if (!(await isOwner(request,env))) return json({error:"Owner authentication required"},401);
+      try { const body=await request.json().catch(()=>({})); const result=await supersedeManufacturerComponentVersion(env,body); return json(result,result.ok?200:400); }
+      catch(error){ return json({error:error?.message||"Component version supersede failed"},500); }
     }
 
     if (url.pathname === "/api/manufacturer/components/stage") {
