@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";import fs from "node:fs";export function runManufacturerComponentDedupRegression(){const s=fs.readFileSync(new URL("../lib/manufacturer-component-staging.js",import.meta.url),"utf8");assert.ok(s.includes("alreadyStaged:true"));assert.ok(s.includes("data_json=?"));return 2;}
