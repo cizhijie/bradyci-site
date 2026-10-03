@@ -53,7 +53,12 @@ internal static class AssemblyIlInspector
                         ? BitConverter.ToString(il, offset, operandSize).Replace("-", " ")
                         : "";
                     var tokenText = "";
-                    if (IsMetadataTokenOpcode(op) && operandSize == 4 && offset + 4 <= il.Length)
+                    if (op == 0x72 && operandSize == 4 && offset + 4 <= il.Length)
+                    {
+                        var token = BitConverter.ToInt32(il, offset);
+                        tokenText = "  // " + ResolveUserString(reader, token);
+                    }
+                    else if (IsMetadataTokenOpcode(op) && operandSize == 4 && offset + 4 <= il.Length)
                     {
                         var token = BitConverter.ToInt32(il, offset);
                         tokenText = "  // " + ResolveToken(reader, token);
@@ -93,6 +98,16 @@ internal static class AssemblyIlInspector
             return 4 + Math.Max(0, n) * 4;
         }
         return 0;
+    }
+
+    private static string ResolveUserString(MetadataReader reader, int token)
+    {
+        try
+        {
+            var handle = MetadataTokens.UserStringHandle(token & 0x00FFFFFF);
+            return "\"" + reader.GetUserString(handle).Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        }
+        catch { return "user-string token " + token.ToString("X8"); }
     }
 
     private static string ResolveToken(MetadataReader reader, int token)
