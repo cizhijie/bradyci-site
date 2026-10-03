@@ -1,0 +1,9 @@
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD <>c.<SetupSqliteDesktop>b__7_2
+  IL_0000: ldarg.1
+  IL_0001: ldc.i4.1
+  IL_0002: callvirt       F3 00 00 0A  // TypeSpec.UseQuerySplittingBehavior
+  IL_0007: pop
+  IL_0008: ret
+Matched IL methods: 1

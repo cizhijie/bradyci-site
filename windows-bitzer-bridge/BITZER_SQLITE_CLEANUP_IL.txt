@@ -1,0 +1,8 @@
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD <>c__DisplayClass7_0.<SetupSqliteDesktop>b__3
+  IL_0000: ldarg.0
+  IL_0001: ldfld          2B 00 00 04  // inMemoryConnection
+  IL_0006: callvirt       FC 00 00 0A  // System.ComponentModel.Component.Dispose
+  IL_000B: ret
+Matched IL methods: 1
