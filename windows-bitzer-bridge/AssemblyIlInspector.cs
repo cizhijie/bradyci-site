@@ -16,6 +16,7 @@ internal static class AssemblyIlInspector
         var reader = pe.GetMetadataReader();
         var wantedMethods = methodFilters.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
         var matched = 0;
+        var relatedStateMachineFilter = typeFilter.Equals("HHKModuleConfig", StringComparison.OrdinalIgnoreCase) ? "Calculation>d__" : null;
 
         foreach (var typeHandle in reader.TypeDefinitions)
         {
@@ -23,13 +24,15 @@ internal static class AssemblyIlInspector
             var ns = reader.GetString(type.Namespace);
             var name = reader.GetString(type.Name);
             var fullName = string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
-            if (!fullName.Contains(typeFilter, StringComparison.OrdinalIgnoreCase)) continue;
+            var directTypeMatch = fullName.Contains(typeFilter, StringComparison.OrdinalIgnoreCase);
+            var stateMachineMatch = relatedStateMachineFilter is not null && fullName.Contains(relatedStateMachineFilter, StringComparison.OrdinalIgnoreCase);
+            if (!directTypeMatch && !stateMachineMatch) continue;
 
             foreach (var methodHandle in type.GetMethods())
             {
                 var method = reader.GetMethodDefinition(methodHandle);
                 var methodName = reader.GetString(method.Name);
-                if (wantedMethods.Length != 0 && !wantedMethods.Any(x => methodName.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+                if (wantedMethods.Length != 0 && !wantedMethods.Any(x => methodName.Contains(x, StringComparison.OrdinalIgnoreCase)) && !(stateMachineMatch && methodName == "MoveNext")) continue;
                 if (method.RelativeVirtualAddress == 0) continue;
 
                 matched++;
@@ -115,12 +118,50 @@ internal static class AssemblyIlInspector
     private static string ResolveMethodSpec(MetadataReader reader, MethodSpecificationHandle h)
     {
         var spec = reader.GetMethodSpecification(h);
-        return spec.Method.Kind switch
+        var baseName = spec.Method.Kind switch
         {
             HandleKind.MethodDefinition => MethodName(reader, (MethodDefinitionHandle)spec.Method),
             HandleKind.MemberReference => MemberName(reader, (MemberReferenceHandle)spec.Method),
             _ => "MethodSpec"
         };
+        try
+        {
+            var blob = reader.GetBlobReader(spec.Signature);
+            if (blob.RemainingBytes == 0) return baseName;
+            blob.ReadByte(); // GENERICINST
+            var count = blob.ReadCompressedInteger();
+            var args = new List<string>();
+            for (var i = 0; i < count; i++) args.Add(ReadTypeSignature(reader, ref blob));
+            return baseName + "<" + string.Join(", ", args) + ">";
+        }
+        catch { return baseName; }
+    }
+
+    private static string ReadTypeSignature(MetadataReader reader, ref BlobReader blob)
+    {
+        if (blob.RemainingBytes == 0) return "?";
+        var code = blob.ReadSignatureTypeCode();
+        if (code is SignatureTypeCode.Class or SignatureTypeCode.ValueType)
+        {
+            var handle = blob.ReadTypeHandle();
+            return handle.Kind switch
+            {
+                HandleKind.TypeDefinition => TypeName(reader, (TypeDefinitionHandle)handle),
+                HandleKind.TypeReference => TypeName(reader, (TypeReferenceHandle)handle),
+                _ => handle.Kind.ToString()
+            };
+        }
+        if (code == SignatureTypeCode.GenericTypeInstance)
+        {
+            var kind = blob.ReadSignatureTypeCode();
+            var handle = blob.ReadTypeHandle();
+            var name = handle.Kind == HandleKind.TypeReference ? TypeName(reader, (TypeReferenceHandle)handle) : handle.Kind.ToString();
+            var n = blob.ReadCompressedInteger();
+            var args = new List<string>();
+            for (var i = 0; i < n; i++) args.Add(ReadTypeSignature(reader, ref blob));
+            return name + "<" + string.Join(", ", args) + ">";
+        }
+        return code.ToString();
     }
 
     private static string MethodName(MetadataReader reader, MethodDefinitionHandle h)
