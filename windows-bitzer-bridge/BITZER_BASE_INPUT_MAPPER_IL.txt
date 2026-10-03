@@ -1,0 +1,251 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD Bitzer.Selection.Platform.MappingProfiles.InputMapperBase.MapToAPIinput
+  IL_0000: ldarg.1
+  IL_0001: callvirt       82 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Flags
+  IL_0006: call           83 02 00 0A  // Domain.Models.Flags.ConvertFlags
+  IL_000B: stloc.0
+  IL_000C: ldloc.0
+  IL_000D: ldfld          84 02 00 0A  // Domain.Models.Flags.UnitSystem
+  IL_0012: stloc.s        05
+  IL_0014: ldloc.s        05
+  IL_0016: brfalse.s      0A
+  IL_0018: ldloc.s        05
+  IL_001A: ldc.i4.1
+  IL_001B: op_002E        50
+  IL_001D: br             9B 00 00 00
+  IL_0022: ldarg.1
+  IL_0023: callvirt       85 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Q
+  IL_0028: call           86 02 00 0A  // Domain.Utils.UnitConverter.KiloWattToWatt
+  IL_002D: ldarg.1
+  IL_002E: callvirt       87 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_T0
+  IL_0033: ldarg.1
+  IL_0034: callvirt       88 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TC
+  IL_0039: newobj         6C 01 00 0A  // Domain.Records.OperatingPoint..ctor
+  IL_003E: ldsfld         C5 02 00 04  // <0>__CelsiusToKelvin
+  IL_0043: dup
+  IL_0044: brtrue.s       13
+  IL_0046: pop
+  IL_0047: ldnull
+  IL_0048: ldftn          4D 01 00 0A  // Domain.Utils.UnitConverter.CelsiusToKelvin
+  IL_004E: newobj         7F 00 00 0A  // TypeSpec..ctor
+  IL_0053: dup
+  IL_0054: stsfld         C5 02 00 04  // <0>__CelsiusToKelvin
+  IL_0059: call           89 02 00 0A  // Domain.OperatingPointExtensions.Convert
+  IL_005E: ldarg.1
+  IL_005F: callvirt       8A 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TN
+  IL_0064: newobj         8B 02 00 0A  // TypeSpec..ctor
+  IL_0069: stloc.s        04
+  IL_006B: br.s           56
+  IL_006D: ldarg.1
+  IL_006E: callvirt       85 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Q
+  IL_0073: call           8C 02 00 0A  // Domain.Utils.UnitConverter.KBtuPerHourToWatt
+  IL_0078: ldarg.1
+  IL_0079: callvirt       87 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_T0
+  IL_007E: ldarg.1
+  IL_007F: callvirt       88 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TC
+  IL_0084: newobj         6C 01 00 0A  // Domain.Records.OperatingPoint..ctor
+  IL_0089: ldsfld         C6 02 00 04  // <1>__FahrenheitToKelvin
+  IL_008E: dup
+  IL_008F: brtrue.s       13
+  IL_0091: pop
+  IL_0092: ldnull
+  IL_0093: ldftn          8D 02 00 0A  // Domain.Utils.UnitConverter.FahrenheitToKelvin
+  IL_0099: newobj         7F 00 00 0A  // TypeSpec..ctor
+  IL_009E: dup
+  IL_009F: stsfld         C6 02 00 04  // <1>__FahrenheitToKelvin
+  IL_00A4: call           89 02 00 0A  // Domain.OperatingPointExtensions.Convert
+  IL_00A9: ldarg.1
+  IL_00AA: callvirt       8A 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TN
+  IL_00AF: call           8E 02 00 0A  // Domain.Utils.UnitConverter.FahrenheitToKelvinDifference
+  IL_00B4: newobj         8B 02 00 0A  // TypeSpec..ctor
+  IL_00B9: stloc.s        04
+  IL_00BB: br.s           06
+  IL_00BD: newobj         94 00 00 0A  // System.NotImplementedException..ctor
+  IL_00C2: op_007A
+  IL_00C3: ldloc.s        04
+  IL_00C5: dup
+  IL_00C6: ldfld          8F 02 00 0A  // TypeSpec.Item1
+  IL_00CB: stloc.1
+  IL_00CC: dup
+  IL_00CD: ldfld          90 02 00 0A  // TypeSpec.Item2
+  IL_00D2: stloc.2
+  IL_00D3: ldfld          91 02 00 0A  // TypeSpec.Item3
+  IL_00D8: stloc.3
+  IL_00D9: newobj         92 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput..ctor
+  IL_00DE: dup
+  IL_00DF: ldloc.0
+  IL_00E0: callvirt       93 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_Flags
+  IL_00E5: dup
+  IL_00E6: newobj         94 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig..ctor
+  IL_00EB: dup
+  IL_00EC: ldloc.0
+  IL_00ED: ldfld          95 02 00 0A  // Domain.Models.Flags.CalcWithHeatPump
+  IL_00F2: callvirt       96 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_SystemMode
+  IL_00F7: dup
+  IL_00F8: ldloc.0
+  IL_00F9: ldfld          97 02 00 0A  // Domain.Models.Flags.HeatTransferFluid
+  IL_00FE: callvirt       98 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_HeatTransferFluid
+  IL_0103: dup
+  IL_0104: ldloc.0
+  IL_0105: ldfld          99 02 00 0A  // Domain.Models.Flags.CalcWithFan
+  IL_010A: callvirt       9A 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_CalcWithFan
+  IL_010F: dup
+  IL_0110: ldloc.0
+  IL_0111: ldfld          9B 02 00 0A  // Domain.Models.Flags.SystemPressureDrop
+  IL_0116: callvirt       9C 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_SystemPressureDrop
+  IL_011B: dup
+  IL_011C: ldarg.1
+  IL_011D: callvirt       9D 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_ModuleId
+  IL_0122: callvirt       9E 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_Module
+  IL_0127: callvirt       9F 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_SystemConfig
+  IL_012C: dup
+  IL_012D: newobj         A0 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig..ctor
+  IL_0132: dup
+  IL_0133: ldloc.0
+  IL_0134: ldfld          A1 02 00 0A  // Domain.Models.Flags.CalculationMode
+  IL_0139: callvirt       A2 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig.set_CalculationMode
+  IL_013E: dup
+  IL_013F: ldloc.1
+  IL_0140: callvirt       A3 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig.set_CapacityRequest
+  IL_0145: callvirt       A4 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_CalculationConfig
+  IL_014A: dup
+  IL_014B: newobj         A5 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData..ctor
+  IL_0150: dup
+  IL_0151: ldarg.1
+  IL_0152: callvirt       A6 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Ref
+  IL_0157: call           A7 02 00 0A  // Domain.Utils.RefrigerantSpellingExtension.GetStandardizedRefrigerantCode
+  IL_015C: callvirt       A8 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData.set_Code
+  IL_0161: callvirt       A9 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_RefrigerantData
+  IL_0166: dup
+  IL_0167: ldc.i4.1
+  IL_0168: stloc.s        07
+  IL_016A: ldloc.s        07
+  IL_016C: newobj         AA 02 00 0A  // TypeSpec..ctor
+  IL_0171: dup
+  IL_0172: ldloc.s        07
+  IL_0174: call           5C 00 00 2B  // System.Runtime.InteropServices.CollectionsMarshal.SetCount<TypeHandle>
+  IL_0179: dup
+  IL_017A: call           5D 00 00 2B  // System.Runtime.InteropServices.CollectionsMarshal.AsSpan<TypeHandle>
+  IL_017F: stloc.s        08
+  IL_0181: ldloca.s       08
+  IL_0183: ldc.i4.0
+  IL_0184: call           AD 02 00 0A  // TypeSpec.get_Item
+  IL_0189: ldloc.2
+  IL_018A: op_0051
+  IL_018B: callvirt       AE 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_OperatingPoints
+  IL_0190: dup
+  IL_0191: newobj         AF 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions..ctor
+  IL_0196: dup
+  IL_0197: ldloc.0
+  IL_0198: ldfld          B0 02 00 0A  // Domain.Models.Flags.SuperheatMode
+  IL_019D: callvirt       B1 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_SuperheatMode
+  IL_01A2: dup
+  IL_01A3: ldloc.0
+  IL_01A4: ldfld          B2 02 00 0A  // Domain.Models.Flags.SubcoolingMode
+  IL_01A9: callvirt       B3 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_SubcoolingMode
+  IL_01AE: dup
+  IL_01AF: ldloc.0
+  IL_01B0: ldfld          B4 02 00 0A  // Domain.Models.Flags.CalcWithUsefulSuperheat
+  IL_01B5: callvirt       B5 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_UsefulSuperheatMode
+  IL_01BA: dup
+  IL_01BB: ldloc.0
+  IL_01BC: ldfld          B6 02 00 0A  // Domain.Models.Flags.ReferenceTemperature
+  IL_01C1: callvirt       B7 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_ReferenceTemperature
+  IL_01C6: dup
+  IL_01C7: ldloc.0
+  IL_01C8: ldarg.1
+  IL_01C9: callvirt       B8 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TS
+  IL_01CE: call           B9 02 00 0A  // Domain.Utils.UnitConverter.ConvertSuperheatToSITemperature
+  IL_01D3: callvirt       BA 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_SuperheatModeTemperature
+  IL_01D8: dup
+  IL_01D9: ldloc.0
+  IL_01DA: ldarg.1
+  IL_01DB: callvirt       BB 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TL
+  IL_01E0: call           BC 02 00 0A  // Domain.Utils.UnitConverter.ConvertSubcoolingToSITemperature
+  IL_01E5: callvirt       BD 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_SubcoolingModeTemperature
+  IL_01EA: dup
+  IL_01EB: ldloc.3
+  IL_01EC: callvirt       BE 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions.set_UsefulSuperheat
+  IL_01F1: callvirt       BF 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_OperatingConditions
+  IL_01F6: dup
+  IL_01F7: ldarg.1
+  IL_01F8: callvirt       C0 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_ProductTypes
+  IL_01FD: ldsfld         C7 02 00 04  // <2>__GetProductNameAndOilSuffix
+  IL_0202: dup
+  IL_0203: brtrue.s       13
+  IL_0205: pop
+  IL_0206: ldnull
+  IL_0207: ldftn          C1 02 00 0A  // Domain.Utils.ProductUtils.GetProductNameAndOilSuffix
+  IL_020D: newobj         C2 02 00 0A  // TypeSpec..ctor
+  IL_0212: dup
+  IL_0213: stsfld         C7 02 00 04  // <2>__GetProductNameAndOilSuffix
+  IL_0218: call           5E 00 00 2B  // System.Linq.Enumerable.Select<String, TypeHandle>
+  IL_021D: call           5F 00 00 2B  // System.Linq.Enumerable.ToList<TypeHandle>
+  IL_0222: callvirt       C3 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_Products
+  IL_0227: dup
+  IL_0228: newobj         C4 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData..ctor
+  IL_022D: dup
+  IL_022E: newobj         C5 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor..ctor
+  IL_0233: dup
+  IL_0234: ldarg.1
+  IL_0235: callvirt       C6 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_DS
+  IL_023A: callvirt       C7 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor.set_Winding
+  IL_023F: dup
+  IL_0240: ldarg.1
+  IL_0241: callvirt       C8 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_NET
+  IL_0246: callvirt       C9 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor.set_MotorId
+  IL_024B: dup
+  IL_024C: ldarg.1
+  IL_024D: callvirt       CA 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_IsUL
+  IL_0252: callvirt       CB 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor.set_IsUL
+  IL_0257: callvirt       CC 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData.set_Motor
+  IL_025C: dup
+  IL_025D: ldarg.1
+  IL_025E: callvirt       CD 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_CR
+  IL_0263: op_0069
+  IL_0264: callvirt       CE 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData.set_CapacityRegulation
+  IL_0269: dup
+  IL_026A: ldarg.0
+  IL_026B: ldarg.1
+  IL_026C: ldloc.0
+  IL_026D: callvirt       7D 01 00 06  // Bitzer.Selection.Platform.MappingProfiles.InputMapperBase.GetSeries
+  IL_0272: callvirt       CF 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData.set_Series
+  IL_0277: callvirt       D0 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_CompressorData
+  IL_027C: dup
+  IL_027D: newobj         D1 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig..ctor
+  IL_0282: dup
+  IL_0283: ldc.i4.0
+  IL_0284: callvirt       D2 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig.set_Type
+  IL_0289: callvirt       D3 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_FrequencyInverterConfig
+  IL_028E: dup
+  IL_028F: newobj         D4 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid..ctor
+  IL_0294: dup
+  IL_0295: ldarg.1
+  IL_0296: callvirt       D5 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FCOF
+  IL_029B: callvirt       D6 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid.set_Frequency
+  IL_02A0: dup
+  IL_02A1: ldarg.1
+  IL_02A2: callvirt       D7 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FCV
+  IL_02A7: brfalse.s      08
+  IL_02A9: ldarg.1
+  IL_02AA: callvirt       D7 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FCV
+  IL_02AF: br.s           06
+  IL_02B1: ldarg.1
+  IL_02B2: callvirt       D8 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_OV
+  IL_02B7: callvirt       D9 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid.set_Voltage
+  IL_02BC: callvirt       DA 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_ElectricGrid
+  IL_02C1: dup
+  IL_02C2: newobj         DB 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings..ctor
+  IL_02C7: dup
+  IL_02C8: ldloc.0
+  IL_02C9: ldfld          84 02 00 0A  // Domain.Models.Flags.UnitSystem
+  IL_02CE: callvirt       DC 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings.set_UnitSystem
+  IL_02D3: dup
+  IL_02D4: ldloc.0
+  IL_02D5: ldfld          DD 02 00 0A  // Domain.Models.Flags.UserMode
+  IL_02DA: callvirt       DE 02 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings.set_UserMode
+  IL_02DF: callvirt       DF 02 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_Settings
+  IL_02E4: ret
+Matched IL methods: 1
