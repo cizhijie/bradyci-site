@@ -816,7 +816,7 @@ export default {
   }
 };
 
-function cleanFinalAnswer(value="") {
+export function cleanFinalAnswer(value="") {
   let s=String(value||"").trim();
   if(!s)return "";
   s=s.replace(/<think>[\s\S]*?<\/think>/gi,"").trim();
