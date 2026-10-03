@@ -1,0 +1,164 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper.MapToAPIinput
+  IL_0000: ldarg.0
+  IL_0001: ldarg.1
+  IL_0002: call           1E 01 00 0A  // Bitzer.Selection.Platform.MappingProfiles.InputMapperBase.MapToAPIinput
+  IL_0007: stloc.0
+  IL_0008: ldloc.0
+  IL_0009: newobj         7B 00 00 06  // Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput..ctor
+  IL_000E: stloc.1
+  IL_000F: ldarg.1
+  IL_0010: callvirt       1F 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_OP
+  IL_0015: stloc.2
+  IL_0016: ldloc.2
+  IL_0017: ldc.i4.5
+  IL_0018: op_002E        0D
+  IL_001A: ldloc.0
+  IL_001B: callvirt       6E 00 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.get_OperatingPoints
+  IL_0020: call           2C 00 00 2B  // System.Linq.Enumerable.ToArray<TypeHandle>
+  IL_0025: br.s           2A
+  IL_0027: ldc.i4.1
+  IL_0028: newarr         43 00 00 01  // Domain.Records.OperatingPoint
+  IL_002D: dup
+  IL_002E: ldc.i4.0
+  IL_002F: ldloc.0
+  IL_0030: callvirt       6E 00 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.get_OperatingPoints
+  IL_0035: ldc.i4.0
+  IL_0036: callvirt       82 00 00 0A  // TypeSpec.get_Item
+  IL_003B: callvirt       A7 00 00 0A  // Domain.Records.OperatingPoint.get_T0
+  IL_0040: ldarg.1
+  IL_0041: callvirt       21 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_TC
+  IL_0046: call           AD 00 00 0A  // Domain.Utils.UnitConverter.BarToPascal
+  IL_004B: newobj         22 01 00 0A  // Domain.Records.OperatingPoint..ctor
+  IL_0050: op_00A2
+  IL_0051: stloc.3
+  IL_0052: ldloc.1
+  IL_0053: callvirt       84 00 00 06  // Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput.<Clone>$
+  IL_0058: stloc.s        08
+  IL_005A: ldloc.s        08
+  IL_005C: ldloc.0
+  IL_005D: callvirt       AA 00 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.get_SystemConfig
+  IL_0062: callvirt       23 01 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.<Clone>$
+  IL_0067: dup
+  IL_0068: ldloc.2
+  IL_0069: callvirt       24 01 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig.set_OperatingMode
+  IL_006E: callvirt       25 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_SystemConfig
+  IL_0073: ldloc.s        08
+  IL_0075: ldloc.3
+  IL_0076: callvirt       26 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_OperatingPoints
+  IL_007B: ldloc.s        08
+  IL_007D: stloc.s        04
+  IL_007F: newobj         27 01 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig..ctor
+  IL_0084: stloc.s        07
+  IL_0086: ldloc.s        07
+  IL_0088: stloc.s        05
+  IL_008A: ldloc.1
+  IL_008B: callvirt       28 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.get_Flags
+  IL_0090: ldfld          29 01 00 0A  // Domain.Models.Flags.CalculationMode
+  IL_0095: ldc.i4.0
+  IL_0096: ceq
+  IL_0098: stloc.s        06
+  IL_009A: ldloc.s        06
+  IL_009C: brfalse.s      1B
+  IL_009E: ldarg.1
+  IL_009F: callvirt       2A 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FI
+  IL_00A4: stloc.s        09
+  IL_00A6: ldloc.s        09
+  IL_00A8: ldc.i4.1
+  IL_00A9: sub
+  IL_00AA: ldc.i4.1
+  IL_00AB: op_0035        05
+  IL_00AD: ldc.i4.1
+  IL_00AE: stloc.s        0A
+  IL_00B0: br.s           03
+  IL_00B2: ldc.i4.0
+  IL_00B3: stloc.s        0A
+  IL_00B5: ldloc.s        0A
+  IL_00B7: stloc.s        06
+  IL_00B9: ldloc.s        05
+  IL_00BB: ldloc.s        06
+  IL_00BD: brtrue.s       08
+  IL_00BF: ldarg.1
+  IL_00C0: callvirt       87 00 00 06  // Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto.get_i_FCF
+  IL_00C5: br.s           02
+  IL_00C7: ldc.i4.s       32
+  IL_00C9: op_006C
+  IL_00CA: callvirt       F4 00 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig.set_Frequency
+  IL_00CF: ldloc.s        07
+  IL_00D1: ldarg.1
+  IL_00D2: callvirt       2A 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FI
+  IL_00D7: callvirt       2B 01 00 0A  // Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig.set_Type
+  IL_00DC: ldloc.s        04
+  IL_00DE: ldloc.s        07
+  IL_00E0: callvirt       2C 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.APIinput.set_FrequencyInverterConfig
+  IL_00E5: ldloc.s        08
+  IL_00E7: ret
+IL METHOD Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper.GetSeries
+  IL_0000: ldarg.2
+  IL_0001: ldfld          2D 01 00 0A  // Domain.Models.Flags.CalcWithTandem
+  IL_0006: ldc.i4.1
+  IL_0007: op_0033        02
+  IL_0009: ldc.i4.6
+  IL_000A: ret
+  IL_000B: ldarg.1
+  IL_000C: brfalse.s      63
+  IL_000E: ldarg.1
+  IL_000F: callvirt       2A 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_FI
+  IL_0014: ldc.i4.1
+  IL_0015: op_002E        45
+  IL_0017: ldarg.1
+  IL_0018: callvirt       2E 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Ref
+  IL_001D: ldstr          09 00 00 70  // token 70000009
+  IL_0022: call           53 00 00 0A  // System.String.op_Equality
+  IL_0027: brfalse.s      20
+  IL_0029: ldarg.1
+  IL_002A: callvirt       2F 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Serie
+  IL_002F: stloc.1
+  IL_0030: ldloc.1
+  IL_0031: ldc.i4.2
+  IL_0032: op_0030        09
+  IL_0034: ldloc.1
+  IL_0035: brfalse.s      29
+  IL_0037: ldloc.1
+  IL_0038: ldc.i4.2
+  IL_0039: op_002E        29
+  IL_003B: br.s           34
+  IL_003D: ldloc.1
+  IL_003E: ldc.i4.s       2C
+  IL_0040: op_002E        26
+  IL_0042: ldloc.1
+  IL_0043: ldc.i4.s       2D
+  IL_0045: op_002E        25
+  IL_0047: br.s           28
+  IL_0049: ldarg.1
+  IL_004A: callvirt       2F 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.get_i_Serie
+  IL_004F: stloc.1
+  IL_0050: ldloc.1
+  IL_0051: ldc.i4.s       2C
+  IL_0053: op_002E        13
+  IL_0055: ldloc.1
+  IL_0056: ldc.i4.s       2D
+  IL_0058: op_002E        12
+  IL_005A: br.s           15
+  IL_005C: ldc.i4.7
+  IL_005D: stloc.0
+  IL_005E: br.s           13
+  IL_0060: ldc.i4.2
+  IL_0061: stloc.0
+  IL_0062: br.s           0F
+  IL_0064: ldc.i4.1
+  IL_0065: stloc.0
+  IL_0066: br.s           0B
+  IL_0068: ldc.i4.8
+  IL_0069: stloc.0
+  IL_006A: br.s           07
+  IL_006C: ldc.i4.s       09
+  IL_006E: stloc.0
+  IL_006F: br.s           02
+  IL_0071: ldc.i4.0
+  IL_0072: stloc.0
+  IL_0073: ldloc.0
+  IL_0074: ret
+Matched IL methods: 2
