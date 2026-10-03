@@ -141,16 +141,6 @@ internal static class AssemblyIlInspector
     {
         if (blob.RemainingBytes == 0) return "?";
         var code = blob.ReadSignatureTypeCode();
-        if (code is SignatureTypeCode.Class or SignatureTypeCode.ValueType)
-        {
-            var handle = blob.ReadTypeHandle();
-            return handle.Kind switch
-            {
-                HandleKind.TypeDefinition => TypeName(reader, (TypeDefinitionHandle)handle),
-                HandleKind.TypeReference => TypeName(reader, (TypeReferenceHandle)handle),
-                _ => handle.Kind.ToString()
-            };
-        }
         if (code == SignatureTypeCode.GenericTypeInstance)
         {
             var kind = blob.ReadSignatureTypeCode();
