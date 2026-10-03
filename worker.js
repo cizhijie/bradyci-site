@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.15";
+const AGENT_VERSION = "v3.16";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -97,14 +97,19 @@ function alternateRealtimeQuery(query) {
 }
 
 async function searchExa(env, query) {
+  console.log("Exa search trace:", {stage:"start",queryChars:String(query||"").length});
+
   const first=await searchExaOnce(env,query);
+  console.log("Exa search trace:", {stage:"first",ok:!!first.ok,error:first.error||null,status:first.status||null,resultCount:first.results?.length||0});
   if(first.ok || first.error==="missing_api_key") return first;
 
   const second=await searchExaOnce(env,query);
+  console.log("Exa search trace:", {stage:"second",ok:!!second.ok,error:second.error||null,status:second.status||null,resultCount:second.results?.length||0});
   if(second.ok) return {...second,retried:true};
 
   const fallbackQuery=alternateRealtimeQuery(query);
   const third=await searchExaOnce(env,fallbackQuery);
+  console.log("Exa search trace:", {stage:"fallback",ok:!!third.ok,error:third.error||null,status:third.status||null,resultCount:third.results?.length||0,queryChanged:fallbackQuery!==String(query||"").trim()});
   if(third.ok) return {...third,retried:true,fallbackQuery:true};
 
   console.warn("Exa search failed after fallback:", {
@@ -116,8 +121,13 @@ async function searchExa(env, query) {
 }
 
 async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens) {
+  console.log("Realtime web trace:", {stage:"answer_start"});
   const search=await searchExa(env,query);
-  if(!search.ok) return null;
+  if(!search.ok) {
+    console.warn("Realtime web trace:", {stage:"search_failed",error:search.error||null,status:search.status||null});
+    return null;
+  }
+  console.log("Realtime web trace:", {stage:"search_ready",resultCount:search.results?.length||0,retried:!!search.retried,fallbackQuery:!!search.fallbackQuery});
   const sources=search.results.map((r,i)=>`[${i+1}] ${r.title}\nURL: ${r.url}\n日期: ${r.publishedDate||"未标注"}\n内容: ${r.text}`).join("\n\n");
   const groundedPrompt=systemPrompt+`\n\n【实时网页检索结果】\n${sources}\n\n只依据以上检索结果和确定性系统时间回答当前实时问题。不要把模型记忆冒充实时事实。重要事实尽量在正文中标注来源编号，如[1][2]；回答末尾加“来源”并列出实际使用的网页标题和 URL。若结果不足以确认，就明确说无法确认。`;
   let response=await callModelNonStream(env,PRIMARY_MODEL,messages,groundedPrompt,maxTokens);
