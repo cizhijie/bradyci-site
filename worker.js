@@ -851,6 +851,8 @@ export function cleanFinalAnswer(value="") {
   let s=String(value||"").trim();
   if(!s)return "";
   s=s.replace(/<think>[\s\S]*?<\/think>/gi,"").trim();
+  s=s.replace(/^```(?:text|markdown|md)?\s*\n?/i,"").replace(/\n?```\s*$/,"").trim();
+  s=s.replace(/^(?:system|developer|tool)\s*[:：\-—]+\s*/i,"").trim();
   const markers=[/\n(?:Final answer|Final|Answer|最终答案|答复)\s*[:：]\s*/i,/^(?:Final answer|Final|Answer|最终答案|答复)\s*[:：]\s*/i];
   for(const re of markers){const parts=s.split(re);if(parts.length>1)s=parts[parts.length-1].trim();}
   const firstChinese=s.search(/[\u4e00-\u9fff]/);
