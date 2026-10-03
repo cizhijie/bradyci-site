@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.05";
+const AGENT_VERSION = "v3.06";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -604,7 +604,7 @@ export default {
             }
           }
           const startsIntake = /(?:冷库|冷冻库|冷藏库|速冻库|保鲜库)/i.test(currentText) && /(?:怎么配|怎么选|方案|看看|配置|选型|负荷|计算|核算|配多大|多大机组|多少匹|几匹|用多大|需要多大|该配什么|怎么做)/i.test(currentText);
-          const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|豆腐|入库|货温|小时|一楼|落地|楼层|地面|保温|开门|次|分钟|室外|环境温度|夏天|夏季|最热|高温|叉车|托盘车|地牛|人工搬运|人员进出|手推车|平方米|平米|㎡|库温)/i.test(currentText);
+          const isProjectFollowup = !!coldRoomState && !startsNewProject && /(?:鲜肉|冷藏肉|冻结|冻肉|牛肉|猪肉|鸡肉|鸭肉|鱼|海鲜|蔬菜|水果|豆腐|食品|货物|入库|进货|每天|每日|日进|吨|公斤|kg|货温|中心温度|目标温度|小时|一楼|落地|楼层|地面|保温|库板|聚氨酯|PIR|XPS|EPS|开门|次|分钟|室外|环境温度|夏天|夏季|最热|高温|叉车|托盘车|地牛|人工搬运|人员进出|手推车|平方米|平米|㎡|库温|制冷剂|R22|R404A|R507A?|不知道|不清楚|没有|有)/i.test(currentText);
           if (startsIntake || isProjectFollowup) {
             const patch = extractColdRoomProject(currentText);
             // A complete intake is authoritative for the whole active project.
