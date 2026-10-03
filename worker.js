@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.13";
+const AGENT_VERSION = "v3.14";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -54,19 +54,28 @@ function classifyRequest(text, activeSkill) {
   return "general";
 }
 
-async function searchExa(env, query) {
-  if (!env.EXA_API_KEY) return { ok:false, error:"EXA_API_KEY is not configured" };
+async function searchExaOnce(env, query) {
+  if (!env.EXA_API_KEY) return { ok:false, error:"missing_api_key" };
   try {
     const response = await fetch("https://api.exa.ai/search", {
       method:"POST",
       headers:{"x-api-key":env.EXA_API_KEY,"Content-Type":"application/json"},
       body:JSON.stringify({query:String(query||"").slice(0,500),type:"auto",numResults:5,contents:{text:{maxCharacters:1800}}})
     });
-    if (!response.ok) return {ok:false,error:"Exa search failed",status:response.status};
+    if (!response.ok) return {ok:false,error:"http_error",status:response.status};
     const data=await response.json().catch(()=>null);
     const results=(data?.results||[]).slice(0,5).map(r=>({title:r.title||"",url:r.url||"",publishedDate:r.publishedDate||null,text:String(r.text||"").slice(0,1800)}));
-    return results.length?{ok:true,results}:{ok:false,error:"No search results"};
-  } catch { return {ok:false,error:"Exa search unavailable"}; }
+    return results.length?{ok:true,results}:{ok:false,error:"no_results"};
+  } catch { return {ok:false,error:"network_error"}; }
+}
+
+async function searchExa(env, query) {
+  const first=await searchExaOnce(env,query);
+  if(first.ok || first.error==="missing_api_key") return first;
+  const second=await searchExaOnce(env,query);
+  if(second.ok) return {...second,retried:true};
+  console.warn("Exa search failed after retry:", {first:first.error,firstStatus:first.status||null,second:second.error,secondStatus:second.status||null});
+  return {...second,retried:true};
 }
 
 async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens) {
