@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.18";
+const AGENT_VERSION = "v3.19";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -135,22 +135,30 @@ async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens
   let response=await callModelNonStream(env,PRIMARY_MODEL,messages,groundedPrompt,maxTokens);
   let model=PRIMARY_MODEL;
   console.log("Realtime model trace:", {stage:"primary_done",ok:!!response.ok,status:response.status||null});
-  if(!response.ok){
-    console.warn("Realtime model trace:", {stage:"fallback_start",model:FALLBACK_MODEL,primaryStatus:response.status||null});
+
+  let data=response.ok?await response.json().catch(()=>null):null;
+  let rawAnswer=String(data?.choices?.[0]?.message?.content||"");
+  let finishReason=data?.choices?.[0]?.finish_reason||null;
+  let answer=cleanFinalAnswer(rawAnswer);
+  const primaryUsable=response.ok && !!answer;
+
+  if(!primaryUsable){
+    console.warn("Realtime model trace:", {stage:"fallback_start",model:FALLBACK_MODEL,primaryStatus:response.status||null,primaryFinishReason:finishReason,primaryRawChars:rawAnswer.length});
     response=await callModelNonStream(env,FALLBACK_MODEL,messages,groundedPrompt,maxTokens);
     model=FALLBACK_MODEL;
     console.log("Realtime model trace:", {stage:"fallback_done",ok:!!response.ok,status:response.status||null});
+    data=response.ok?await response.json().catch(()=>null):null;
+    rawAnswer=String(data?.choices?.[0]?.message?.content||"");
+    finishReason=data?.choices?.[0]?.finish_reason||null;
+    answer=cleanFinalAnswer(rawAnswer);
   }
-  if(!response.ok){
-    console.warn("Realtime model trace:", {stage:"model_failed",model,status:response.status||null});
+
+  if(!response.ok || !answer){
+    console.warn("Realtime model trace:", {stage:"model_failed",model,status:response.status||null,finishReason,rawChars:rawAnswer.length});
     return null;
   }
-  const data=await response.json().catch(()=>null);
-  const rawAnswer=String(data?.choices?.[0]?.message?.content||"");
-  const finishReason=data?.choices?.[0]?.finish_reason||null;
-  const answer=cleanFinalAnswer(rawAnswer);
-  console.log("Realtime model trace:", {stage:"answer_ready",model,finishReason,rawChars:rawAnswer.length,cleanChars:answer.length,empty:!answer});
-  return answer?{answer,model,results:search.results}:null;
+  console.log("Realtime model trace:", {stage:"answer_ready",model,finishReason,rawChars:rawAnswer.length,cleanChars:answer.length,empty:false});
+  return {answer,model,results:search.results};
 }
 
 function formatChinaSystemTime(now = new Date()) {
