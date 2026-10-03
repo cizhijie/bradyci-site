@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.17";
+const AGENT_VERSION = "v3.18";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -49,7 +49,8 @@ const OWNER_LOGIN_WINDOW_SECONDS = 15 * 60;
 function classifyRequest(text, activeSkill) {
   const raw = String(text || "").trim();
   if (/^(?:今天|现在)(?:是)?(?:几号|几月几日|星期几|周几|几点|什么时间)|^(?:北京时间|中国时间)(?:是)?(?:几点|多少)/i.test(raw)) return "system-time";
-  if (/(?:今天|现在|最新|实时|刚刚|目前).{0,12}(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存|网站状态)|(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存).{0,12}(?:今天|现在|最新|实时|刚刚|目前)/i.test(raw)) return "realtime-external";
+  if (/(?:天气|气温|温度|降雨|下雨|下雪|空气质量|AQI|新闻|价格|报价|汇率|比赛|比分|股价|金价|油价|航班|库存|网站状态)/i.test(raw)) return "realtime-external";
+  if (/(?:今天|现在|最新|实时|刚刚|目前|明天|今晚|本周|最近).{0,16}(?:政策|发布|公布|更新|发生|结果|消息)|(?:政策|发布|公布|更新|发生|结果|消息).{0,16}(?:今天|现在|最新|实时|刚刚|目前|明天|今晚|本周|最近)/i.test(raw)) return "realtime-external";
   if (activeSkill?.id === "refrigeration" || /(?:冷库|制冷|压缩机|冷风机|冷凝器|蒸发器|冷媒|制冷剂|BITZER|比泽尔|R404A|R507A?|R22|Te|Tc)/i.test(raw)) return "refrigeration";
   return "general";
 }
