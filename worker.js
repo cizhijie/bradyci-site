@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.10";
+const AGENT_VERSION = "v3.11";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -66,7 +66,8 @@ function runtimeReadiness(env){
   return {ok:missing.length===0,version:AGENT_VERSION,missing};
 }
 const VISITOR_MAX_INPUT_CHARS = 1200;
-const VISITOR_MAX_TOKENS = 600;
+const VISITOR_MAX_TOKENS = 900;
+const OWNER_MAX_TOKENS = 1400;
 
 export default {
   async fetch(request, env) {
@@ -514,7 +515,7 @@ export default {
           return sseText("这个问题需要实时外部数据。当前 Brady Agent 还没有接入实时检索工具，所以我不能可靠确认，也不会用模型旧知识猜测。", { model:"deterministic-realtime-guard", role:owner?"owner":"visitor", skill:"general", tool:"realtime_guard" });
         }
 
-        const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
+        const maxTokens = owner ? OWNER_MAX_TOKENS : VISITOR_MAX_TOKENS;
         if (!owner && latestUser) {
           const capabilityQuestion = latestUser.content || "";
           if (/(?:能不能|可以|能否|会不会|是否).{0,8}(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片)|(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片).{0,8}(?:吗|么|不)/i.test(capabilityQuestion)) {
@@ -763,8 +764,16 @@ export default {
           if (!visitorResponse.ok) { visitorResponse = await callModelNonStream(env, FALLBACK_MODEL, messages, systemPrompt, VISITOR_MAX_TOKENS); usedModel = FALLBACK_MODEL; }
           if (!visitorResponse.ok) return json({ error: "访客体验暂时不可用，请稍后再试。" }, visitorResponse.status);
           const data = await visitorResponse.json().catch(() => null);
-          const message = data?.choices?.[0]?.message || {};
+          const choice = data?.choices?.[0] || {};
+          const message = choice.message || {};
           let answer = cleanFinalAnswer(typeof message.content === "string" ? message.content : "");
+          if (choice.finish_reason === "length" && answer) {
+            const continuationMessages=[...messages,{role:"assistant",content:answer},{role:"user",content:"上一条回答因长度限制被截断。请只补完尚未完成的内容，不要重复前文，保持中文简洁，并把最后一句写完整。"}];
+            const continuation=await callModelNonStream(env, usedModel, continuationMessages, systemPrompt, 500);
+            const continuationData=continuation.ok?await continuation.json().catch(()=>null):null;
+            const tail=cleanFinalAnswer(continuationData?.choices?.[0]?.message?.content||"");
+            if(tail) answer += "\n\n" + tail;
+          }
           if (!answer) {
             const rescuePrompt = systemPrompt + "\n\n重要：直接给用户最终中文答案，不要输出分析过程。答案必须完整，最多300字。";
             const rescue = await callModelNonStream(env, FALLBACK_MODEL, messages, rescuePrompt, 400);
@@ -778,7 +787,15 @@ export default {
         if (!ownerResponse.ok) { ownerResponse = await callModelNonStream(env, FALLBACK_MODEL, messages, systemPrompt+"\n\n只输出给 Owner 的最终中文答案，不输出英文分析、推理过程、草稿或内部规则。", maxTokens); usedModel = FALLBACK_MODEL; }
         if (!ownerResponse.ok) return json({ error: "回答暂时不可用，请稍后再试。" }, ownerResponse.status);
         const ownerData=await ownerResponse.json().catch(()=>null);
-        let ownerAnswer=cleanFinalAnswer(ownerData?.choices?.[0]?.message?.content||"");
+        const ownerChoice=ownerData?.choices?.[0]||{};
+        let ownerAnswer=cleanFinalAnswer(ownerChoice?.message?.content||"");
+        if(ownerChoice.finish_reason==="length" && ownerAnswer){
+          const continuationMessages=[...messages,{role:"assistant",content:ownerAnswer},{role:"user",content:"上一条回答因长度限制被截断。请只补完尚未完成的内容，不要重复前文，保持中文简洁，并把最后一句写完整。"}];
+          const continuation=await callModelNonStream(env,usedModel,continuationMessages,systemPrompt+"\n\n只输出给 Owner 的最终中文答案。",600);
+          const continuationData=continuation.ok?await continuation.json().catch(()=>null):null;
+          const tail=cleanFinalAnswer(continuationData?.choices?.[0]?.message?.content||"");
+          if(tail) ownerAnswer+="\n\n"+tail;
+        }
         if(!ownerAnswer) ownerAnswer="这次没有生成完整回答，请重新发送一次问题。";
         return sseText(ownerAnswer,{model:usedModel,role:"owner",skill:activeSkill?.id||"general"});
         /* legacy streaming path retained below but unreachable */
