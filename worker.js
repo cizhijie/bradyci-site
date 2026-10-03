@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.00";
+const AGENT_VERSION = "v3.01";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -475,7 +475,14 @@ export default {
         const projectPrompt = split.project.length ? `\n\n【当前项目记忆：${activeSkill?.label || "相关项目"}】\n${split.project.map(m => `- ${m.content}`).join("\n")}` : "";
         const skillPrompt = activeSkill ? `\n\n${activeSkill.prompt}` : "";
         const toolPrompt = owner && activeSkill?.id === "refrigeration" ? `\n\n${REFRIGERATION_TOOL_PROTOCOL}` : "";
-        const systemPrompt = SYSTEM_PROMPT + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
+        const now = new Date();
+        const chinaTime = new Intl.DateTimeFormat("zh-CN", {
+          timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, weekday: "long"
+        }).format(now);
+        const utcTime = now.toISOString();
+        const timePrompt = `\n\n【系统时间】当前 UTC 时间：${utcTime}；当前中国标准时间（Asia/Shanghai）：${chinaTime}。凡涉及“今天、现在、今年、刚刚、最新”等时间表达，必须以这里的系统时间为准，不得凭模型训练数据猜日期。若问题要求最新新闻、实时价格、天气、比赛结果、政策变化、网站当前状态等外部实时信息，而当前没有实时检索工具返回的数据，必须明确说明“当前没有实时检索结果”，不要编造或假装已经查询。仅询问当前日期/时间时，可直接依据这里的系统时间回答。\n【时效性规则】模型已有知识只能作为背景知识，不能冒充实时信息；凡无法从当前对话、项目资料、数据库确定性工具或实时检索结果确认的最新事实，必须标明无法实时确认。`;
+        const systemPrompt = SYSTEM_PROMPT + timePrompt + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (!owner && latestUser) {
