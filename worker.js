@@ -55,18 +55,36 @@ function classifyRequest(text, activeSkill) {
 }
 
 async function searchExaOnce(env, query) {
-  if (!env.EXA_API_KEY) return { ok:false, error:"missing_api_key" };
+  if (!env.EXA_API_KEY) {
+    console.warn("Exa search diagnostic:", {error:"missing_api_key"});
+    return { ok:false, error:"missing_api_key" };
+  }
   try {
     const response = await fetch("https://api.exa.ai/search", {
       method:"POST",
       headers:{"x-api-key":env.EXA_API_KEY,"Content-Type":"application/json"},
       body:JSON.stringify({query:String(query||"").slice(0,500),type:"auto",numResults:5,contents:{text:{maxCharacters:1800}}})
     });
-    if (!response.ok) return {ok:false,error:"http_error",status:response.status};
+    if (!response.ok) {
+      const raw=await response.text().catch(()=>"");
+      let detail="";
+      try {
+        const parsed=JSON.parse(raw);
+        detail=String(parsed?.error?.message||parsed?.message||parsed?.error||"").slice(0,300);
+      } catch {
+        detail=String(raw||"").replace(/\s+/g," ").slice(0,300);
+      }
+      console.warn("Exa search diagnostic:", {error:"http_error",status:response.status,detail:detail||null});
+      return {ok:false,error:"http_error",status:response.status,detail:detail||null};
+    }
     const data=await response.json().catch(()=>null);
     const results=(data?.results||[]).slice(0,5).map(r=>({title:r.title||"",url:r.url||"",publishedDate:r.publishedDate||null,text:String(r.text||"").slice(0,1800)}));
+    if(!results.length) console.warn("Exa search diagnostic:", {error:"no_results"});
     return results.length?{ok:true,results}:{ok:false,error:"no_results"};
-  } catch { return {ok:false,error:"network_error"}; }
+  } catch (error) {
+    console.warn("Exa search diagnostic:", {error:"network_error",name:error?.name||null,message:String(error?.message||"").slice(0,300)||null});
+    return {ok:false,error:"network_error"};
+  }
 }
 
 async function searchExa(env, query) {
