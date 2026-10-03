@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.02";
+const AGENT_VERSION = "v3.03";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -497,7 +497,14 @@ export default {
         }).format(now);
         const utcTime = now.toISOString();
         const timePrompt = `\n\n【系统时间】当前 UTC 时间：${utcTime}；当前中国标准时间（Asia/Shanghai）：${chinaTime}。凡涉及“今天、现在、今年、刚刚、最新”等时间表达，必须以这里的系统时间为准，不得凭模型训练数据猜日期。若问题要求最新新闻、实时价格、天气、比赛结果、政策变化、网站当前状态等外部实时信息，而当前没有实时检索工具返回的数据，必须明确说明“当前没有实时检索结果”，不要编造或假装已经查询。仅询问当前日期/时间时，可直接依据这里的系统时间回答。\n【时效性规则】模型已有知识只能作为背景知识，不能冒充实时信息；凡无法从当前对话、项目资料、数据库确定性工具或实时检索结果确认的最新事实，必须标明无法实时确认。`;
-        const systemPrompt = SYSTEM_PROMPT + timePrompt + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
+        const trustPrompt = `\n\n【可信数据源优先级】回答前先判断事实来自哪里，并按以下顺序使用：
+1. 后端确定性结果：系统时间、工程计算工具返回值。不得被模型心算或训练记忆覆盖。
+2. 已验证数据库：BITZER/厂家性能、运行范围及已审核项目数据。涉及具体厂家型号、制冷量、工况性能时，必须优先使用数据库结果；数据库没有精确可靠数据时，不得用排量、匹数、相邻工况或模型记忆伪造精确厂家性能。
+3. 当前对话和 Owner 项目资料：可用于用户明确提供的事实；与旧记忆冲突时以当前输入为准。
+4. 模型通用知识：只用于概念解释、思路、写作和不依赖最新/专有数据的常识。不得冒充厂家资料、实时信息或用户资料。
+5. 未知：以上来源均不能确认时，明确说当前无法可靠确认，并指出需要什么数据或工具。禁止为了显得有帮助而猜一个具体数字、型号、日期、价格或最新事实。
+【回答纪律】确定性数据与模型推理冲突时，以确定性数据为准；“估算”必须明确标注估算及关键假设；具体厂家性能必须可追溯到已验证数据库或当前提供的厂家资料。`;
+        const systemPrompt = SYSTEM_PROMPT + timePrompt + trustPrompt + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
 
         const requestClass = classifyRequest(latestUser?.content || "", activeSkill);
         if (requestClass === "system-time") {
