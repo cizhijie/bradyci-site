@@ -152,9 +152,11 @@ export function formatColdRoomReadiness(a = {}) {
   const questions=(a.customerQuestions||[]).filter(Boolean);
   if(questions.length){
     const priority=questions.filter(q=>/室外高温|地面保温|每天大约开门|库门尺寸|货物|入库|处理时间|制冷剂/.test(q));
-    const chosen=(priority.length?priority:questions).slice(0,3);
-    lines.push("", "**接下来优先确认**", ...chosen.map((x,i)=>(i+1)+". "+x));
-    if(questions.length>chosen.length) lines.push("其余低影响信息先不追问，后面需要时再补。");
+    const chosen=(priority.length?priority:questions).slice(0,2);
+    const canProceed=!!a.canStartAnyCalculation || a.engineeringMode?.id==="estimate";
+    lines.push("", canProceed ? "**可以先算，后续只需优先确认**" : "**开始计算前优先确认**", ...chosen.map((x,i)=>(i+1)+". "+x));
+    if(canProceed) lines.push("现有条件能算的部分先继续，不等待所有次要信息补齐；缺失项只影响对应分项或正式定型。");
+    if(questions.length>chosen.length) lines.push("其余低影响信息先不追问，后面真正影响结果时再补。");
   }
 
   lines.push("", "U值、导热系数、食品比热、潜热等专业参数由系统从可靠资料补全；客户不需要自己提供。估算项会单独标明，正式选型前再复核关键条件。");
