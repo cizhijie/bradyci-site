@@ -1,50 +1,51 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
 Brady BITZER Bridge x86 host ready.
 Process architecture: X86
-TYPE Bitzer.Selection.Platform.HHK.HHKModuleConfig
-  PROPERTY ModuleId sig=08000E
-  FIELD Id sig=060E
-  METHOD get_ModuleId() sig=00000E
-  METHOD RegisterServices(1:services) sig=200101128081
-  METHOD Calculation(1:inputsDto, 2:bitzerPlatform) sig=00021512808D01128091123815128099011234
-  METHOD .ctor() sig=200001
-TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput
-  PROPERTY EqualityContract sig=2800128085
-  METHOD get_EqualityContract() sig=2000128085
-  METHOD .ctor(1:apiInput) sig=20010112813D
-  METHOD ToString() sig=20000E
-  METHOD PrintMembers(1:builder) sig=2001021280D5
-  METHOD op_Inequality(1:left, 2:right) sig=00020212341234
-  METHOD op_Equality(1:left, 2:right) sig=00020212341234
-  METHOD GetHashCode() sig=200008
-  METHOD Equals(1:obj) sig=2001021C
-  METHOD Equals(1:other) sig=20010212813D
-  METHOD Equals(1:other) sig=2001021234
-  METHOD <Clone>$() sig=20001234
-  METHOD .ctor(1:original) sig=2001011234
-TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto
-  PROPERTY EqualityContract sig=2800128085
-  PROPERTY i_FCF sig=280008
-  PROPERTY i_FCMV sig=280008
-  FIELD <i_FCF>k__BackingField sig=0608
-  FIELD <i_FCMV>k__BackingField sig=0608
-  METHOD get_EqualityContract() sig=2000128085
-  METHOD get_i_FCF() sig=200008
-  METHOD set_i_FCF(1:value) sig=20010108
-  METHOD get_i_FCMV() sig=200008
-  METHOD set_i_FCMV(1:value) sig=20010108
-  METHOD ToString() sig=20000E
-  METHOD PrintMembers(1:builder) sig=2001021280D5
-  METHOD op_Inequality(1:left, 2:right) sig=00020212381238
-  METHOD op_Equality(1:left, 2:right) sig=00020212381238
-  METHOD GetHashCode() sig=200008
-  METHOD Equals(1:obj) sig=2001021C
-  METHOD Equals(1:other) sig=2001021281E5
-  METHOD Equals(1:other) sig=2001021238
-  METHOD <Clone>$() sig=20001238
-  METHOD .ctor(1:original) sig=2001011238
-  METHOD .ctor() sig=200001
-TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper
-  METHOD MapToAPIinput(1:inputs) sig=200112341238
-  METHOD GetSeries(1:src, 2:flags) sig=20021181191281E51281F5
-  METHOD .ctor() sig=200001
+TYPE Bitzer.Selection.Platform.HHK.HHKModuleConfig : System.Object [System.Runtime]
+  PROPERTY String ModuleId
+  FIELD String Id
+  METHOD String get_ModuleId()
+  METHOD Void RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection [Microsoft.Extensions.DependencyInjection.Abstractions] services)
+  METHOD System.Threading.Tasks.Task`1 [System.Runtime]<Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput [Bitzer.Selection.Platform.Abstractions]> Calculation(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto inputsDto, Bitzer.Selection.Platform.BitzerPlatform`1 [Bitzer.Selection.Platform]<Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput> bitzerPlatform)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput : Bitzer.Selection.Platform.Abstractions.Inputs.APIinput [Bitzer.Selection.Platform.Abstractions]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput [Bitzer.Selection.Platform.Abstractions] apiInput)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput left, Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput left, Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput [Bitzer.Selection.Platform.Abstractions] other)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput other)
+  METHOD Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput original)
+TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto : Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto [Bitzer.Selection.Platform.Abstractions]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Int32 i_FCF
+  PROPERTY Int32 i_FCMV
+  FIELD Int32 <i_FCF>k__BackingField
+  FIELD Int32 <i_FCMV>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Int32 get_i_FCF()
+  METHOD Void set_i_FCF(Int32 value)
+  METHOD Int32 get_i_FCMV()
+  METHOD Void set_i_FCMV(Int32 value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto left, Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto left, Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto [Bitzer.Selection.Platform.Abstractions] other)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto other)
+  METHOD Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper : Bitzer.Selection.Platform.MappingProfiles.InputMapperBase [Bitzer.Selection.Platform]
+  METHOD Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput MapToAPIinput(Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto inputs)
+  METHOD Domain.Models.Series [Domain] GetSeries(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto [Bitzer.Selection.Platform.Abstractions] src, Domain.Models.Flags [Domain] flags)
+  METHOD Void .ctor()
 Matched types: 4
