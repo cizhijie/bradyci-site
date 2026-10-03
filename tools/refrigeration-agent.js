@@ -301,8 +301,8 @@ export function detectManufacturerSelectionRequest(messages = [], projectState =
   const current=[...messages].reverse().find(m=>m?.role==="user"&&typeof m.content==="string");
   const text=current?.content||"";
   const bitzerModel=(text.match(/\b((?:2|4|6|8)[A-Z]{2,4}-\d+(?:Y)?(?:-\d+[A-Z])?)\b/i)||[])[1];
-  const performanceIntent=/(?:制冷量|冷量|输入功率|功率|COP|质量流量|排气温度|性能参数|性能数据|工况|数据来源)/i.test(text);
-  const selectionIntent=/(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw).*(选|选型|怎么配|型号|候选)|(?:选|选型|型号|候选).*(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw)/i.test(text);
+  const performanceIntent=/(?:制冷量|冷量|输入功率|耗功|功率|COP|能效|质量流量|冷媒流量|排气温度|性能参数|性能数据|性能|工况|数据来源|参数|表现|能出多少|有多少冷量|多少千瓦|多少kW|查(?:一下)?|查询|看看|告诉我)/i.test(text);
+  const selectionIntent=/(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw).*(选|选型|怎么配|型号|候选|推荐|匹配|查|查询|看看)|(?:选|选型|型号|候选|推荐|匹配|查|查询|看看).*(比泽尔|BITZER|压缩机|涡旋|活塞|往复|螺杆|scroll|piston|reciprocating|screw)/i.test(text);
   if(!selectionIntent && !(bitzerModel&&performanceIntent)) return null;
   const refrigerant=(text.match(/\b(R(?:22|1234YF|1234ZE|134A|404A|407[ACF]|448A|449A|450A|452A|507A?|513A))\b/i)||[])[1] || projectState?.refrigerant;
   const architecture = bitzerModel ? "semi-hermetic-reciprocating" : /涡旋|scroll/i.test(text) ? "scroll" : /活塞|往复|reciprocating|piston/i.test(text) ? "semi-hermetic-reciprocating" : /螺杆|screw/i.test(text) ? "screw" : "";
@@ -313,8 +313,8 @@ export function detectManufacturerSelectionRequest(messages = [], projectState =
   if(/比泽尔|BITZER/i.test(text)||bitzerModel) preferredBrands.push("bitzer");
   if(/汉钟|HANBELL/i.test(text)) preferredBrands.push("hanbell");
   if(/复盛|FUSHENG/i.test(text)) preferredBrands.push("fusheng");
-  const te=(text.match(/(?:Te|蒸发温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
-  const tc=(text.match(/(?:Tc|冷凝温度)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
+  const te=(text.match(/(?:Te|蒸发(?:温度)?|蒸发工况)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C|度)?/i)||[])[1];
+  const tc=(text.match(/(?:Tc|冷凝(?:温度)?|冷凝工况)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C|度)?/i)||[])[1];
   const suction=(text.match(/(?:吸气温度|suction(?:\s+gas)?\s+temperature)\s*[:：=]?\s*(-?\d+(?:\.\d+)?)\s*(?:℃|°?C)?/i)||[])[1];
   const kw=(text.match(/(?:需要|需求|所需|冷量|制冷量)\s*[:：=]?\s*(\d+(?:\.\d+)?)\s*(?:kW|kw|千瓦)/i)||[])[1];
   const directPerformance=Boolean(bitzerModel&&performanceIntent);
