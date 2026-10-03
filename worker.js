@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.21";
+const AGENT_VERSION = "v3.22";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -140,7 +140,8 @@ async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens
   let rawAnswer=String(data?.choices?.[0]?.message?.content||"");
   let finishReason=data?.choices?.[0]?.finish_reason||null;
   let answer=cleanFinalAnswer(rawAnswer);
-  const primaryUsable=response.ok && !!answer;
+  const isUsableRealtimeAnswer=(res,text,reason)=>res.ok && !!text && reason!=="length" && text.length>=40;
+  const primaryUsable=isUsableRealtimeAnswer(response,answer,finishReason);
 
   if(!primaryUsable){
     console.warn("Realtime model trace:", {stage:"fallback_start",model:FALLBACK_MODEL,primaryStatus:response.status||null,primaryFinishReason:finishReason,primaryRawChars:rawAnswer.length});
@@ -151,10 +152,20 @@ async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens
     rawAnswer=String(data?.choices?.[0]?.message?.content||"");
     finishReason=data?.choices?.[0]?.finish_reason||null;
     answer=cleanFinalAnswer(rawAnswer);
+
+    if(!isUsableRealtimeAnswer(response,answer,finishReason)){
+      console.warn("Realtime model trace:", {stage:"fallback_retry_start",model:FALLBACK_MODEL,status:response.status||null,finishReason,rawChars:rawAnswer.length});
+      response=await callModelNonStream(env,FALLBACK_MODEL,messages,groundedPrompt,maxTokens);
+      console.log("Realtime model trace:", {stage:"fallback_retry_done",ok:!!response.ok,status:response.status||null});
+      data=response.ok?await response.json().catch(()=>null):null;
+      rawAnswer=String(data?.choices?.[0]?.message?.content||"");
+      finishReason=data?.choices?.[0]?.finish_reason||null;
+      answer=cleanFinalAnswer(rawAnswer);
+    }
   }
 
-  if(!response.ok || !answer){
-    console.warn("Realtime model trace:", {stage:"model_failed",model,status:response.status||null,finishReason,rawChars:rawAnswer.length});
+  if(!isUsableRealtimeAnswer(response,answer,finishReason)){
+    console.warn("Realtime model trace:", {stage:"model_failed",model,status:response.status||null,finishReason,rawChars:rawAnswer.length,cleanChars:answer.length});
     return null;
   }
   console.log("Realtime model trace:", {stage:"answer_ready",model,finishReason,rawChars:rawAnswer.length,cleanChars:answer.length,empty:false});
