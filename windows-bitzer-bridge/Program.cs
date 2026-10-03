@@ -60,6 +60,14 @@ internal static class Program
             return AssemblyMetadataInspector.Inspect(assemblyPath, filters);
         }
 
+        if (args.Length >= 4 && string.Equals(args[0], "--inspect-il", StringComparison.OrdinalIgnoreCase))
+        {
+            var assemblyPath = args[1];
+            var typeFilter = args[2];
+            var methodFilters = args.Skip(3).ToArray();
+            return AssemblyIlInspector.Inspect(assemblyPath, typeFilter, methodFilters);
+        }
+
         if (args.Length == 2 && string.Equals(args[0], "--discover-local-data", StringComparison.OrdinalIgnoreCase))
         {
             var root = args[1];
@@ -105,7 +113,7 @@ internal static class Program
             return 0;
         }
 
-        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll> | --smoke-gate <path-to-Hhk52.dll> | --inspect-metadata <assembly> [type-filter ...] | --discover-local-data <BITZER-root>]");
+        Console.Error.WriteLine("Usage: Brady.BitzerBridge.exe [--preflight <path-to-Hhk52.dll> | --smoke-gate <path-to-Hhk52.dll> | --inspect-metadata <assembly> [type-filter ...] | --inspect-il <assembly> <type-filter> <method-filter ...> | --discover-local-data <BITZER-root>]");
         return 1;
     }
 }
