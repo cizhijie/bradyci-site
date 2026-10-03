@@ -1,0 +1,74 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD Bitzer.Selection.Platform.HHK.HHKModuleConfig.RegisterServices
+  IL_0000: ldarg.1
+  IL_0001: ldstr          01 00 00 70  // token 70000001
+  IL_0006: call           01 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_000B: ldstr          01 00 00 70  // token 70000001
+  IL_0010: call           02 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0015: ldstr          01 00 00 70  // token 70000001
+  IL_001A: call           03 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_001F: ldstr          01 00 00 70  // token 70000001
+  IL_0024: ldsfld         2D 00 00 04  // <>9__3_0
+  IL_0029: dup
+  IL_002A: brtrue.s       17
+  IL_002C: pop
+  IL_002D: ldsfld         2C 00 00 04  // <>9
+  IL_0032: ldftn          D9 00 00 06  // <>c.<RegisterServices>b__3_0
+  IL_0038: newobj         4C 00 00 0A  // TypeSpec..ctor
+  IL_003D: dup
+  IL_003E: stsfld         2D 00 00 04  // <>9__3_0
+  IL_0043: call           04 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0048: ldstr          01 00 00 70  // token 70000001
+  IL_004D: call           05 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0052: ldstr          01 00 00 70  // token 70000001
+  IL_0057: call           06 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_005C: ldstr          01 00 00 70  // token 70000001
+  IL_0061: call           07 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0066: ldstr          01 00 00 70  // token 70000001
+  IL_006B: call           08 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0070: ldstr          01 00 00 70  // token 70000001
+  IL_0075: call           09 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_007A: ldstr          01 00 00 70  // token 70000001
+  IL_007F: call           0A 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0084: ldstr          01 00 00 70  // token 70000001
+  IL_0089: call           0B 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_008E: ldstr          01 00 00 70  // token 70000001
+  IL_0093: call           0C 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_0098: ldstr          01 00 00 70  // token 70000001
+  IL_009D: call           0D 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00A2: ldstr          01 00 00 70  // token 70000001
+  IL_00A7: call           0E 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00AC: ldstr          01 00 00 70  // token 70000001
+  IL_00B1: call           0F 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00B6: ldstr          01 00 00 70  // token 70000001
+  IL_00BB: call           10 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00C0: ldstr          01 00 00 70  // token 70000001
+  IL_00C5: call           11 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00CA: ldstr          01 00 00 70  // token 70000001
+  IL_00CF: call           12 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped
+  IL_00D4: pop
+  IL_00D5: ret
+IL METHOD Bitzer.Selection.Platform.HHK.HHKModuleConfig.Calculation
+  IL_0000: ldloca.s       00
+  IL_0002: call           4E 00 00 0A  // TypeSpec.Create
+  IL_0007: stfld          2F 00 00 04  // <>t__builder
+  IL_000C: ldloca.s       00
+  IL_000E: ldarg.0
+  IL_000F: stfld          30 00 00 04  // inputsDto
+  IL_0014: ldloca.s       00
+  IL_0016: ldarg.1
+  IL_0017: stfld          31 00 00 04  // bitzerPlatform
+  IL_001C: ldloca.s       00
+  IL_001E: ldc.i4.m1
+  IL_001F: stfld          2E 00 00 04  // <>1__state
+  IL_0024: ldloca.s       00
+  IL_0026: ldflda         2F 00 00 04  // <>t__builder
+  IL_002B: ldloca.s       00
+  IL_002D: call           13 00 00 2B  // TypeSpec.Start
+  IL_0032: ldloca.s       00
+  IL_0034: ldflda         2F 00 00 04  // <>t__builder
+  IL_0039: call           50 00 00 0A  // TypeSpec.get_Task
+  IL_003E: ret
+Matched IL methods: 2
