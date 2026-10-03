@@ -19,7 +19,7 @@ export function runRealProjectE2ERegression(){
  const beefProductEquivalentKW=(beef.results.product_load.energyKJ.total/3600)/20;
  check(beefProductEquivalentKW < beef.results.design_capacity.requiredCapacityRangeKW.max,"equipment capacity must exceed product daily-energy equivalent at the stated 20 h/day runtime");
  check(beef.results.design_capacity.requiredCapacityRangeKW.max < 500,"beef fixture must catch runaway/double-counted capacity");
- check(beef.text.startsWith("**初步方案结论**"),"beef freezer must be answer-first");
+ check(beef.text.startsWith("**先说结论**"),"beef freezer must be answer-first");
  check(!/推荐.{0,20}(?:型号|[A-Z]{2,}\d{2,})/.test(beef.text),"estimate must not hallucinate an exact compressor model");
 
  const tofu=run({
