@@ -11,7 +11,7 @@ export function runPreliminarySolutionSummaryRegression(){
   },
   selection_readiness:{missing:["refrigerant"],conditionsUsed:{evaporatingTempC:null,condensingTempC:null}}
  });
- check(text.startsWith("**初步方案结论**"),"customer summary must appear before calculation details");
+ check(text.startsWith("**先说结论**"),"customer summary must appear before calculation details");
  check(text.includes("50–60 kW"),"summary must expose estimated capacity range");
  check(text.includes("半封闭活塞"),"summary must expose compressor direction");
  check(text.includes("品牌候选不等于已确定具体型号"),"summary must preserve anti-hallucination boundary");
