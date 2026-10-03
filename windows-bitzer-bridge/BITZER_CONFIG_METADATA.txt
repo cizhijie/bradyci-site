@@ -1,0 +1,244 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+TYPE Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.INormOperatingConditionsProvider
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions GetNormOperatingConditions(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions operatingConditions, Domain.Models.UnitSystem [Domain] unitSystem, Domain.Models.OperatingMode [Domain] operatingMode)
+TYPE Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.IOperatingConditionsProcessor
+  METHOD Bitzer.Selection.Platform.Abstractions.SystemConditions.ISystemConditions GetSystemConditions(Domain.Records.OperatingPoint [Domain] operatingPoint, Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions operatingConditions)
+TYPE Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.IOperatingConditionsProcessorFactory
+  METHOD Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.IOperatingConditionsProcessor Create(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions operatingConditions, Domain.Models.OperatingMode [Domain] operatingMode)
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.UnitSystem [Domain] UnitSystem
+  PROPERTY Domain.Models.UserMode [Domain] UserMode
+  PROPERTY Domain.Models.ApplicationLimits [Domain] ApplicationLimits
+  FIELD Domain.Models.UnitSystem [Domain] <UnitSystem>k__BackingField
+  FIELD Domain.Models.UserMode [Domain] <UserMode>k__BackingField
+  FIELD Domain.Models.ApplicationLimits [Domain] <ApplicationLimits>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.UnitSystem [Domain] get_UnitSystem()
+  METHOD Void set_UnitSystem(Domain.Models.UnitSystem [Domain] value)
+  METHOD Domain.Models.UserMode [Domain] get_UserMode()
+  METHOD Void set_UserMode(Domain.Models.UserMode [Domain] value)
+  METHOD Domain.Models.ApplicationLimits [Domain] get_ApplicationLimits()
+  METHOD Void set_ApplicationLimits(Domain.Models.ApplicationLimits [Domain] value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.SystemMode [Domain] SystemMode
+  PROPERTY Domain.Models.HeatTransferFluid [Domain] HeatTransferFluid
+  PROPERTY Domain.Models.CalcWithFan [Domain] CalcWithFan
+  PROPERTY Domain.Models.SystemPressureDrop [Domain] SystemPressureDrop
+  PROPERTY Domain.Models.OperatingMode [Domain] OperatingMode
+  PROPERTY String Module
+  FIELD Domain.Models.SystemMode [Domain] <SystemMode>k__BackingField
+  FIELD Domain.Models.HeatTransferFluid [Domain] <HeatTransferFluid>k__BackingField
+  FIELD Domain.Models.CalcWithFan [Domain] <CalcWithFan>k__BackingField
+  FIELD Domain.Models.SystemPressureDrop [Domain] <SystemPressureDrop>k__BackingField
+  FIELD Domain.Models.OperatingMode [Domain] <OperatingMode>k__BackingField
+  FIELD String <Module>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.SystemMode [Domain] get_SystemMode()
+  METHOD Void set_SystemMode(Domain.Models.SystemMode [Domain] value)
+  METHOD Domain.Models.HeatTransferFluid [Domain] get_HeatTransferFluid()
+  METHOD Void set_HeatTransferFluid(Domain.Models.HeatTransferFluid [Domain] value)
+  METHOD Domain.Models.CalcWithFan [Domain] get_CalcWithFan()
+  METHOD Void set_CalcWithFan(Domain.Models.CalcWithFan [Domain] value)
+  METHOD Domain.Models.SystemPressureDrop [Domain] get_SystemPressureDrop()
+  METHOD Void set_SystemPressureDrop(Domain.Models.SystemPressureDrop [Domain] value)
+  METHOD Domain.Models.OperatingMode [Domain] get_OperatingMode()
+  METHOD Void set_OperatingMode(Domain.Models.OperatingMode [Domain] value)
+  METHOD String get_Module()
+  METHOD Void set_Module(String value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.CalculationMode [Domain] CalculationMode
+  PROPERTY Double CapacityRequest
+  FIELD Domain.Models.CalculationMode [Domain] <CalculationMode>k__BackingField
+  FIELD Double <CapacityRequest>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.CalculationMode [Domain] get_CalculationMode()
+  METHOD Void set_CalculationMode(Domain.Models.CalculationMode [Domain] value)
+  METHOD Double get_CapacityRequest()
+  METHOD Void set_CapacityRequest(Double value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY String Code
+  PROPERTY Boolean IsRefrigerantCO2
+  PROPERTY System.Nullable`1 [System.Runtime]<Char> OilSuffix
+  FIELD String <Code>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Char> <OilSuffix>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD String get_Code()
+  METHOD Void set_Code(String value)
+  METHOD Boolean get_IsRefrigerantCO2()
+  METHOD System.Nullable`1 [System.Runtime]<Char> get_OilSuffix()
+  METHOD Void set_OilSuffix(System.Nullable`1 [System.Runtime]<Char> value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.SuperheatMode [Domain] SuperheatMode
+  PROPERTY Domain.Models.SubcoolingMode [Domain] SubcoolingMode
+  PROPERTY Domain.Models.EcoMode [Domain] EcoMode
+  PROPERTY Domain.Models.UsefulSuperheatMode [Domain] UsefulSuperheatMode
+  PROPERTY Domain.Models.ReferenceTemperature [Domain] ReferenceTemperature
+  PROPERTY Double SuperheatModeTemperature
+  PROPERTY Double SubcoolingModeTemperature
+  PROPERTY Double SubcoolerModeTemperature
+  PROPERTY Double UsefulSuperheat
+  PROPERTY Double MaxOutletTemperature
+  PROPERTY Domain.Models.AdditionalCoolingMode [Domain] AdditionalCoolingMode
+  FIELD Domain.Models.SuperheatMode [Domain] <SuperheatMode>k__BackingField
+  FIELD Domain.Models.SubcoolingMode [Domain] <SubcoolingMode>k__BackingField
+  FIELD Domain.Models.EcoMode [Domain] <EcoMode>k__BackingField
+  FIELD Domain.Models.UsefulSuperheatMode [Domain] <UsefulSuperheatMode>k__BackingField
+  FIELD Domain.Models.ReferenceTemperature [Domain] <ReferenceTemperature>k__BackingField
+  FIELD Double <SuperheatModeTemperature>k__BackingField
+  FIELD Double <SubcoolingModeTemperature>k__BackingField
+  FIELD Double <SubcoolerModeTemperature>k__BackingField
+  FIELD Double <UsefulSuperheat>k__BackingField
+  FIELD Double <MaxOutletTemperature>k__BackingField
+  FIELD Domain.Models.AdditionalCoolingMode [Domain] <AdditionalCoolingMode>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.SuperheatMode [Domain] get_SuperheatMode()
+  METHOD Void set_SuperheatMode(Domain.Models.SuperheatMode [Domain] value)
+  METHOD Domain.Models.SubcoolingMode [Domain] get_SubcoolingMode()
+  METHOD Void set_SubcoolingMode(Domain.Models.SubcoolingMode [Domain] value)
+  METHOD Domain.Models.EcoMode [Domain] get_EcoMode()
+  METHOD Void set_EcoMode(Domain.Models.EcoMode [Domain] value)
+  METHOD Domain.Models.UsefulSuperheatMode [Domain] get_UsefulSuperheatMode()
+  METHOD Void set_UsefulSuperheatMode(Domain.Models.UsefulSuperheatMode [Domain] value)
+  METHOD Domain.Models.ReferenceTemperature [Domain] get_ReferenceTemperature()
+  METHOD Void set_ReferenceTemperature(Domain.Models.ReferenceTemperature [Domain] value)
+  METHOD Double get_SuperheatModeTemperature()
+  METHOD Void set_SuperheatModeTemperature(Double value)
+  METHOD Double get_SubcoolingModeTemperature()
+  METHOD Void set_SubcoolingModeTemperature(Double value)
+  METHOD Double get_SubcoolerModeTemperature()
+  METHOD Void set_SubcoolerModeTemperature(Double value)
+  METHOD Double get_UsefulSuperheat()
+  METHOD Void set_UsefulSuperheat(Double value)
+  METHOD Double get_MaxOutletTemperature()
+  METHOD Void set_MaxOutletTemperature(Double value)
+  METHOD Domain.Models.AdditionalCoolingMode [Domain] get_AdditionalCoolingMode()
+  METHOD Void set_AdditionalCoolingMode(Domain.Models.AdditionalCoolingMode [Domain] value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.Series [Domain] Series
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor Motor
+  PROPERTY Int32 CapacityRegulation
+  FIELD Domain.Models.Series [Domain] <Series>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor <Motor>k__BackingField
+  FIELD Int32 <CapacityRegulation>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.Series [Domain] get_Series()
+  METHOD Void set_Series(Domain.Models.Series [Domain] value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor get_Motor()
+  METHOD Void set_Motor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Motor value)
+  METHOD Int32 get_CapacityRegulation()
+  METHOD Void set_CapacityRegulation(Int32 value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.GridFrequency [Domain] Frequency
+  PROPERTY Int32 Voltage
+  PROPERTY Double NominalVoltage
+  PROPERTY Double CurrentFactor
+  FIELD Domain.Models.GridFrequency [Domain] <Frequency>k__BackingField
+  FIELD Int32 <Voltage>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.GridFrequency [Domain] get_Frequency()
+  METHOD Void set_Frequency(Domain.Models.GridFrequency [Domain] value)
+  METHOD Int32 get_Voltage()
+  METHOD Void set_Voltage(Int32 value)
+  METHOD Double get_NominalVoltage()
+  METHOD Double get_CurrentFactor()
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Domain.Models.FrequencyInverterType [Domain] Type
+  PROPERTY Double Frequency
+  FIELD Domain.Models.FrequencyInverterType [Domain] <Type>k__BackingField
+  FIELD Double <Frequency>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Domain.Models.FrequencyInverterType [Domain] get_Type()
+  METHOD Void set_Type(Domain.Models.FrequencyInverterType [Domain] value)
+  METHOD Double get_Frequency()
+  METHOD Void set_Frequency(Double value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig left, Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig other)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig original)
+  METHOD Void .ctor()
+Matched types: 11

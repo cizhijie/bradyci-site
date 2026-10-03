@@ -1,0 +1,279 @@
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+TYPE Domain.OperatingPointExtensions : System.Object [System.Runtime]
+  METHOD Domain.Records.OperatingPoint Convert(Domain.Records.OperatingPoint operatingPoint, System.Func`2 [System.Runtime]<Double, Double> converter)
+TYPE Domain.Records.OperatingPoint : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Double T0
+  PROPERTY Double TC
+  FIELD Double <T0>k__BackingField
+  FIELD Double <TC>k__BackingField
+  METHOD Void .ctor(Double T0, Double TC)
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Double get_T0()
+  METHOD Void set_T0(Double value)
+  METHOD Double get_TC()
+  METHOD Void set_TC(Double value)
+  METHOD Domain.Records.OperatingPoint op_Implicit(Domain.Limits.Point op)
+  METHOD Domain.Limits.Point op_Implicit(Domain.Records.OperatingPoint op)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Domain.Records.OperatingPoint left, Domain.Records.OperatingPoint right)
+  METHOD Boolean op_Equality(Domain.Records.OperatingPoint left, Domain.Records.OperatingPoint right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Domain.Records.OperatingPoint other)
+  METHOD Domain.Records.OperatingPoint <Clone>$()
+  METHOD Void .ctor(Domain.Records.OperatingPoint original)
+  METHOD Void Deconstruct(ref Double T0, ref Double TC)
+TYPE Domain.Records.ProductInfo : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY String ProductName
+  PROPERTY System.Nullable`1 [System.Runtime]<Char> OilSuffix
+  FIELD String <ProductName>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Char> <OilSuffix>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD String get_ProductName()
+  METHOD Void set_ProductName(String value)
+  METHOD System.Nullable`1 [System.Runtime]<Char> get_OilSuffix()
+  METHOD Void set_OilSuffix(System.Nullable`1 [System.Runtime]<Char> value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Domain.Records.ProductInfo left, Domain.Records.ProductInfo right)
+  METHOD Boolean op_Equality(Domain.Records.ProductInfo left, Domain.Records.ProductInfo right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Domain.Records.ProductInfo other)
+  METHOD Domain.Records.ProductInfo <Clone>$()
+  METHOD Void .ctor(Domain.Records.ProductInfo original)
+  METHOD Void .ctor()
+TYPE Domain.Models.AsyncMotorWithInverter : System.Object [System.Runtime]
+  PROPERTY Double Voltage
+  PROPERTY Double PowerConsumption
+  PROPERTY Double RotorReactance
+  PROPERTY System.Numerics.Complex [System.Runtime.Numerics] Ffmm
+  PROPERTY System.Numerics.Complex [System.Runtime.Numerics] Stator
+  PROPERTY System.Numerics.Complex [System.Runtime.Numerics] AirGap
+  PROPERTY System.Numerics.Complex [System.Runtime.Numerics] FerritCore
+  PROPERTY System.Numerics.Complex [System.Runtime.Numerics] Fm
+  FIELD Double <Voltage>k__BackingField
+  FIELD Double <PowerConsumption>k__BackingField
+  FIELD Double <RotorReactance>k__BackingField
+  FIELD System.Numerics.Complex [System.Runtime.Numerics] <Ffmm>k__BackingField
+  FIELD System.Numerics.Complex [System.Runtime.Numerics] <Stator>k__BackingField
+  FIELD System.Numerics.Complex [System.Runtime.Numerics] <AirGap>k__BackingField
+  FIELD System.Numerics.Complex [System.Runtime.Numerics] <FerritCore>k__BackingField
+  FIELD System.Numerics.Complex [System.Runtime.Numerics] <Fm>k__BackingField
+  FIELD Int32 maxIterationSteps
+  FIELD Double maxAllowedEpsilon
+  FIELD Double epsilon
+  FIELD Double stepWidth
+  METHOD Double get_Voltage()
+  METHOD Void set_Voltage(Double value)
+  METHOD Double get_PowerConsumption()
+  METHOD Void set_PowerConsumption(Double value)
+  METHOD Double get_RotorReactance()
+  METHOD Void set_RotorReactance(Double value)
+  METHOD System.Numerics.Complex [System.Runtime.Numerics] get_Ffmm()
+  METHOD Void set_Ffmm(System.Numerics.Complex [System.Runtime.Numerics] value)
+  METHOD System.Numerics.Complex [System.Runtime.Numerics] get_Stator()
+  METHOD Void set_Stator(System.Numerics.Complex [System.Runtime.Numerics] value)
+  METHOD System.Numerics.Complex [System.Runtime.Numerics] get_AirGap()
+  METHOD Void set_AirGap(System.Numerics.Complex [System.Runtime.Numerics] value)
+  METHOD System.Numerics.Complex [System.Runtime.Numerics] get_FerritCore()
+  METHOD Void set_FerritCore(System.Numerics.Complex [System.Runtime.Numerics] value)
+  METHOD System.Numerics.Complex [System.Runtime.Numerics] get_Fm()
+  METHOD Void set_Fm(System.Numerics.Complex [System.Runtime.Numerics] value)
+  METHOD Void .ctor()
+TYPE Domain.Models.OperatingPointLimitPosition : System.Enum [System.Runtime]
+  FIELD Int32 value__
+  FIELD Domain.Models.OperatingPointLimitPosition InsideLimits
+  FIELD Domain.Models.OperatingPointLimitPosition LowT0
+  FIELD Domain.Models.OperatingPointLimitPosition HighT0
+  FIELD Domain.Models.OperatingPointLimitPosition LowTc
+  FIELD Domain.Models.OperatingPointLimitPosition HighTc
+TYPE Domain.Models.Flags : System.Object [System.Runtime]
+  FIELD Domain.Models.CalculationMode CalculationMode
+  FIELD Domain.Models.SubcoolingMode SubcoolingMode
+  FIELD Domain.Models.HeatTransferFluid HeatTransferFluid
+  FIELD Domain.Models.CalcWithFan CalcWithFan
+  FIELD Domain.Models.UserMode UserMode
+  FIELD Domain.Models.ApplicationLimits ApplicationLimits
+  FIELD Domain.Models.SystemPressureDrop SystemPressureDrop
+  FIELD Domain.Models.CalcWithTandem CalcWithTandem
+  FIELD Domain.Models.ReferenceTemperature ReferenceTemperature
+  FIELD Domain.Models.UnitSystem UnitSystem
+  FIELD Domain.Models.SuperheatMode SuperheatMode
+  FIELD Domain.Models.SystemMode CalcWithHeatPump
+  FIELD Domain.Models.UsefulSuperheatMode CalcWithUsefulSuperheat
+  METHOD Domain.Models.Flags ConvertFlags(Int32 flags)
+  METHOD Void .ctor()
+TYPE Domain.Models.SharedEntities.AsyncMotorWithInverterData : System.Object [System.Runtime]
+  PROPERTY Int32 Id
+  PROPERTY Double P
+  PROPERTY Double Dia
+  PROPERTY Double Rfe
+  PROPERTY Double Rs
+  PROPERTY Double Ls
+  PROPERTY Double Lag
+  PROPERTY Double Rr
+  PROPERTY Double Lr
+  PROPERTY Double UpLSPM
+  PROPERTY Double LLSPM
+  FIELD Int32 <Id>k__BackingField
+  FIELD Double <P>k__BackingField
+  FIELD Double <Dia>k__BackingField
+  FIELD Double <Rfe>k__BackingField
+  FIELD Double <Rs>k__BackingField
+  FIELD Double <Ls>k__BackingField
+  FIELD Double <Lag>k__BackingField
+  FIELD Double <Rr>k__BackingField
+  FIELD Double <Lr>k__BackingField
+  FIELD Double <UpLSPM>k__BackingField
+  FIELD Double <LLSPM>k__BackingField
+  METHOD Int32 get_Id()
+  METHOD Void set_Id(Int32 value)
+  METHOD Double get_P()
+  METHOD Void set_P(Double value)
+  METHOD Double get_Dia()
+  METHOD Void set_Dia(Double value)
+  METHOD Double get_Rfe()
+  METHOD Void set_Rfe(Double value)
+  METHOD Double get_Rs()
+  METHOD Void set_Rs(Double value)
+  METHOD Double get_Ls()
+  METHOD Void set_Ls(Double value)
+  METHOD Double get_Lag()
+  METHOD Void set_Lag(Double value)
+  METHOD Double get_Rr()
+  METHOD Void set_Rr(Double value)
+  METHOD Double get_Lr()
+  METHOD Void set_Lr(Double value)
+  METHOD Double get_UpLSPM()
+  METHOD Void set_UpLSPM(Double value)
+  METHOD Double get_LLSPM()
+  METHOD Void set_LLSPM(Double value)
+  METHOD System.Linq.Expressions.Expression`1 [System.Linq.Expressions]<System.Func`2 [System.Runtime]<Domain.Models.SharedEntities.AsyncMotorWithInverterData, Boolean>> MatchesExpression(Domain.Models.SharedEntities.AsyncMotorWithInverterData target)
+  METHOD Void .ctor()
+TYPE Domain.Models.PerformanceEntities.Coefficients.AsyncMotorDataCoefs : System.Object [System.Runtime]
+  PROPERTY Int32 ID
+  PROPERTY Double P
+  PROPERTY Double Dia
+  PROPERTY Double Rfe
+  PROPERTY Double Rs
+  PROPERTY Double Ls
+  PROPERTY Double Lag
+  PROPERTY Double Rr
+  PROPERTY Double Lr
+  PROPERTY Double UpLSPM
+  PROPERTY Double LLSPM
+  FIELD Int32 <ID>k__BackingField
+  FIELD Double <P>k__BackingField
+  FIELD Double <Dia>k__BackingField
+  FIELD Double <Rfe>k__BackingField
+  FIELD Double <Rs>k__BackingField
+  FIELD Double <Ls>k__BackingField
+  FIELD Double <Lag>k__BackingField
+  FIELD Double <Rr>k__BackingField
+  FIELD Double <Lr>k__BackingField
+  FIELD Double <UpLSPM>k__BackingField
+  FIELD Double <LLSPM>k__BackingField
+  METHOD Int32 get_ID()
+  METHOD Void set_ID(Int32 value)
+  METHOD Double get_P()
+  METHOD Void set_P(Double value)
+  METHOD Double get_Dia()
+  METHOD Void set_Dia(Double value)
+  METHOD Double get_Rfe()
+  METHOD Void set_Rfe(Double value)
+  METHOD Double get_Rs()
+  METHOD Void set_Rs(Double value)
+  METHOD Double get_Ls()
+  METHOD Void set_Ls(Double value)
+  METHOD Double get_Lag()
+  METHOD Void set_Lag(Double value)
+  METHOD Double get_Rr()
+  METHOD Void set_Rr(Double value)
+  METHOD Double get_Lr()
+  METHOD Void set_Lr(Double value)
+  METHOD Double get_UpLSPM()
+  METHOD Void set_UpLSPM(Double value)
+  METHOD Double get_LLSPM()
+  METHOD Void set_LLSPM(Double value)
+  METHOD Void .ctor()
+TYPE Domain.Models.BitzerPlatformEntities.CRProductInformation : System.Object [System.Runtime]
+  PROPERTY String Id
+  PROPERTY Boolean IsDeleted
+  PROPERTY String AvailableCapacitySteps
+  FIELD String <Id>k__BackingField
+  FIELD Boolean <IsDeleted>k__BackingField
+  FIELD String <AvailableCapacitySteps>k__BackingField
+  METHOD String get_Id()
+  METHOD Void set_Id(String value)
+  METHOD Boolean get_IsDeleted()
+  METHOD Void set_IsDeleted(Boolean value)
+  METHOD String get_AvailableCapacitySteps()
+  METHOD Void set_AvailableCapacitySteps(String value)
+  METHOD Boolean IsVaristep(String capacityRegulationPosition)
+  METHOD Void .ctor()
+TYPE Domain.Limits.OperatingPointLimitStatus : System.ValueType [System.Runtime]
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> ValidTemp
+  PROPERTY Double TemperatureDeviation
+  PROPERTY Domain.Models.OperatingPointLimitPosition OperatingPointLimitPosition
+  FIELD System.Nullable`1 [System.Runtime]<Double> <ValidTemp>k__BackingField
+  FIELD Double <TemperatureDeviation>k__BackingField
+  FIELD Domain.Models.OperatingPointLimitPosition <OperatingPointLimitPosition>k__BackingField
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_ValidTemp()
+  METHOD Void set_ValidTemp(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD Double get_TemperatureDeviation()
+  METHOD Void set_TemperatureDeviation(Double value)
+  METHOD Domain.Models.OperatingPointLimitPosition get_OperatingPointLimitPosition()
+  METHOD Void set_OperatingPointLimitPosition(Domain.Models.OperatingPointLimitPosition value)
+  METHOD Void .ctor(Domain.Models.OperatingPointLimitPosition positionCode, System.Nullable`1 [System.Runtime]<Double> validTemp, System.Nullable`1 [System.Runtime]<Double> temperatureDeviation)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Domain.Limits.OperatingPointLimitStatus left, Domain.Limits.OperatingPointLimitStatus right)
+  METHOD Boolean op_Equality(Domain.Limits.OperatingPointLimitStatus left, Domain.Limits.OperatingPointLimitStatus right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Domain.Limits.OperatingPointLimitStatus other)
+TYPE Domain.Exceptions.ChooseMotor2Error : Domain.Exceptions.CompressorError
+  METHOD Void .ctor()
+TYPE Domain.Exceptions.ChooseMotor1Error : Domain.Exceptions.CompressorError
+  METHOD Void .ctor()
+TYPE Domain.Exceptions.MissingMotorDataError : Domain.Exceptions.CompressorError
+  METHOD Void .ctor()
+TYPE Domain.Exceptions.OperatingPointOutsideOfLimitError : Domain.Exceptions.TemperatureException
+  PROPERTY Double TemperatureDeviation
+  FIELD Double <temperatureDeviation>P
+  METHOD Void .ctor(Int32 errorCode, Double suggestedTemperature, Double temperatureDeviation, Domain.Models.TemperatureUnit temperatureUnit, System.MidpointRounding [System.Runtime] rounding)
+  METHOD Double get_TemperatureDeviation()
+TYPE Domain.Exceptions.MotorTechDataError : Domain.Exceptions.ErrorCodeException
+  METHOD Void .ctor(Int32 errorCode)
+TYPE Domain.Exceptions.SuperheatTooLowDependentOnOperatingPointError : Domain.Exceptions.TemperatureException
+  METHOD Void .ctor(Double suggestedTemperature, Domain.Models.TemperatureUnit temperatureUnit)
+TYPE Domain.Exceptions.SuperheatTooLowIndependentOfOperatingPointError : Domain.Exceptions.SuperheatError
+  METHOD Void .ctor()
+TYPE MotorVersion : Domain.Limits.RegionType
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Int32 Version
+  PROPERTY String Identifier
+  FIELD Int32 <Version>k__BackingField
+  METHOD Void .ctor(Int32 Version)
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Int32 get_Version()
+  METHOD Void set_Version(Int32 value)
+  METHOD String get_Identifier()
+  METHOD System.Collections.Generic.IEnumerable`1 [System.Runtime]<String> GetPatterns()
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(MotorVersion left, MotorVersion right)
+  METHOD Boolean op_Equality(MotorVersion left, MotorVersion right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Domain.Limits.RegionType other)
+  METHOD Boolean Equals(MotorVersion other)
+  METHOD MotorVersion <Clone>$()
+  METHOD Void .ctor(MotorVersion original)
+  METHOD Void Deconstruct(ref Int32 Version)
+Matched types: 18
