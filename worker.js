@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.14";
+const AGENT_VERSION = "v3.15";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -87,13 +87,32 @@ async function searchExaOnce(env, query) {
   }
 }
 
+function alternateRealtimeQuery(query) {
+  const q=String(query||"").trim();
+  if(/天气/i.test(q)) {
+    const place=q.replace(/(?:今天|现在|实时|目前|天气|怎么样|如何|情况|？|\?)/g," ").replace(/\s+/g," ").trim();
+    return (place?place+" ":"")+"天气 实时 温度 预报";
+  }
+  return q+" 最新 实时";
+}
+
 async function searchExa(env, query) {
   const first=await searchExaOnce(env,query);
   if(first.ok || first.error==="missing_api_key") return first;
+
   const second=await searchExaOnce(env,query);
   if(second.ok) return {...second,retried:true};
-  console.warn("Exa search failed after retry:", {first:first.error,firstStatus:first.status||null,second:second.error,secondStatus:second.status||null});
-  return {...second,retried:true};
+
+  const fallbackQuery=alternateRealtimeQuery(query);
+  const third=await searchExaOnce(env,fallbackQuery);
+  if(third.ok) return {...third,retried:true,fallbackQuery:true};
+
+  console.warn("Exa search failed after fallback:", {
+    first:first.error,firstStatus:first.status||null,
+    second:second.error,secondStatus:second.status||null,
+    third:third.error,thirdStatus:third.status||null
+  });
+  return {...third,retried:true,fallbackQuery:true};
 }
 
 async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens) {
