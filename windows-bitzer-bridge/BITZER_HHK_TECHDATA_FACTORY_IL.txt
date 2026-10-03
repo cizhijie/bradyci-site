@@ -1,0 +1,18 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD <>c.<RegisterServices>b__3_0
+  IL_0000: ldarg.1
+  IL_0001: ldstr          01 00 00 70  // token 70000001
+  IL_0006: call           30 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceProviderKeyedServiceExtensions.GetRequiredKeyedService<Bitzer.Selection.Platform.Abstractions.Repositories.IProductsRepository>
+  IL_000B: ldc.r8         00 00 00 00 00 A8 96 40
+  IL_0014: ldc.r8         00 00 00 00 00 58 9B 40
+  IL_001D: newobj         B6 01 00 0A  // Bitzer.Selection.Platform.Services.TechDataService..ctor
+  IL_0022: ret
+IL METHOD <>c.<GetCRFactor4Cylinder>b__3_0
+  IL_0000: ldarg.1
+  IL_0001: callvirt       5A 02 00 0A  // Domain.Models.BitzerPlatformEntities.ProductCoefficients.PowerCRCoefficient.get_CapacityRegulation
+  IL_0006: ldc.i4.s       32
+  IL_0008: ceq
+  IL_000A: ret
+Matched IL methods: 2
