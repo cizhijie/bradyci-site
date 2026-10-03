@@ -504,6 +504,18 @@ export function calculateReadyColdRoomParts(state = {}, assessment = assessColdR
 
 export function formatReadyColdRoomCalculations(results = {}) {
   const lines = [];
+  // Customer-facing default: lead with the decision-useful result. Detailed engineering
+  // trace remains below so Owner can still audit assumptions and sources.
+  const headlineCapacity=results.design_capacity?.requiredCapacityRangeKW;
+  const headlineArch=results.compressor_architecture?.architectureAssessment || [];
+  if(headlineCapacity){
+    lines.push("**先说结论**", "");
+    lines.push(`• 目前估算需要的设备制冷能力约 **${headlineCapacity.min}–${headlineCapacity.max} kW**。`);
+    const labels={scroll:"涡旋","semi-hermetic-reciprocating":"半封闭活塞",screw:"螺杆","parallel-rack":"并联机组"};
+    const preferred=headlineArch.filter(x=>x.preference==="preferred");
+    if(preferred.length) lines.push("• 机组形式优先比较："+preferred.slice(0,2).map(x=>labels[x.architecture]||x.architecture).join(" / ")+"。");
+    lines.push("• 这是当前条件下的工程估算，不直接等同于“多少匹”；具体压缩机型号要按制冷剂、蒸发温度和冷凝温度核对厂家性能。", "");
+  }
 
   // Customer-facing summary first; detailed calculations remain below for traceability.
   const dc0=results.design_capacity;
@@ -531,9 +543,8 @@ export function formatReadyColdRoomCalculations(results = {}) {
     if(pending.length) lines.push("• 正式定型号前还需确认："+[...new Set(pending)].join("、"));
     lines.push("");
   }
-  if (results.engineering_mode) {
-    lines.push("**核算模式：" + results.engineering_mode.label + "**", "");
-    if (results.engineering_mode.id === "estimate") lines.push("• 当前允许使用审核后的工程默认值/范围继续初算；所有估算项必须单独标注，不能冒充客户实测或正式选型数据。", "");
+  if (results.engineering_mode?.id === "estimate") {
+    lines.push("**计算说明**", "", "• 缺少现场实测值的部分采用已审核的工程估算范围，并会明确标注；正式定型号前再复核关键条件。", "");
   }
   const dde = results.door_dimension_estimate;
   if (dde) {
