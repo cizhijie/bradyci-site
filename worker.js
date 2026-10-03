@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.12";
+const AGENT_VERSION = "v3.13";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -52,6 +52,35 @@ function classifyRequest(text, activeSkill) {
   if (/(?:今天|现在|最新|实时|刚刚|目前).{0,12}(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存|网站状态)|(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存).{0,12}(?:今天|现在|最新|实时|刚刚|目前)/i.test(raw)) return "realtime-external";
   if (activeSkill?.id === "refrigeration" || /(?:冷库|制冷|压缩机|冷风机|冷凝器|蒸发器|冷媒|制冷剂|BITZER|比泽尔|R404A|R507A?|R22|Te|Tc)/i.test(raw)) return "refrigeration";
   return "general";
+}
+
+async function searchExa(env, query) {
+  if (!env.EXA_API_KEY) return { ok:false, error:"EXA_API_KEY is not configured" };
+  try {
+    const response = await fetch("https://api.exa.ai/search", {
+      method:"POST",
+      headers:{"x-api-key":env.EXA_API_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({query:String(query||"").slice(0,500),type:"auto",numResults:5,contents:{text:{maxCharacters:1800}}})
+    });
+    if (!response.ok) return {ok:false,error:"Exa search failed",status:response.status};
+    const data=await response.json().catch(()=>null);
+    const results=(data?.results||[]).slice(0,5).map(r=>({title:r.title||"",url:r.url||"",publishedDate:r.publishedDate||null,text:String(r.text||"").slice(0,1800)}));
+    return results.length?{ok:true,results}:{ok:false,error:"No search results"};
+  } catch { return {ok:false,error:"Exa search unavailable"}; }
+}
+
+async function answerWithWebSearch(env, messages, systemPrompt, query, maxTokens) {
+  const search=await searchExa(env,query);
+  if(!search.ok) return null;
+  const sources=search.results.map((r,i)=>`[${i+1}] ${r.title}\nURL: ${r.url}\n日期: ${r.publishedDate||"未标注"}\n内容: ${r.text}`).join("\n\n");
+  const groundedPrompt=systemPrompt+`\n\n【实时网页检索结果】\n${sources}\n\n只依据以上检索结果和确定性系统时间回答当前实时问题。不要把模型记忆冒充实时事实。重要事实尽量在正文中标注来源编号，如[1][2]；回答末尾加“来源”并列出实际使用的网页标题和 URL。若结果不足以确认，就明确说无法确认。`;
+  let response=await callModelNonStream(env,PRIMARY_MODEL,messages,groundedPrompt,maxTokens);
+  let model=PRIMARY_MODEL;
+  if(!response.ok){response=await callModelNonStream(env,FALLBACK_MODEL,messages,groundedPrompt,maxTokens);model=FALLBACK_MODEL;}
+  if(!response.ok)return null;
+  const data=await response.json().catch(()=>null);
+  const answer=cleanFinalAnswer(data?.choices?.[0]?.message?.content||"");
+  return answer?{answer,model,results:search.results}:null;
 }
 
 function formatChinaSystemTime(now = new Date()) {
@@ -511,11 +540,13 @@ export default {
         if (requestClass === "system-time") {
           return sseText("当前中国标准时间（北京时间）：" + formatChinaSystemTime(now) + "。", { model:"deterministic-system-time", role:owner?"owner":"visitor", skill:"general", tool:"system_time" });
         }
+        const maxTokens = owner ? OWNER_MAX_TOKENS : VISITOR_MAX_TOKENS;
         if (requestClass === "realtime-external") {
-          return sseText("这个问题需要实时外部数据。当前 Brady Agent 还没有接入实时检索工具，所以我不能可靠确认，也不会用模型旧知识猜测。", { model:"deterministic-realtime-guard", role:owner?"owner":"visitor", skill:"general", tool:"realtime_guard" });
+          const webAnswer=await answerWithWebSearch(env,messages,systemPrompt,latestUser?.content||"",maxTokens);
+          if(webAnswer) return sseText(webAnswer.answer,{model:webAnswer.model,role:owner?"owner":"visitor",skill:"general",tool:"exa_web_search"});
+          return sseText("这个问题需要实时外部数据，但本次联网检索没有取得可靠结果。我不会用模型旧知识猜测，请稍后再试。",{model:"deterministic-realtime-guard",role:owner?"owner":"visitor",skill:"general",tool:"realtime_guard"});
         }
 
-        const maxTokens = owner ? OWNER_MAX_TOKENS : VISITOR_MAX_TOKENS;
         if (!owner && latestUser) {
           const capabilityQuestion = latestUser.content || "";
           if (/(?:能不能|可以|能否|会不会|是否).{0,8}(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片)|(?:直接)?(?:生成|做|制作|画).{0,4}(?:图片|图像|照片).{0,8}(?:吗|么|不)/i.test(capabilityQuestion)) {
