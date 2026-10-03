@@ -126,32 +126,30 @@ internal static class AssemblyIlInspector
         };
         try
         {
-            var blob = reader.GetBlobReader(spec.Signature);
-            if (blob.RemainingBytes == 0) return baseName;
-            blob.ReadByte(); // GENERICINST
-            var count = blob.ReadCompressedInteger();
-            var args = new List<string>();
-            for (var i = 0; i < count; i++) args.Add(ReadTypeSignature(reader, ref blob));
+            var args = spec.DecodeSignature(new IlTypeNameProvider(reader), genericContext: (object?)null);
             return baseName + "<" + string.Join(", ", args) + ">";
         }
         catch { return baseName; }
     }
 
-    private static string ReadTypeSignature(MetadataReader reader, ref BlobReader blob)
+    private sealed class IlTypeNameProvider : ISignatureTypeProvider<string, object?>
     {
-        if (blob.RemainingBytes == 0) return "?";
-        var code = blob.ReadSignatureTypeCode();
-        if (code == SignatureTypeCode.GenericTypeInstance)
-        {
-            var kind = blob.ReadSignatureTypeCode();
-            var handle = blob.ReadTypeHandle();
-            var name = handle.Kind == HandleKind.TypeReference ? TypeName(reader, (TypeReferenceHandle)handle) : handle.Kind.ToString();
-            var n = blob.ReadCompressedInteger();
-            var args = new List<string>();
-            for (var i = 0; i < n; i++) args.Add(ReadTypeSignature(reader, ref blob));
-            return name + "<" + string.Join(", ", args) + ">";
-        }
-        return code.ToString();
+        private readonly MetadataReader _reader;
+        internal IlTypeNameProvider(MetadataReader reader) => _reader = reader;
+        public string GetArrayType(string elementType, ArrayShape shape) => elementType + "[" + new string(',', Math.Max(0, shape.Rank - 1)) + "]";
+        public string GetByReferenceType(string elementType) => elementType + "&";
+        public string GetFunctionPointerType(MethodSignature<string> signature) => "fnptr";
+        public string GetGenericInstantiation(string genericType, System.Collections.Immutable.ImmutableArray<string> typeArguments) => genericType + "<" + string.Join(", ", typeArguments) + ">";
+        public string GetGenericMethodParameter(object? genericContext, int index) => "!!" + index;
+        public string GetGenericTypeParameter(object? genericContext, int index) => "!" + index;
+        public string GetModifiedType(string modifierType, string unmodifiedType, bool isRequired) => unmodifiedType;
+        public string GetPinnedType(string elementType) => elementType;
+        public string GetPointerType(string elementType) => elementType + "*";
+        public string GetPrimitiveType(PrimitiveTypeCode typeCode) => typeCode.ToString();
+        public string GetSZArrayType(string elementType) => elementType + "[]";
+        public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => TypeName(reader, handle);
+        public string GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => TypeName(reader, handle);
+        public string GetTypeFromSpecification(MetadataReader reader, object? genericContext, TypeSpecificationHandle handle, byte rawTypeKind) => reader.GetTypeSpecification(handle).DecodeSignature(this, genericContext);
     }
 
     private static string MethodName(MetadataReader reader, MethodDefinitionHandle h)
