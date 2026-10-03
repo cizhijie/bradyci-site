@@ -38,13 +38,28 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.01";
+const AGENT_VERSION = "v3.02";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
 const OWNER_COOKIE = "brady_owner_session";
 const OWNER_LOGIN_MAX_FAILURES = 5;
 const OWNER_LOGIN_WINDOW_SECONDS = 15 * 60;
+
+function classifyRequest(text, activeSkill) {
+  const raw = String(text || "").trim();
+  if (/^(?:今天|现在)(?:是)?(?:几号|几月几日|星期几|周几|几点|什么时间)|^(?:北京时间|中国时间)(?:是)?(?:几点|多少)/i.test(raw)) return "system-time";
+  if (/(?:今天|现在|最新|实时|刚刚|目前).{0,12}(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存|网站状态)|(?:天气|新闻|价格|报价|汇率|比赛|比分|政策|股价|金价|油价|航班|库存).{0,12}(?:今天|现在|最新|实时|刚刚|目前)/i.test(raw)) return "realtime-external";
+  if (activeSkill?.id === "refrigeration" || /(?:冷库|制冷|压缩机|冷风机|冷凝器|蒸发器|冷媒|制冷剂|BITZER|比泽尔|R404A|R507A?|R22|Te|Tc)/i.test(raw)) return "refrigeration";
+  return "general";
+}
+
+function formatChinaSystemTime(now = new Date()) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, weekday: "long"
+  }).format(now);
+}
 
 function runtimeReadiness(env){
   const missing=REQUIRED_RUNTIME_BINDINGS.filter(name=>!env[name]);
@@ -483,6 +498,14 @@ export default {
         const utcTime = now.toISOString();
         const timePrompt = `\n\n【系统时间】当前 UTC 时间：${utcTime}；当前中国标准时间（Asia/Shanghai）：${chinaTime}。凡涉及“今天、现在、今年、刚刚、最新”等时间表达，必须以这里的系统时间为准，不得凭模型训练数据猜日期。若问题要求最新新闻、实时价格、天气、比赛结果、政策变化、网站当前状态等外部实时信息，而当前没有实时检索工具返回的数据，必须明确说明“当前没有实时检索结果”，不要编造或假装已经查询。仅询问当前日期/时间时，可直接依据这里的系统时间回答。\n【时效性规则】模型已有知识只能作为背景知识，不能冒充实时信息；凡无法从当前对话、项目资料、数据库确定性工具或实时检索结果确认的最新事实，必须标明无法实时确认。`;
         const systemPrompt = SYSTEM_PROMPT + timePrompt + identityPrompt + longPrompt + projectPrompt + skillPrompt + toolPrompt;
+
+        const requestClass = classifyRequest(latestUser?.content || "", activeSkill);
+        if (requestClass === "system-time") {
+          return sseText("当前中国标准时间（北京时间）：" + formatChinaSystemTime(now) + "。", { model:"deterministic-system-time", role:owner?"owner":"visitor", skill:"general", tool:"system_time" });
+        }
+        if (requestClass === "realtime-external") {
+          return sseText("这个问题需要实时外部数据。当前 Brady Agent 还没有接入实时检索工具，所以我不能可靠确认，也不会用模型旧知识猜测。", { model:"deterministic-realtime-guard", role:owner?"owner":"visitor", skill:"general", tool:"realtime_guard" });
+        }
 
         const maxTokens = owner ? 900 : VISITOR_MAX_TOKENS;
         if (!owner && latestUser) {
