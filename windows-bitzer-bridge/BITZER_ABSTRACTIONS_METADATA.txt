@@ -1,0 +1,483 @@
+C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Hhk52NativeExecutionGate.cs(10,13): warning CS0162: 检测到无法访问的代码 [C:\Users\bradyci\bradyci-site\windows-bitzer-bridge\Brady.BitzerBridge.csproj]
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+TYPE Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Int32 result
+  PROPERTY String o_T1
+  PROPERTY String o_T2
+  PROPERTY Int32 o_OP1
+  PROPERTY Int32 o_OP2
+  PROPERTY Double o_FCF1
+  PROPERTY Double o_FCF2
+  PROPERTY Double o_FCFmin1
+  PROPERTY Double o_FCFmin2
+  PROPERTY Double o_FCFmax1
+  PROPERTY Double o_FCFmax2
+  PROPERTY Double o_Q1
+  PROPERTY Double o_Q2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_Qmin1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_Qmin2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_Qmax1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_Qmax2
+  PROPERTY Double o_QU1
+  PROPERTY Double o_QU2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QN1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QN2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QC1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QC2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QH1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QH2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> output_1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> output_2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_I1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_I2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_U1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_U2
+  PROPERTY String o_VR1
+  PROPERTY String o_VR2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_COS1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_COS2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_E1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_E2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_EN1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_EN2
+  PROPERTY Double o_VG1
+  PROPERTY Double o_VG2
+  PROPERTY Double o_M1
+  PROPERTY Double o_M2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TH1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TH2
+  PROPERTY Double o_PC1
+  PROPERTY Double o_PC2
+  PROPERTY Int32 o_Hint1
+  PROPERTY Int32 o_Hint2
+  PROPERTY Int32 o_Hint3
+  PROPERTY String o_Err
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_VOL1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_VOL2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_ML1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_ML2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_ME1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_ME2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QA1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QA2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TOL1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TOL2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TJ1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TJ2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TE1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TE2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_PJ1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_PJ2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_PE1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_PE2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TL1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_TL2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QS1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_QS2
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_CR1
+  PROPERTY System.Nullable`1 [System.Runtime]<Double> o_CR2
+  FIELD Int32 <result>k__BackingField
+  FIELD String <o_T1>k__BackingField
+  FIELD String <o_T2>k__BackingField
+  FIELD Int32 <o_OP1>k__BackingField
+  FIELD Int32 <o_OP2>k__BackingField
+  FIELD Double <o_FCF1>k__BackingField
+  FIELD Double <o_FCF2>k__BackingField
+  FIELD Double <o_FCFmin1>k__BackingField
+  FIELD Double <o_FCFmin2>k__BackingField
+  FIELD Double <o_FCFmax1>k__BackingField
+  FIELD Double <o_FCFmax2>k__BackingField
+  FIELD Double <o_Q1>k__BackingField
+  FIELD Double <o_Q2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_Qmin1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_Qmin2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_Qmax1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_Qmax2>k__BackingField
+  FIELD Double <o_QU1>k__BackingField
+  FIELD Double <o_QU2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QN1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QN2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QC1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QC2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QH1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QH2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <output_1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <output_2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_I1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_I2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_U1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_U2>k__BackingField
+  FIELD String <o_VR1>k__BackingField
+  FIELD String <o_VR2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_COS1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_COS2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_E1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_E2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_EN1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_EN2>k__BackingField
+  FIELD Double <o_VG1>k__BackingField
+  FIELD Double <o_VG2>k__BackingField
+  FIELD Double <o_M1>k__BackingField
+  FIELD Double <o_M2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TH1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TH2>k__BackingField
+  FIELD Double <o_PC1>k__BackingField
+  FIELD Double <o_PC2>k__BackingField
+  FIELD Int32 <o_Hint1>k__BackingField
+  FIELD Int32 <o_Hint2>k__BackingField
+  FIELD Int32 <o_Hint3>k__BackingField
+  FIELD String <o_Err>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_VOL1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_VOL2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_ML1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_ML2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_ME1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_ME2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QA1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QA2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TOL1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TOL2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TJ1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TJ2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TE1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TE2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_PJ1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_PJ2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_PE1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_PE2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TL1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_TL2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QS1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_QS2>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_CR1>k__BackingField
+  FIELD System.Nullable`1 [System.Runtime]<Double> <o_CR2>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Int32 get_result()
+  METHOD Void set_result(Int32 value)
+  METHOD String get_o_T1()
+  METHOD Void set_o_T1(String value)
+  METHOD String get_o_T2()
+  METHOD Void set_o_T2(String value)
+  METHOD Int32 get_o_OP1()
+  METHOD Void set_o_OP1(Int32 value)
+  METHOD Int32 get_o_OP2()
+  METHOD Void set_o_OP2(Int32 value)
+  METHOD Double get_o_FCF1()
+  METHOD Void set_o_FCF1(Double value)
+  METHOD Double get_o_FCF2()
+  METHOD Void set_o_FCF2(Double value)
+  METHOD Double get_o_FCFmin1()
+  METHOD Void set_o_FCFmin1(Double value)
+  METHOD Double get_o_FCFmin2()
+  METHOD Void set_o_FCFmin2(Double value)
+  METHOD Double get_o_FCFmax1()
+  METHOD Void set_o_FCFmax1(Double value)
+  METHOD Double get_o_FCFmax2()
+  METHOD Void set_o_FCFmax2(Double value)
+  METHOD Double get_o_Q1()
+  METHOD Void set_o_Q1(Double value)
+  METHOD Double get_o_Q2()
+  METHOD Void set_o_Q2(Double value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_Qmin1()
+  METHOD Void set_o_Qmin1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_Qmin2()
+  METHOD Void set_o_Qmin2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_Qmax1()
+  METHOD Void set_o_Qmax1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_Qmax2()
+  METHOD Void set_o_Qmax2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD Double get_o_QU1()
+  METHOD Void set_o_QU1(Double value)
+  METHOD Double get_o_QU2()
+  METHOD Void set_o_QU2(Double value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QN1()
+  METHOD Void set_o_QN1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QN2()
+  METHOD Void set_o_QN2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QC1()
+  METHOD Void set_o_QC1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QC2()
+  METHOD Void set_o_QC2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QH1()
+  METHOD Void set_o_QH1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QH2()
+  METHOD Void set_o_QH2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_output_1()
+  METHOD Void set_output_1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_output_2()
+  METHOD Void set_output_2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_I1()
+  METHOD Void set_o_I1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_I2()
+  METHOD Void set_o_I2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_U1()
+  METHOD Void set_o_U1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_U2()
+  METHOD Void set_o_U2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD String get_o_VR1()
+  METHOD Void set_o_VR1(String value)
+  METHOD String get_o_VR2()
+  METHOD Void set_o_VR2(String value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_COS1()
+  METHOD Void set_o_COS1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_COS2()
+  METHOD Void set_o_COS2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_E1()
+  METHOD Void set_o_E1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_E2()
+  METHOD Void set_o_E2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_EN1()
+  METHOD Void set_o_EN1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_EN2()
+  METHOD Void set_o_EN2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD Double get_o_VG1()
+  METHOD Void set_o_VG1(Double value)
+  METHOD Double get_o_VG2()
+  METHOD Void set_o_VG2(Double value)
+  METHOD Double get_o_M1()
+  METHOD Void set_o_M1(Double value)
+  METHOD Double get_o_M2()
+  METHOD Void set_o_M2(Double value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TH1()
+  METHOD Void set_o_TH1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TH2()
+  METHOD Void set_o_TH2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD Double get_o_PC1()
+  METHOD Void set_o_PC1(Double value)
+  METHOD Double get_o_PC2()
+  METHOD Void set_o_PC2(Double value)
+  METHOD Int32 get_o_Hint1()
+  METHOD Void set_o_Hint1(Int32 value)
+  METHOD Int32 get_o_Hint2()
+  METHOD Void set_o_Hint2(Int32 value)
+  METHOD Int32 get_o_Hint3()
+  METHOD Void set_o_Hint3(Int32 value)
+  METHOD String get_o_Err()
+  METHOD Void set_o_Err(String value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_VOL1()
+  METHOD Void set_o_VOL1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_VOL2()
+  METHOD Void set_o_VOL2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_ML1()
+  METHOD Void set_o_ML1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_ML2()
+  METHOD Void set_o_ML2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_ME1()
+  METHOD Void set_o_ME1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_ME2()
+  METHOD Void set_o_ME2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QA1()
+  METHOD Void set_o_QA1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QA2()
+  METHOD Void set_o_QA2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TOL1()
+  METHOD Void set_o_TOL1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TOL2()
+  METHOD Void set_o_TOL2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TJ1()
+  METHOD Void set_o_TJ1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TJ2()
+  METHOD Void set_o_TJ2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TE1()
+  METHOD Void set_o_TE1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TE2()
+  METHOD Void set_o_TE2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_PJ1()
+  METHOD Void set_o_PJ1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_PJ2()
+  METHOD Void set_o_PJ2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_PE1()
+  METHOD Void set_o_PE1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_PE2()
+  METHOD Void set_o_PE2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TL1()
+  METHOD Void set_o_TL1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_TL2()
+  METHOD Void set_o_TL2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QS1()
+  METHOD Void set_o_QS1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_QS2()
+  METHOD Void set_o_QS2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_CR1()
+  METHOD Void set_o_CR1(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD System.Nullable`1 [System.Runtime]<Double> get_o_CR2()
+  METHOD Void set_o_CR2(System.Nullable`1 [System.Runtime]<Double> value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput left, Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput left, Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput other)
+  METHOD Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.Operator.ApiSystemOutput original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.Inputs.APIinput : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig CalculationConfig
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig SystemConfig
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData RefrigerantData
+  PROPERTY System.Collections.Generic.IList`1 [System.Runtime]<Domain.Records.OperatingPoint [Domain]> OperatingPoints
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions OperatingConditions
+  PROPERTY System.Collections.Generic.List`1 [System.Collections]<Domain.Records.ProductInfo [Domain]> Products
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData CompressorData
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig FrequencyInverterConfig
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid ElectricGrid
+  PROPERTY Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings Settings
+  PROPERTY Domain.Models.Flags [Domain] Flags
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig <CalculationConfig>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig <SystemConfig>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData <RefrigerantData>k__BackingField
+  FIELD System.Collections.Generic.IList`1 [System.Runtime]<Domain.Records.OperatingPoint [Domain]> <OperatingPoints>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions <OperatingConditions>k__BackingField
+  FIELD System.Collections.Generic.List`1 [System.Collections]<Domain.Records.ProductInfo [Domain]> <Products>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData <CompressorData>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig <FrequencyInverterConfig>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid <ElectricGrid>k__BackingField
+  FIELD Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings <Settings>k__BackingField
+  FIELD Domain.Models.Flags [Domain] <Flags>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig get_CalculationConfig()
+  METHOD Void set_CalculationConfig(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CalculationConfig value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig get_SystemConfig()
+  METHOD Void set_SystemConfig(Bitzer.Selection.Platform.Abstractions.CompressorSystem.SystemConfig value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData get_RefrigerantData()
+  METHOD Void set_RefrigerantData(Bitzer.Selection.Platform.Abstractions.CompressorSystem.RefrigerantData value)
+  METHOD System.Collections.Generic.IList`1 [System.Runtime]<Domain.Records.OperatingPoint [Domain]> get_OperatingPoints()
+  METHOD Void set_OperatingPoints(System.Collections.Generic.IList`1 [System.Runtime]<Domain.Records.OperatingPoint [Domain]> value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions get_OperatingConditions()
+  METHOD Void set_OperatingConditions(Bitzer.Selection.Platform.Abstractions.CompressorSystem.OperatingConditions value)
+  METHOD System.Collections.Generic.List`1 [System.Collections]<Domain.Records.ProductInfo [Domain]> get_Products()
+  METHOD Void set_Products(System.Collections.Generic.List`1 [System.Collections]<Domain.Records.ProductInfo [Domain]> value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData get_CompressorData()
+  METHOD Void set_CompressorData(Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorData value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig get_FrequencyInverterConfig()
+  METHOD Void set_FrequencyInverterConfig(Bitzer.Selection.Platform.Abstractions.CompressorSystem.FrequencyInverterConfig value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid get_ElectricGrid()
+  METHOD Void set_ElectricGrid(Bitzer.Selection.Platform.Abstractions.CompressorSystem.ElectricityGrid value)
+  METHOD Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings get_Settings()
+  METHOD Void set_Settings(Bitzer.Selection.Platform.Abstractions.CompressorSystem.Settings value)
+  METHOD Domain.Models.Flags [Domain] get_Flags()
+  METHOD Void set_Flags(Domain.Models.Flags [Domain] value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput left, Bitzer.Selection.Platform.Abstractions.Inputs.APIinput right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput left, Bitzer.Selection.Platform.Abstractions.Inputs.APIinput right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput other)
+  METHOD Bitzer.Selection.Platform.Abstractions.Inputs.APIinput <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.Inputs.APIinput original)
+  METHOD Void .ctor()
+TYPE Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto : System.Object [System.Runtime]
+  PROPERTY System.Type [System.Runtime] EqualityContract
+  PROPERTY String ModuleId
+  PROPERTY String i_RPath
+  PROPERTY String i_NPath
+  PROPERTY Int32 i_Flags
+  PROPERTY Int32 i_Serie
+  PROPERTY Int32 i_Method
+  PROPERTY String[] i_ProductTypes
+  PROPERTY Int32 i_CC
+  PROPERTY String i_Ref
+  PROPERTY Double i_Q
+  PROPERTY Double i_T0
+  PROPERTY Double i_TC
+  PROPERTY Double i_TS
+  PROPERTY Double i_TL
+  PROPERTY Double i_TN
+  PROPERTY Int32 i_NET
+  PROPERTY Int32 i_DS
+  PROPERTY Int32 i_OV
+  PROPERTY Int32 i_FI
+  PROPERTY Int32 i_FCV
+  PROPERTY Int32 i_FCOF
+  PROPERTY Int32 i_OP
+  PROPERTY Single i_CR
+  PROPERTY Boolean i_IsUL
+  FIELD String <ModuleId>k__BackingField
+  FIELD String <i_RPath>k__BackingField
+  FIELD String <i_NPath>k__BackingField
+  FIELD Int32 <i_Flags>k__BackingField
+  FIELD Int32 <i_Serie>k__BackingField
+  FIELD Int32 <i_Method>k__BackingField
+  FIELD String[] <i_ProductTypes>k__BackingField
+  FIELD Int32 <i_CC>k__BackingField
+  FIELD String <i_Ref>k__BackingField
+  FIELD Double <i_Q>k__BackingField
+  FIELD Double <i_T0>k__BackingField
+  FIELD Double <i_TC>k__BackingField
+  FIELD Double <i_TS>k__BackingField
+  FIELD Double <i_TL>k__BackingField
+  FIELD Double <i_TN>k__BackingField
+  FIELD Int32 <i_NET>k__BackingField
+  FIELD Int32 <i_DS>k__BackingField
+  FIELD Int32 <i_OV>k__BackingField
+  FIELD Int32 <i_FI>k__BackingField
+  FIELD Int32 <i_FCV>k__BackingField
+  FIELD Int32 <i_FCOF>k__BackingField
+  FIELD Int32 <i_OP>k__BackingField
+  FIELD Single <i_CR>k__BackingField
+  FIELD Boolean <i_IsUL>k__BackingField
+  METHOD System.Type [System.Runtime] get_EqualityContract()
+  METHOD String get_ModuleId()
+  METHOD Void set_ModuleId(String value)
+  METHOD String get_i_RPath()
+  METHOD Void set_i_RPath(String value)
+  METHOD String get_i_NPath()
+  METHOD Void set_i_NPath(String value)
+  METHOD Int32 get_i_Flags()
+  METHOD Void set_i_Flags(Int32 value)
+  METHOD Int32 get_i_Serie()
+  METHOD Void set_i_Serie(Int32 value)
+  METHOD Int32 get_i_Method()
+  METHOD Void set_i_Method(Int32 value)
+  METHOD String[] get_i_ProductTypes()
+  METHOD Void set_i_ProductTypes(String[] value)
+  METHOD Int32 get_i_CC()
+  METHOD Void set_i_CC(Int32 value)
+  METHOD String get_i_Ref()
+  METHOD Void set_i_Ref(String value)
+  METHOD Double get_i_Q()
+  METHOD Void set_i_Q(Double value)
+  METHOD Double get_i_T0()
+  METHOD Void set_i_T0(Double value)
+  METHOD Double get_i_TC()
+  METHOD Void set_i_TC(Double value)
+  METHOD Double get_i_TS()
+  METHOD Void set_i_TS(Double value)
+  METHOD Double get_i_TL()
+  METHOD Void set_i_TL(Double value)
+  METHOD Double get_i_TN()
+  METHOD Void set_i_TN(Double value)
+  METHOD Int32 get_i_NET()
+  METHOD Void set_i_NET(Int32 value)
+  METHOD Int32 get_i_DS()
+  METHOD Void set_i_DS(Int32 value)
+  METHOD Int32 get_i_OV()
+  METHOD Void set_i_OV(Int32 value)
+  METHOD Int32 get_i_FI()
+  METHOD Void set_i_FI(Int32 value)
+  METHOD Int32 get_i_FCV()
+  METHOD Void set_i_FCV(Int32 value)
+  METHOD Int32 get_i_FCOF()
+  METHOD Void set_i_FCOF(Int32 value)
+  METHOD Int32 get_i_OP()
+  METHOD Void set_i_OP(Int32 value)
+  METHOD Single get_i_CR()
+  METHOD Void set_i_CR(Single value)
+  METHOD Boolean get_i_IsUL()
+  METHOD Void set_i_IsUL(Boolean value)
+  METHOD String ToString()
+  METHOD Boolean PrintMembers(System.Text.StringBuilder [System.Runtime] builder)
+  METHOD Boolean op_Inequality(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto left, Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto right)
+  METHOD Boolean op_Equality(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto left, Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto right)
+  METHOD Int32 GetHashCode()
+  METHOD Boolean Equals(Object obj)
+  METHOD Boolean Equals(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto other)
+  METHOD Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto <Clone>$()
+  METHOD Void .ctor(Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto original)
+  METHOD Void .ctor()
+Matched types: 3
