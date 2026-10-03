@@ -50,6 +50,7 @@ const suites=[
  ["load-time-basis","./load-time-basis-regression.js","runLoadTimeBasisRegression"],
  ["manufacturer-candidate","./manufacturer-candidate-regression.js","runManufacturerCandidateRegression"],
  ["manufacturer-performance","./manufacturer-performance-regression.js","runManufacturerPerformanceRegression"],
+ ["manufacturer-staging-chain","./manufacturer-staging-chain-regression.js","runManufacturerStagingChainRegression"],
  ["plank-brick-geometry","./plank-brick-geometry-regression.js","runPlankBrickGeometryRegression"],
  ["preliminary-solution-summary","./preliminary-solution-summary-regression.js","runPreliminarySolutionSummaryRegression"],
  ["product-target-temperature","./product-target-temperature-regression.js","runProductTargetTemperatureRegression"],
