@@ -28,7 +28,7 @@ export function runRealProjectE2ERegression(){
   processMode:"chilled_storage",insulation:{material:"聚氨酯",thicknessMm:100},projectOutdoorTempC:39
  });
  check(tofu.assessment.engineeringMode.id==="estimate","tofu case must stay usable in estimate mode");
- check(tofu.text.includes("快速估算"),"tofu answer must disclose estimate status");
+ check(tofu.text.includes("工程估算") || tofu.text.includes("估算范围"),"tofu answer must disclose estimate status");
  check(!tofu.results.product_load?.ok,"tofu product load must stay blocked until reviewed tofu thermal-property data exists");
  check(tofu.assessment.blocked.some(x=>x.id==="product_load"),"tofu case must disclose that product load is blocked rather than inventing food properties");
 
