@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.07";
+const AGENT_VERSION = "v3.08";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
