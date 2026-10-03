@@ -1,0 +1,129 @@
+Brady BITZER Bridge x86 host ready.
+Process architecture: X86
+IL METHOD Bitzer.Selection.Platform.HHK.HHKModuleConfig.RegisterServices
+  IL_0000: ldarg.1
+  IL_0001: ldstr          01 00 00 70  // token 70000001
+  IL_0006: call           01 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.BitzerPlatform`1<Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput>>
+  IL_000B: ldstr          01 00 00 70  // token 70000001
+  IL_0010: call           02 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Utils.MeanTemperatureConverter>
+  IL_0015: ldstr          01 00 00 70  // token 70000001
+  IL_001A: call           03 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.SearchFocus.ISearchFocus, Bitzer.Selection.Platform.SearchFocus.DefaultSearchFocus>
+  IL_001F: ldstr          01 00 00 70  // token 70000001
+  IL_0024: ldsfld         2D 00 00 04  // <>9__3_0
+  IL_0029: dup
+  IL_002A: brtrue.s       17
+  IL_002C: pop
+  IL_002D: ldsfld         2C 00 00 04  // <>9
+  IL_0032: ldftn          D9 00 00 06  // <>c.<RegisterServices>b__3_0
+  IL_0038: newobj         4C 00 00 0A  // TypeSpec..ctor
+  IL_003D: dup
+  IL_003E: stsfld         2D 00 00 04  // <>9__3_0
+  IL_0043: call           04 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.ITechDataService>
+  IL_0048: ldstr          01 00 00 70  // token 70000001
+  IL_004D: call           05 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.IHintService, Bitzer.Selection.Platform.HHK.Services.HHKHintService>
+  IL_0052: ldstr          01 00 00 70  // token 70000001
+  IL_0057: call           06 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.FinalFilter.IFinalFilter, Bitzer.Selection.Platform.FinalFilter.FinalFilterCapacity>
+  IL_005C: ldstr          01 00 00 70  // token 70000001
+  IL_0061: call           07 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.ILimitsService, Bitzer.Selection.Platform.HHK.Services.HHKLimitsService>
+  IL_0066: ldstr          01 00 00 70  // token 70000001
+  IL_006B: call           08 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.SearchAlgorithm.ISearchAlgorithm, Bitzer.Selection.Platform.SearchAlgorithm.BinarySearchCapacity>
+  IL_0070: ldstr          01 00 00 70  // token 70000001
+  IL_0075: call           09 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Repositories.IProductsRepository, Bitzer.Selection.Platform.Data.Repositories.ProductsRepository>
+  IL_007A: ldstr          01 00 00 70  // token 70000001
+  IL_007F: call           0A 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Repositories.IHintsRepository, Bitzer.Selection.Platform.Data.Repositories.HintsRepository>
+  IL_0084: ldstr          01 00 00 70  // token 70000001
+  IL_0089: call           0B 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.IInputCheckService, Bitzer.Selection.Platform.HHK.Services.HHKInputCheckService>
+  IL_008E: ldstr          01 00 00 70  // token 70000001
+  IL_0093: call           0C 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.IOutputCheckService, Bitzer.Selection.Platform.HHK.Services.HHKOutputCheckService>
+  IL_0098: ldstr          01 00 00 70  // token 70000001
+  IL_009D: call           0D 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.Pipeline.IOperatingModeService, Bitzer.Selection.Platform.HHK.Services.HHKOperatingModeService>
+  IL_00A2: ldstr          01 00 00 70  // token 70000001
+  IL_00A7: call           0E 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.OperatorGenerator.IOperatorGenerator`1<Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput>, Bitzer.Selection.Platform.OperatorGenerator.DefaultOperatorGenerator`2<Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorSystemInput>>
+  IL_00AC: ldstr          01 00 00 70  // token 70000001
+  IL_00B1: call           0F 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.SystemFactories.ISystemFactory`2<Bitzer.Selection.Platform.HHK.Inputs.HHKApiInput, Bitzer.Selection.Platform.Abstractions.CompressorSystem.CompressorSystemInput>, Bitzer.Selection.Platform.HHK.SystemFactories.HHKSystemFactory>
+  IL_00B6: ldstr          01 00 00 70  // token 70000001
+  IL_00BB: call           10 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.PostProcessor.IPostProcessor, Bitzer.Selection.Platform.PostProcessor.FrequencyRegulatorPostProcessor>
+  IL_00C0: ldstr          01 00 00 70  // token 70000001
+  IL_00C5: call           11 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.INormOperatingConditionsProvider, Bitzer.Selection.Platform.HHK.InputsProcessors.HHKNormOperatingConditionsProvider>
+  IL_00CA: ldstr          01 00 00 70  // token 70000001
+  IL_00CF: call           12 00 00 2B  // Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddKeyedScoped<Bitzer.Selection.Platform.Abstractions.OperatingConditionsProcessors.IOperatingConditionsProcessorFactory, Bitzer.Selection.Platform.OperatingConditionsProcessors.OperatingConditionsProcessorFactory>
+  IL_00D4: pop
+  IL_00D5: ret
+IL METHOD <Calculation>d__4.MoveNext
+  IL_0000: ldarg.0
+  IL_0001: ldfld          2E 00 00 04  // <>1__state
+  IL_0006: stloc.0
+  IL_0007: ldloc.0
+  IL_0008: brfalse.s      5E
+  IL_000A: newobj         98 00 00 06  // Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper..ctor
+  IL_000F: ldarg.0
+  IL_0010: ldfld          30 00 00 04  // inputsDto
+  IL_0015: ldstr          01 00 00 70  // token 70000001
+  IL_001A: callvirt       B7 01 00 0A  // Bitzer.Selection.Platform.Abstractions.Inputs.InputsDto.set_ModuleId
+  IL_001F: ldarg.0
+  IL_0020: ldfld          30 00 00 04  // inputsDto
+  IL_0025: callvirt       96 00 00 06  // Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper.MapToAPIinput
+  IL_002A: stloc.2
+  IL_002B: ldarg.0
+  IL_002C: ldfld          31 00 00 04  // bitzerPlatform
+  IL_0031: ldloc.2
+  IL_0032: callvirt       B8 01 00 0A  // TypeSpec.Run
+  IL_0037: callvirt       B9 01 00 0A  // TypeSpec.GetAwaiter
+  IL_003C: stloc.s        04
+  IL_003E: ldloca.s       04
+  IL_0040: call           BA 01 00 0A  // TypeSpec.get_IsCompleted
+  IL_0045: brtrue.s       3E
+  IL_0047: ldarg.0
+  IL_0048: ldc.i4.0
+  IL_0049: dup
+  IL_004A: stloc.0
+  IL_004B: stfld          2E 00 00 04  // <>1__state
+  IL_0050: ldarg.0
+  IL_0051: ldloc.s        04
+  IL_0053: stfld          32 00 00 04  // <>u__1
+  IL_0058: ldarg.0
+  IL_0059: ldflda         2F 00 00 04  // <>t__builder
+  IL_005E: ldloca.s       04
+  IL_0060: ldarg.0
+  IL_0061: call           31 00 00 2B  // TypeSpec.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter`1<System.Collections.Generic.IList`1<Domain.Results.Result`1<Bitzer.Selection.Platform.Abstractions.CompressorSystem.ISystemReport>>>, <Calculation>d__4>
+  IL_0066: op_00DE
+  IL_0067: op_0060
+  IL_0068: ldarg.0
+  IL_0069: ldfld          32 00 00 04  // <>u__1
+  IL_006E: stloc.s        04
+  IL_0070: ldarg.0
+  IL_0071: ldflda         32 00 00 04  // <>u__1
+  IL_0076: initobj        2A 00 00 1B  // TypeSpec 1B00002A
+  IL_007C: ldarg.0
+  IL_007D: ldc.i4.m1
+  IL_007E: dup
+  IL_007F: stloc.0
+  IL_0080: stfld          2E 00 00 04  // <>1__state
+  IL_0085: ldloca.s       04
+  IL_0087: call           BC 01 00 0A  // TypeSpec.GetResult
+  IL_008C: stloc.3
+  IL_008D: newobj         79 00 00 06  // Bitzer.Selection.Platform.HHK.Outputs.HHKOutputMapper..ctor
+  IL_0092: ldloc.3
+  IL_0093: call           BD 01 00 0A  // Bitzer.Selection.Platform.MappingProfiles.OutputMapperBase.MapOutputs
+  IL_0098: stloc.1
+  IL_0099: op_00DE
+  IL_009A: ldc.i4.3
+  IL_009B: stloc.s        05
+  IL_009D: ldarg.0
+  IL_009E: ldc.i4.s       FE
+  IL_00A0: stfld          2E 00 00 04  // <>1__state
+  IL_00A5: ldarg.0
+  IL_00A6: ldflda         2F 00 00 04  // <>t__builder
+  IL_00AB: ldloc.s        05
+  IL_00AD: call           BE 01 00 0A  // TypeSpec.SetException
+  IL_00B2: op_00DE
+  IL_00B3: ldnull
+  IL_00B4: ldarg.0
+  IL_00B5: ldc.i4.s       FE
+  IL_00B7: stfld          2E 00 00 04  // <>1__state
+  IL_00BC: ldarg.0
+  IL_00BD: ldflda         2F 00 00 04  // <>t__builder
+  IL_00C2: ldloc.1
+  IL_00C3: call           BF 01 00 0A  // TypeSpec.SetResult
+  IL_00C8: ret
+Matched IL methods: 2
