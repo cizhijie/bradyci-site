@@ -38,7 +38,7 @@ const SYSTEM_PROMPT = `你是 Brady Agent，阿杰创建的个人 AI 工作台�
 
 const PRIMARY_MODEL = "qwen/qwen3.8-27b:free";
 const FALLBACK_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-const AGENT_VERSION = "v3.11";
+const AGENT_VERSION = "v3.12";
 const REQUIRED_RUNTIME_BINDINGS = ["OWNER_PIN","OPENROUTER_API_KEY","brady_agent_memory","ASSETS"];
 const OWNER_SESSION_SECONDS = 8 * 60 * 60;
 const OWNER_SESSION_FUTURE_SKEW_SECONDS = 60;
@@ -825,8 +825,12 @@ function cleanFinalAnswer(value="") {
   const firstChinese=s.search(/[\u4e00-\u9fff]/);
   if(firstChinese>0){
     const prefix=s.slice(0,firstChinese);
-    if(/\b(?:we need|need to|analysis|reasoning|policy|user asks|must|should|let's|let us)\b/i.test(prefix))s=s.slice(firstChinese).trim();
+    if(/\b(?:we need|need to|analysis|reasoning|policy|user asks|must|should|let's|let us|assistant|system|developer|tool|thought|thinking|plan|response|draft)\b/i.test(prefix))s=s.slice(firstChinese).trim();
   }
+  // Remove leaked role/analysis labels and a meaningless leading "1." without
+  // destroying legitimate numbered lists that contain 2., 3. later.
+  s=s.replace(/^(?:assistant|analysis|reasoning|thoughts?|thinking|final answer|final response|response|draft)\s*[:：\-—]+\s*/i,"").trim();
+  if(/^1[.、]\s*/.test(s) && !/(?:^|\n)\s*2[.、]\s+/m.test(s)) s=s.replace(/^1[.、]\s*/,"").trim();
   return s;
 }
 
