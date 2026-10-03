@@ -30,6 +30,7 @@ const suites=[
  ["reviewed-correlation-heat-transfer","./reviewed-correlation-heat-transfer-regression.js","runReviewedCorrelationHeatTransferRegression"],
  ["forced-air-heat-transfer","./forced-air-heat-transfer-regression.js","runForcedAirHeatTransferRegression"],
  ["core-freezing-language","./core-freezing-language-regression.js","runCoreFreezingLanguageRegression"],
+ ["final-answer-sanitizer","./final-answer-sanitizer-regression.js","runFinalAnswerSanitizerRegression"],
  ["agent-core-freezing-tool","./agent-core-freezing-tool-regression.js","runAgentCoreFreezingToolRegression"],
  ["ashrae-published-numeric-benchmark","./ashrae-published-numeric-benchmark-regression.js","runAshraePublishedNumericBenchmarkRegression"],
  ["ashrae-freezing-benchmark","./ashrae-freezing-benchmark-regression.js","runAshraeFreezingBenchmarkRegression"],
