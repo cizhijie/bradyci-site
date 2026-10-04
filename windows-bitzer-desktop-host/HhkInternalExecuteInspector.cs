@@ -19,14 +19,24 @@ internal static class HhkInternalExecuteInspector
             var invoke=FindResolvedMethod(cs,"Invoke","Bitzer.BitzerFunction") ?? throw new MissingMethodException("Resolved BitzerFunction.Invoke not found");
             var t=invoke.DeclaringType ?? throw new TypeLoadException("BitzerFunction declaring type not found");
             var internalExecute=t.GetMethod("InternalExecute",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static);
-            var m=internalExecute==null?null:FindResolvedMethod(internalExecute,"Execute","Bitzer.BitzerFunction");
-            Console.WriteLine("HHK EXECUTE BODY");
+            var baseExecute=internalExecute==null?null:FindResolvedMethod(internalExecute,"Execute","Bitzer.BitzerFunction");
+            var m=baseExecute==null?null:FindOverrideFromCalculateSingle(cs,baseExecute);
+            Console.WriteLine("HHK OVERRIDE EXECUTE BODY");
             if(m==null){Console.WriteLine("BitzerFunction.Execute not found.");return 79;}
             Console.WriteLine($"METHOD {m}");
             var body=m.GetMethodBody();if(body==null){Console.WriteLine("BODY <none/native/external>");return 0;}
             foreach(var x in Decode(m))Console.WriteLine($"  IL_{x.Offset:X4}: {x.Op.Name} {x.Text}");
-            Console.WriteLine("HHK Execute body: complete.");Console.WriteLine("Safety: IL metadata only; no vendor method invoked and no calculation executed.");return 0;
+            Console.WriteLine("HHK override Execute body: complete.");Console.WriteLine("Safety: IL metadata only; no vendor method invoked and no calculation executed.");return 0;
         }catch(Exception e){Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");return 80;}
+    }
+    private static MethodBase? FindOverrideFromCalculateSingle(MethodBase cs,MethodBase baseExecute)
+    {
+        var hhkCtor=FindResolvedMethod(cs,".ctor","Bitzer.HHK_Design") as ConstructorInfo;
+        var hhkType=hhkCtor?.DeclaringType;
+        if(hhkType==null)return null;
+        var pars=baseExecute.GetParameters().Select(x=>x.ParameterType).ToArray();
+        var flags=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly;
+        return hhkType.GetMethod(baseExecute.Name,flags,null,pars,null) ?? baseExecute;
     }
     private static MethodBase? FindResolvedMethod(MethodBase m,string methodName,string declaringType)
     {
