@@ -31,7 +31,8 @@ internal static class DesktopDbOpenProbe
                 .Single(m => m.Name == "Create" && m.GetParameters().Length == 3);
 
             var loggerType = typeof(NullLogger<>).MakeGenericType(factoryType);
-            var logger = loggerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)!.GetValue(null);
+            var logger = Activator.CreateInstance(loggerType);
+            if (logger is null) return Fail("logger_create_failed");
             Console.WriteLine("Stage: create_factory");
             var factory = create.Invoke(null, new object?[] { true, false, logger });
             Console.WriteLine("Stage: factory_created");
