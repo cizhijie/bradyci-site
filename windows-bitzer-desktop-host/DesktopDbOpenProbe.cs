@@ -32,7 +32,9 @@ internal static class DesktopDbOpenProbe
 
             var loggerType = typeof(NullLogger<>).MakeGenericType(factoryType);
             var logger = loggerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)!.GetValue(null);
-            Console.WriteLine("Stage: create_factory");\n            var factory = create.Invoke(null, new object?[] { true, false, logger });\n            Console.WriteLine("Stage: factory_created");
+            Console.WriteLine("Stage: create_factory");
+            var factory = create.Invoke(null, new object?[] { true, false, logger });
+            Console.WriteLine("Stage: factory_created");
             if (factory is null) return Fail("factory_create_failed");
 
             var setup = factoryType.GetMethod("SetupSqliteDesktop", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -57,7 +59,8 @@ internal static class DesktopDbOpenProbe
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.ToString());\n            return Fail(ex.GetType().Name + ": " + ex.Message);
+            Console.Error.WriteLine(ex.ToString());
+            return Fail(ex.GetType().Name + ": " + ex.Message);
         }
         finally
         {
