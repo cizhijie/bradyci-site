@@ -23,6 +23,8 @@ internal static class HhkNativeContractInspector{
    var m=nt.GetMethod("Native_Call_HHK_Design",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static)!;
    var da=m.GetCustomAttribute<DllImportAttribute>();
    Console.WriteLine($"PINVOKE DLL={da?.Value} EntryPoint={da?.EntryPoint} CallingConvention={da?.CallingConvention} CharSet={da?.CharSet} ExactSpelling={da?.ExactSpelling} SetLastError={da?.SetLastError}");
+   Console.WriteLine("HHK DEFAULT CONSTRUCTORS");
+   foreach(var tn in new[]{"BitzerRemote.HHK_Design_Input_Native","BitzerRemote.HHK_Design_Output_Native"}){var t=a.GetType(tn,true)!;var o=Activator.CreateInstance(t)!;Console.WriteLine("DEFAULT "+tn);foreach(var fld in t.GetFields(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance))Console.WriteLine($" {fld.Name}={fld.GetValue(o)??"<null>"}");}
    Console.WriteLine($"SIGNATURE {m}");
    Console.WriteLine("Safety: contract metadata only; native function not invoked.");
    return 0;
