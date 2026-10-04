@@ -12,13 +12,13 @@ internal static class BitzerBundleHhkLocator
   Console.WriteLine($"BITZER bundle HHK locator: version={major}.{minor}; files={count}");int hits=0;
   for(int i=0;i<count;i++){long off=br.ReadInt64(),size=br.ReadInt64(),zip=major>=6?br.ReadInt64():0;byte type=br.ReadByte();string path=ReadStr(br);
    if(!path.EndsWith(".dll",StringComparison.OrdinalIgnoreCase)||zip!=0||off<0||size<=0||off+size>d.LongLength||size>int.MaxValue)continue;
-   var span=d.AsSpan((int)off,(int)size);var found=Marks.Where(m=>Has(span,Encoding.ASCII.GetBytes(m))||Has(span,Encoding.Unicode.GetBytes(m))).ToArray();
+   var payload=new byte[(int)size];Buffer.BlockCopy(d,(int)off,payload,0,(int)size);var found=Marks.Where(m=>Has(payload,Encoding.ASCII.GetBytes(m))||Has(payload,Encoding.Unicode.GetBytes(m))).ToArray();
    if(found.Length==0)continue;hits++;Console.WriteLine($"MATCH {path} | offset=0x{off:X} size={size} type={type} | {string.Join(", ",found)}");
-   var dir=Path.Combine(Path.GetTempPath(),"brady-bitzer-inspect","hhk-candidates");Directory.CreateDirectory(dir);var dst=Path.Combine(dir,Path.GetFileName(path));File.WriteAllBytes(dst,span.ToArray());Console.WriteLine("  copied="+dst);
+   var dir=Path.Combine(Path.GetTempPath(),"brady-bitzer-inspect","hhk-candidates");Directory.CreateDirectory(dir);var dst=Path.Combine(dir,Path.GetFileName(path));File.WriteAllBytes(dst,payload);Console.WriteLine("  copied="+dst);
   }
   Console.WriteLine($"BITZER bundle HHK locator: complete; matches={hits}");Console.WriteLine("Safety: manifest scan/copy only; no payload loaded/executed, database, HTTP, config values, services, or calculation.");return 0;
  }
- static bool Has(ReadOnlySpan<byte>d,byte[]q)=>d.IndexOf(q)>=0;
+ static bool Has(byte[] d,byte[] q)=>d.AsSpan().IndexOf(q)>=0;
  static string ReadStr(BinaryReader br){int n=0,shift=0;byte b;do{b=br.ReadByte();n|=(b&127)<<shift;shift+=7;}while((b&128)!=0);return Encoding.UTF8.GetString(br.ReadBytes(n));}
  static int Find(byte[]d,byte[]q){for(int i=0;i<=d.Length-q.Length;i++){int j=0;for(;j<q.Length&&d[i+j]==q[j];j++);if(j==q.Length)return i;}return -1;}
 }
