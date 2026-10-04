@@ -1,10 +1,17 @@
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Brady.BitzerDesktopHost;
 
 internal static class RuntimeRouteDiscovery
 {
+    private static readonly string[] ExactMarkers =
+    {
+        "CalculationController", "CalculationTabsController", "CalculationService",
+        "GetResults", "GetPredefinedModuleInputs", "UpdateCalcResultList",
+        "CalculationInput", "CalculationOutput",
+        "CalculationHHK.CalculateSingle", "hhkDesign_Invoke"
+    };
+
     public static int Run(string root)
     {
         var exe = Path.GetFullPath(Path.Combine(root, "..", "selection", "BITZER_API.exe"));
@@ -20,26 +27,33 @@ internal static class RuntimeRouteDiscovery
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        var anchors = strings
-            .Where(s => ContainsAny(s, "CalculationController", "GetResults", "Calculation", "MapControllers",
-                                      "UseEndpoints", "MapControllerRoute", "HttpGet", "HttpPost", "RouteAttribute"))
-            .Take(200)
+        var hits = strings
+            .Where(IsUseful)
+            .Select(Clean)
+            .Where(s => s.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .Take(60)
             .ToArray();
 
-        Console.WriteLine($"BITZER_API static route discovery: {anchors.Length} relevant string(s)");
-        foreach (var s in anchors)
-        {
-            var safe = s.Length > 220 ? s[..220] : s;
-            Console.WriteLine($"  {safe}");
-        }
+        Console.WriteLine($"BITZER focused calculation discovery: {hits.Length} item(s)");
+        foreach (var s in hits) Console.WriteLine($"  {s}");
 
-        Console.WriteLine("Runtime route discovery: complete");
-        Console.WriteLine("Safety: local executable read-only scan; no process memory, config values, encryption material, HTTP writes, or calculation.");
+        Console.WriteLine("Focused discovery: complete");
+        Console.WriteLine("Safety: local executable read-only scan; no HTTP writes, calculation, config values, or encryption material.");
         return 0;
     }
 
-    private static bool ContainsAny(string value, params string[] needles) =>
-        needles.Any(n => value.Contains(n, StringComparison.OrdinalIgnoreCase));
+    private static bool IsUseful(string s)
+    {
+        if (s.Length > 500) return false;
+        return ExactMarkers.Any(m => s.Contains(m, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string Clean(string s)
+    {
+        s = s.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ").Trim();
+        return s.Length > 240 ? s[..240] : s;
+    }
 
     private static IEnumerable<string> ExtractAscii(byte[] data, int min)
     {
