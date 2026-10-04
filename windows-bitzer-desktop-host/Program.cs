@@ -35,7 +35,8 @@ internal static class Program
         if (string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase)) return DesktopDbRuntimeInspector.Run(root);
         if (string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase)) return DesktopConfigPreflight.Run(root);
         if (string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase)) return DesktopDbStartupCheck.Run(root);
-        if (string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbBootstrapProbe.Run(root);\n        if (string.Equals(args[0], "--db-open-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbOpenProbe.Run(root);
+        if (string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbBootstrapProbe.Run(root);
+        if (string.Equals(args[0], "--db-open-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbOpenProbe.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
