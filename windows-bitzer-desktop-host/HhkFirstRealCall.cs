@@ -32,7 +32,7 @@ internal static class HhkFirstRealCall
    var map=mapperType.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly).Single(x=>x.Name=="MapToAPIinput"&&x.GetParameters().Length==1&&x.GetParameters()[0].ParameterType==dtoType);
    var api=map.Invoke(mapper,new[]{dto})!;
    Console.WriteLine("MAPPED API INPUT");
-   foreach(var pr in api.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance).OrderBy(x=>x.Name)){object? v=null;try{v=pr.GetValue(api);}catch{} Console.WriteLine(" API "+pr.Name+"="+(v is Array ar?string.Join(",",ar.Cast<object?>()):v)); if(pr.Name=="Products"&&v is System.Collections.IEnumerable en){foreach(var item in en){Console.WriteLine(" PRODUCT "+item);foreach(var pp in item!.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance))try{Console.WriteLine("  "+pp.Name+"="+pp.GetValue(item));}catch{}}}}}
+   foreach(var pr in api.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance).OrderBy(x=>x.Name)){object? v=null;try{v=pr.GetValue(api);}catch{} Console.WriteLine(" API "+pr.Name+"="+(v is Array ar?string.Join(",",ar.Cast<object?>()):v)); if(pr.Name=="Products"&&v is System.Collections.IEnumerable en){foreach(var item in en){Console.WriteLine(" PRODUCT "+item);foreach(var pp in item!.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance))try{Console.WriteLine("  "+pp.Name+"="+pp.GetValue(item));}catch{}}}}
    Console.WriteLine("Mapper executed; calculation/native call still not invoked.");
    return 0;
   }catch(Exception e){Console.Error.WriteLine(e.GetType().Name+": "+e.Message);return 88;}
