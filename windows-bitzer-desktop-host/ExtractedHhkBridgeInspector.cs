@@ -38,9 +38,12 @@ internal static class ExtractedHhkBridgeInspector
             {
                 Assembly asm; try{asm=AssemblyLoadContext.Default.LoadFromAssemblyPath(file);}catch{continue;}
                 foreach(var t in SafeTypes(asm))
-                foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static|BindingFlags.DeclaredOnly))
                 {
-                    var il=m.GetMethodBody()?.GetILAsByteArray(); if(il is null) continue;
+                    MethodInfo[] methods;
+                    try{methods=t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static|BindingFlags.DeclaredOnly);}catch{continue;}
+                    foreach(var m in methods)
+                    {
+                        byte[]? il; try{il=m.GetMethodBody()?.GetILAsByteArray();}catch{continue;} if(il is null) continue;
                     var refs=Refs(m,il);
                     var old=refs.Where(r=>Legacy.Any(x=>r.Contains("."+x,StringComparison.Ordinal))).Distinct().ToArray();
                     var modern=refs.Where(r=>Modern.Any(x=>r.Contains(x,StringComparison.OrdinalIgnoreCase))).Distinct().ToArray();
@@ -49,6 +52,7 @@ internal static class ExtractedHhkBridgeInspector
                     Console.WriteLine($"METHOD {t.FullName}.{m.Name}");
                     foreach(var x in old) Console.WriteLine("  LEGACY "+x);
                     foreach(var x in modern.Take(12)){Console.WriteLine("  BRIDGE "+x);bridgeHits++;}
+                    }
                 }
             }
 
