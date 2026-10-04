@@ -40,9 +40,9 @@ internal static class HhkLegacyFieldMappingInspector
                 var path=Path.Combine(root,file);
                 if(!File.Exists(path)) continue;
                 var asm=AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-                foreach(var t in SafeTypes(asm).Where(x=>x.Name.Contains("Mapper",StringComparison.OrdinalIgnoreCase)))
+                foreach(var t in SafeTypes(asm))
                 foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static|BindingFlags.DeclaredOnly)
-                    .Where(x=>x.GetMethodBody()!=null && x.Name.Contains("MapToAPIinput",StringComparison.OrdinalIgnoreCase)))
+                    .Where(x=>x.GetMethodBody()!=null))
                 {
                     var ins=Decode(m);
                     for(int i=0;i<ins.Count;i++)
@@ -50,15 +50,13 @@ internal static class HhkLegacyFieldMappingInspector
                         var target=Targets.FirstOrDefault(x=>ins[i].Operand.EndsWith("."+x,StringComparison.Ordinal));
                         if(target is null) continue;
                         hits++;
+                        var sink = FindSink(ins, i);
                         Console.WriteLine($"MAP {target[4..]} @ {t.FullName}.{m.Name}");
-                        int end=Math.Min(ins.Count-1,i+18);
-                        for(int j=i;j<=end;j++)
-                        {
-                            var x=ins[j];
-                            if(j>i && Targets.Any(q=>x.Operand.EndsWith("."+q,StringComparison.Ordinal))) break;
-                            if(j==i || IsUseful(x))
-                                Console.WriteLine($"  IL_{x.Offset:X4}: {x.Op.Name} {x.Operand}");
-                        }
+                        Console.WriteLine($"  SOURCE IL_{ins[i].Offset:X4}: {ins[i].Operand}");
+                        if(sink is not null)
+                            Console.WriteLine($"  SINK   IL_{sink.Offset:X4}: {sink.Op.Name} {sink.Operand}");
+                        else
+                            Console.WriteLine("  SINK   unresolved_within_basic_block");
                     }
                 }
             }
@@ -68,6 +66,22 @@ internal static class HhkLegacyFieldMappingInspector
         }
         catch(Exception e){Console.Error.WriteLine($"HHK legacy field map failed: {e.GetType().Name}: {e.Message}");return 68;}
         finally{AssemblyLoadContext.Default.Resolving-=Resolver;}
+    }
+
+    private static Ins? FindSink(List<Ins> ins, int source)
+    {
+        for(int j=source+1;j<Math.Min(ins.Count,source+32);j++)
+        {
+            var x=ins[j];
+            var n=x.Op.Name??"";
+            if(n.StartsWith("br",StringComparison.Ordinal) || n=="ret" || n=="throw" || n=="leave" || n=="leave.s") break;
+            if(Targets.Any(q=>x.Operand.EndsWith("."+q,StringComparison.Ordinal))) break;
+            if(x.Operand.Contains(".set_",StringComparison.Ordinal) ||
+               x.Operand.Contains("Convert",StringComparison.OrdinalIgnoreCase) ||
+               x.Operand.Contains("GetSeries",StringComparison.OrdinalIgnoreCase))
+                return x;
+        }
+        return null;
     }
 
     private static bool IsUseful(Ins x)
