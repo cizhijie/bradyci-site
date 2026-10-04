@@ -46,7 +46,20 @@ internal static class DesktopDbRuntimeInspector
             {
                 using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file));
                 Console.WriteLine("  " + Path.GetFileName(file));
-                foreach (var p in doc.RootElement.EnumerateObject()) Console.WriteLine("    " + p.Name);
+                foreach (var p in doc.RootElement.EnumerateObject())
+                {
+                    Console.WriteLine("    " + p.Name);
+                    if (p.NameEquals("ConnectionStrings") && p.Value.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        foreach (var child in p.Value.EnumerateObject())
+                            Console.WriteLine("      " + child.Name + ": <value hidden>");
+                    }
+                    else if (p.NameEquals("Configuration") && p.Value.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        foreach (var child in p.Value.EnumerateObject())
+                            Console.WriteLine("      " + child.Name + ": <" + child.Value.ValueKind + ">");
+                    }
+                }
             }
 
             Console.WriteLine("Desktop DB inspection: metadata_ready");
