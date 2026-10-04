@@ -22,9 +22,9 @@ internal static class Program
 
         if (!OperatingSystem.IsWindows()) return Fail(2, "windows_required");
         if (Environment.Is64BitProcess) return Fail(3, "x86_process_required");
-        if (args.Length != 2 || !(string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-open-probe", StringComparison.OrdinalIgnoreCase)))
+        if (args.Length != 2 || !(string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-open-probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--scan-desktop-config-source", StringComparison.OrdinalIgnoreCase)))
         {
-            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe|--inspect-hhk-runtime|--inspect-desktop-db|--validate-desktop-config|--db-startup-check|--db-bootstrap-probe|--db-open-probe <BITZER-platform-directory>");
+            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe|--inspect-hhk-runtime|--inspect-desktop-db|--validate-desktop-config|--db-startup-check|--db-bootstrap-probe|--db-open-probe|--scan-desktop-config-source <BITZER-platform-directory>");
             return 1;
         }
 
@@ -37,6 +37,7 @@ internal static class Program
         if (string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase)) return DesktopDbStartupCheck.Run(root);
         if (string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbBootstrapProbe.Run(root);
         if (string.Equals(args[0], "--db-open-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbOpenProbe.Run(root);
+        if (string.Equals(args[0], "--scan-desktop-config-source", StringComparison.OrdinalIgnoreCase)) return DesktopConfigSourceScanner.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
