@@ -9,4 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Brady.BitzerDesktopHost</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>
