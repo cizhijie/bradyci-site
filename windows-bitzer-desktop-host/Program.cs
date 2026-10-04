@@ -41,7 +41,8 @@ internal static class Program
         if (string.Equals(args[0], "--scan-desktop-config-il", StringComparison.OrdinalIgnoreCase)) return DesktopConfigKeyIlScanner.Run(root);
         if (string.Equals(args[0], "--scan-config-injection", StringComparison.OrdinalIgnoreCase)) return DesktopConfigInjectionScanner.Run(root);
         if (string.Equals(args[0], "--scan-exe-config", StringComparison.OrdinalIgnoreCase)) return DesktopExeConfigScanner.Run(root);
-        if (string.Equals(args[0], "--inspect-calculation-route", StringComparison.OrdinalIgnoreCase)) return CalculationRouteInspector.Run(root);\n        if (string.Equals(args[0], "--probe-runtime-endpoints", StringComparison.OrdinalIgnoreCase)) return RuntimeEndpointProbe.Run(root);
+        if (string.Equals(args[0], "--inspect-calculation-route", StringComparison.OrdinalIgnoreCase)) return CalculationRouteInspector.Run(root);
+        if (string.Equals(args[0], "--probe-runtime-endpoints", StringComparison.OrdinalIgnoreCase)) return RuntimeEndpointProbe.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
