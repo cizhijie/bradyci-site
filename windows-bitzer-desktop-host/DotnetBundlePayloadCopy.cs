@@ -11,7 +11,7 @@ internal static class DotnetBundlePayloadCopy
   long h=BinaryPrimitives.ReadInt64LittleEndian(d.AsSpan(s-8,8));if(h<=0||h>=d.LongLength){Console.Error.WriteLine("invalid bundle header.");return 48;}
   using var ms=new MemoryStream(d,false);using var br=new BinaryReader(ms,Encoding.UTF8,false);ms.Position=h;
   uint major=br.ReadUInt32(),minor=br.ReadUInt32();int count=br.ReadInt32();Console.WriteLine($"bundle_header=0x{h:X}; version={major}.{minor}; files={count}");
-  if(count<1||count>10000)return 49;if(major>=2){br.ReadInt64();br.ReadInt64();}if(major>=6){br.ReadInt64();br.ReadInt64();}
+  if(count<1||count>10000)return 49; ReadStr(br); if(major>=2){br.ReadInt64();br.ReadInt64();br.ReadInt64();br.ReadInt64();br.ReadUInt64();}
   for(int i=0;i<count;i++){long off=br.ReadInt64(),size=br.ReadInt64(),zip=major>=6?br.ReadInt64():0;byte type=br.ReadByte();string path=ReadStr(br);
    if(!path.Equals("BITZER_API.dll",StringComparison.OrdinalIgnoreCase))continue;
    Console.WriteLine($"payload={path}; offset=0x{off:X}; size={size}; compressed={zip}; type={type}");
