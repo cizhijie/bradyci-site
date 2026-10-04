@@ -49,7 +49,8 @@ internal static class Program
         if (string.Equals(args[0], "--inspect-hhk-entry", StringComparison.OrdinalIgnoreCase)) return HhkEntryPointInspector.Run(root);
         if (string.Equals(args[0], "--inspect-hhk-dto", StringComparison.OrdinalIgnoreCase)) return HhkDtoContractInspector.Run(root);
         if (string.Equals(args[0], "--inspect-hhk-mapper-il", StringComparison.OrdinalIgnoreCase)) return HhkMapperIlInspector.Run(root);
-        if (string.Equals(args[0], "--inspect-hhk-enums", StringComparison.OrdinalIgnoreCase)) return HhkEnumContractInspector.Run(root);\n        if (string.Equals(args[0], "--inspect-hhk-input-semantics", StringComparison.OrdinalIgnoreCase)) return HhkInputSemanticsInspector.Run(root);
+        if (string.Equals(args[0], "--inspect-hhk-enums", StringComparison.OrdinalIgnoreCase)) return HhkEnumContractInspector.Run(root);
+        if (string.Equals(args[0], "--inspect-hhk-input-semantics", StringComparison.OrdinalIgnoreCase)) return HhkInputSemanticsInspector.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
