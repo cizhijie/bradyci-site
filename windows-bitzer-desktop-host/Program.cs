@@ -22,9 +22,9 @@ internal static class Program
 
         if (!OperatingSystem.IsWindows()) return Fail(2, "windows_required");
         if (Environment.Is64BitProcess) return Fail(3, "x86_process_required");
-        if (args.Length != 2 || !(string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase)))
+        if (args.Length != 2 || !(string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase)))
         {
-            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe|--inspect-hhk-runtime|--inspect-desktop-db|--validate-desktop-config|--db-startup-check <BITZER-platform-directory>");
+            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe|--inspect-hhk-runtime|--inspect-desktop-db|--validate-desktop-config|--db-startup-check|--db-bootstrap-probe <BITZER-platform-directory>");
             return 1;
         }
 
@@ -34,7 +34,7 @@ internal static class Program
         if (string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase)) return HhkRuntimeInspector.Run(root);
         if (string.Equals(args[0], "--inspect-desktop-db", StringComparison.OrdinalIgnoreCase)) return DesktopDbRuntimeInspector.Run(root);
         if (string.Equals(args[0], "--validate-desktop-config", StringComparison.OrdinalIgnoreCase)) return DesktopConfigPreflight.Run(root);
-        if (string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase)) return DesktopDbStartupCheck.Run(root);
+        if (string.Equals(args[0], "--db-startup-check", StringComparison.OrdinalIgnoreCase)) return DesktopDbStartupCheck.Run(root);\n        if (string.Equals(args[0], "--db-bootstrap-probe", StringComparison.OrdinalIgnoreCase)) return DesktopDbBootstrapProbe.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
