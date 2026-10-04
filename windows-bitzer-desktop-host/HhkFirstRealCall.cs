@@ -29,7 +29,7 @@ internal static class HhkFirstRealCall
    Set("i_CC",0); Set("i_CR",100f); Set("i_FI",0); Set("i_Method",0); Set("i_OP",0);
    Set("i_Ref","R404A"); Set("i_T0",-10d); Set("i_ProductTypes",new[]{"2KES-05Y"});
    var mapper=Activator.CreateInstance(mapperType)!;
-   var map=mapperType.GetMethod("MapToAPIinput",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)!;
+   var map=mapperType.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly).Single(x=>x.Name=="MapToAPIinput"&&x.GetParameters().Length==1&&x.GetParameters()[0].ParameterType==dtoType);
    var api=map.Invoke(mapper,new[]{dto})!;
    Console.WriteLine("MAPPED API INPUT");
    foreach(var pr in api.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance).OrderBy(x=>x.Name)){object? v=null;try{v=pr.GetValue(api);}catch{} Console.WriteLine(" API "+pr.Name+"="+(v is Array ar?string.Join(",",ar.Cast<object?>()):v));}
