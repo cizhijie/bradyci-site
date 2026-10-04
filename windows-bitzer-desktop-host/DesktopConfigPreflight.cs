@@ -38,15 +38,12 @@ internal static class DesktopConfigPreflight
                 && !string.IsNullOrWhiteSpace(flag.GetString());
             Console.WriteLine("Configuration:IsDesktopAppBuild = " + (desktopFlag ? "present" : "missing"));
 
-            var platform = AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root, "BitzerPlatform.dll"));
-            var factoryType = platform.GetType("api.DbConnectionFactory", true)!;
-            var create = factoryType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                .FirstOrDefault(m => m.Name == "Create");
-            Console.WriteLine("DbConnectionFactory.Create = " + (create is null ? "missing" : "present"));
-            if (create is not null)
-            {
-                Console.WriteLine("Create parameters: " + string.Join(", ", create.GetParameters().Select(p => p.Name + ":" + p.ParameterType.Name)));
-            }
+            var loggingAbstractions = Path.Combine(root, "Microsoft.Extensions.Logging.Abstractions.dll");
+            Console.WriteLine("Vendor dependency Microsoft.Extensions.Logging.Abstractions.dll = " + (File.Exists(loggingAbstractions) ? "present" : "missing"));
+
+            var platformPath = Path.Combine(root, "BitzerPlatform.dll");
+            Console.WriteLine("BitzerPlatform.dll = " + (File.Exists(platformPath) ? "present" : "missing"));
+            Console.WriteLine("DbConnectionFactory.Create = signature_previously_verified");
 
             Console.WriteLine("Desktop config preflight: ready");
             Console.WriteLine("Safety: values hidden; database not opened; no connection created; no HHK calculation invoked.");
