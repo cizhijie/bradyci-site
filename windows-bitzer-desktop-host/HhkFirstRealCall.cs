@@ -14,11 +14,11 @@ internal static class HhkFirstRealCall
    var dll=Path.Combine(root,"Bitzer.Selection.Platform.HHK.dll");
    if(!File.Exists(dll)){Console.Error.WriteLine("HHK assembly not found.");return 87;}
    var a=AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
-   foreach(var t in SafeTypes(a).Where(x=>(x.FullName??"").Contains("HHKModuleConfig")||(x.FullName??"").Contains("HHKInputsDto")))
+   foreach(var t in SafeTypes(a).Where(x=>(x.FullName??"").Contains("HHKModuleConfig")||(x.FullName??"").Contains("HHKInputsDto")||(x.FullName??"").Contains("HHKInputsMapper")) )
    {
     Console.WriteLine("TYPE "+t.FullName);
-    foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance|BindingFlags.DeclaredOnly).Where(x=>x.Name.Contains("Calculation",StringComparison.OrdinalIgnoreCase)))
-     Console.WriteLine(" ENTRY "+m+" static="+m.IsStatic);
+    foreach(var prop in t.GetProperties(BindingFlags.Public|BindingFlags.Instance).Where(x=>x.CanWrite).OrderBy(x=>x.Name)) Console.WriteLine(" PROP "+prop.PropertyType.FullName+" "+prop.Name);
+    foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance|BindingFlags.DeclaredOnly).Where(x=>x.Name.Contains("Calculation",StringComparison.OrdinalIgnoreCase)||x.Name.Contains("MapToAPIinput",StringComparison.OrdinalIgnoreCase))) Console.WriteLine(" ENTRY "+m+" static="+m.IsStatic);
    }
    Console.WriteLine("Preflight complete; no calculation invoked in this pass.");
    return 0;
