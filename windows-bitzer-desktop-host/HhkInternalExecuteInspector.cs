@@ -13,7 +13,10 @@ internal static class HhkInternalExecuteInspector
         if(!File.Exists(dll)){Console.Error.WriteLine("Calculation.dll not found.");return 78;}
         AssemblyLoadContext.Default.Resolving+=(c,n)=>{foreach(var d in new[]{dir,Path.GetFullPath(Path.Combine(root,"..","selection")),root}){var p=Path.Combine(d,n.Name+".dll");if(File.Exists(p))try{return c.LoadFromAssemblyPath(p);}catch{}}return null;};
         try{
-            var a=AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);var t=a.GetType("Bitzer.BitzerFunction",true)!;
+            var a=AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
+            var hhk=a.GetType("Bitzer.HHK_Design",true)!;
+            var invoke=hhk.BaseType?.GetMethod("Invoke",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static);
+            var t=invoke?.DeclaringType ?? hhk.BaseType ?? throw new TypeLoadException("BitzerFunction base type not found");
             var m=t.GetMethod("InternalExecute",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static);
             Console.WriteLine("HHK INTERNAL EXECUTE");
             if(m==null){Console.WriteLine("InternalExecute not found.");return 79;}
