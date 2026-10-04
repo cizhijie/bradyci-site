@@ -18,13 +18,14 @@ internal static class HhkInternalExecuteInspector
             var cs=calc.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static|BindingFlags.DeclaredOnly).First(x=>x.Name=="CalculateSingle"&&x.GetMethodBody()!=null);
             var invoke=FindResolvedMethod(cs,"Invoke","Bitzer.BitzerFunction") ?? throw new MissingMethodException("Resolved BitzerFunction.Invoke not found");
             var t=invoke.DeclaringType ?? throw new TypeLoadException("BitzerFunction declaring type not found");
-            var m=t.GetMethod("InternalExecute",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static);
-            Console.WriteLine("HHK INTERNAL EXECUTE");
-            if(m==null){Console.WriteLine("InternalExecute not found.");return 79;}
+            var internalExecute=t.GetMethod("InternalExecute",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static);
+            var m=internalExecute==null?null:FindResolvedMethod(internalExecute,"Execute","Bitzer.BitzerFunction");
+            Console.WriteLine("HHK EXECUTE BODY");
+            if(m==null){Console.WriteLine("BitzerFunction.Execute not found.");return 79;}
             Console.WriteLine($"METHOD {m}");
             var body=m.GetMethodBody();if(body==null){Console.WriteLine("BODY <none/native/external>");return 0;}
             foreach(var x in Decode(m))Console.WriteLine($"  IL_{x.Offset:X4}: {x.Op.Name} {x.Text}");
-            Console.WriteLine("HHK InternalExecute: complete.");Console.WriteLine("Safety: IL metadata only; no vendor method invoked and no calculation executed.");return 0;
+            Console.WriteLine("HHK Execute body: complete.");Console.WriteLine("Safety: IL metadata only; no vendor method invoked and no calculation executed.");return 0;
         }catch(Exception e){Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");return 80;}
     }
     private static MethodBase? FindResolvedMethod(MethodBase m,string methodName,string declaringType)
