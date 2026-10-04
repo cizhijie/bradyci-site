@@ -7,71 +7,71 @@ internal static class CalculationRouteInspector
 {
     public static int Run(string root)
     {
-        var apiPath = Path.Combine(root, "..", "selection", "BITZER_API.exe");
-        apiPath = Path.GetFullPath(apiPath);
-        if (!File.Exists(apiPath))
+        var selection = Path.GetFullPath(Path.Combine(root, "..", "selection"));
+        if (!Directory.Exists(selection))
         {
-            Console.Error.WriteLine("Calculation route inspection: BITZER_API.exe not found.");
+            Console.Error.WriteLine("Calculation route inspection: selection directory not found.");
             return 20;
         }
 
         Assembly? Resolver(AssemblyLoadContext context, AssemblyName name)
         {
-            var candidates = new[]
+            foreach (var dir in new[] { selection, root })
             {
-                Path.Combine(Path.GetDirectoryName(apiPath)!, $"{name.Name}.dll"),
-                Path.Combine(root, $"{name.Name}.dll")
-            };
-            var candidate = candidates.FirstOrDefault(File.Exists);
-            return candidate is null ? null : context.LoadFromAssemblyPath(candidate);
+                var p = Path.Combine(dir, $"{name.Name}.dll");
+                if (File.Exists(p))
+                {
+                    try { return context.LoadFromAssemblyPath(p); } catch { }
+                }
+            }
+            return null;
         }
 
         AssemblyLoadContext.Default.Resolving += Resolver;
         try
         {
-            var asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(apiPath);
-            var controller = asm.GetTypes().FirstOrDefault(t =>
-                string.Equals(t.Name, "CalculationController", StringComparison.Ordinal));
+            var candidates = Directory.EnumerateFiles(selection, "*.dll", SearchOption.TopDirectoryOnly)
+                .Where(IsManaged)
+                .ToArray();
+
+            Type? controller = null;
+            Assembly? owner = null;
+            foreach (var path in candidates)
+            {
+                try
+                {
+                    var asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+                    var type = SafeTypes(asm).FirstOrDefault(t =>
+                        string.Equals(t.Name, "CalculationController", StringComparison.Ordinal));
+                    if (type is not null) { controller = type; owner = asm; break; }
+                }
+                catch { }
+            }
 
             if (controller is null)
             {
-                Console.Error.WriteLine("Calculation route inspection: CalculationController not found.");
+                Console.Error.WriteLine($"Calculation route inspection: CalculationController not found in {candidates.Length} managed DLL(s).");
+                Console.Error.WriteLine("Next step: inspect runtime endpoint metadata instead of guessing URL paths.");
                 return 21;
             }
 
+            Console.WriteLine($"Assembly: {owner!.GetName().Name}");
             Console.WriteLine($"Controller: {controller.FullName}");
-            PrintRouteAttributes("Controller route", controller.GetCustomAttributesData());
+            PrintAttributes("Controller", controller.GetCustomAttributesData());
 
-            var methods = controller.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
-                .Where(m => m.Name.Contains("Result", StringComparison.OrdinalIgnoreCase)
-                         || m.Name.Contains("Calcul", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(m => m.Name)
-                .ToArray();
-
-            foreach (var method in methods)
+            foreach (var method in controller.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                         .OrderBy(m => m.Name))
             {
                 Console.WriteLine($"Method: {method.Name}");
-                PrintRouteAttributes("  Attribute", method.GetCustomAttributesData());
+                PrintAttributes("  Attribute", method.GetCustomAttributesData());
                 foreach (var p in method.GetParameters())
                     Console.WriteLine($"  Parameter: {p.Name} : {p.ParameterType.FullName}");
                 Console.WriteLine($"  Returns: {method.ReturnType.FullName}");
             }
 
             Console.WriteLine("Calculation route inspection: complete");
-            Console.WriteLine("Safety: metadata only; no HTTP request; no database opened; no calculation invoked.");
+            Console.WriteLine("Safety: managed metadata only; BITZER_API.exe not loaded; no HTTP request; no calculation invoked.");
             return 0;
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            Console.Error.WriteLine("Calculation route inspection: dependency load failure.");
-            foreach (var e in ex.LoaderExceptions.Where(e => e is not null).Take(5))
-                Console.Error.WriteLine($"  {e!.GetType().Name}: {e.Message}");
-            return 22;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Calculation route inspection failed: {ex.GetType().Name}: {ex.Message}");
-            return 23;
         }
         finally
         {
@@ -79,17 +79,29 @@ internal static class CalculationRouteInspector
         }
     }
 
-    private static void PrintRouteAttributes(string label, IEnumerable<CustomAttributeData> attrs)
+    private static bool IsManaged(string path)
+    {
+        try { _ = AssemblyName.GetAssemblyName(path); return true; }
+        catch { return false; }
+    }
+
+    private static IEnumerable<Type> SafeTypes(Assembly asm)
+    {
+        try { return asm.GetTypes(); }
+        catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t is not null)!; }
+        catch { return Array.Empty<Type>(); }
+    }
+
+    private static void PrintAttributes(string label, IEnumerable<CustomAttributeData> attrs)
     {
         foreach (var a in attrs)
         {
-            var name = a.AttributeType.Name;
-            if (!name.Contains("Route", StringComparison.OrdinalIgnoreCase)
-                && !name.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
+            var n = a.AttributeType.Name;
+            if (!n.Contains("Route", StringComparison.OrdinalIgnoreCase) &&
+                !n.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
                 continue;
-
             var args = string.Join(", ", a.ConstructorArguments.Select(x => x.Value?.ToString() ?? "null"));
-            Console.WriteLine($"{label}: {name}({args})");
+            Console.WriteLine($"{label}: {n}({args})");
         }
     }
 }
