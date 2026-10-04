@@ -14,6 +14,7 @@ else{
  Console.WriteLine($"TYPE {nt.FullName} | ASM {nt.Assembly.Location}");
  var hm=nt.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static).FirstOrDefault(x=>x.Name=="HHK_Design");
  Dump(hm);
+ if(hm!=null){var native=Find(hm,"Native_Call_HHK_Design","BitzerNative.BitzerNative");Console.WriteLine("NATIVE CALL HHK DESIGN");Dump(native); if(native is MethodInfo mi){var di=mi.GetCustomAttributesData();foreach(var a in di)Console.WriteLine($" ATTRIBUTE {a.AttributeType.FullName} | {string.Join(", ",a.ConstructorArguments.Select(x=>x.Value))}");}}
 }
 Console.WriteLine("BITZERDLL MEMBERS");foreach(var f in bf.GetFields(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static).Where(x=>x.Name.Contains("Bitzer",StringComparison.OrdinalIgnoreCase)||x.FieldType.FullName?.Contains("IBitzer")==true))Console.WriteLine($"FIELD {f.FieldType.FullName} {f.Name}");Console.WriteLine("Safety: metadata/IL only; getter not invoked; no calculation executed.");return 0;}catch(Exception e){Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");return 82;}}
 static void Dump(MethodBase? m){if(m==null){Console.WriteLine("METHOD <not found>");return;}Console.WriteLine($"METHOD {m.DeclaringType?.FullName}.{m.Name} | {m}");var b=m.GetMethodBody();if(b==null){Console.WriteLine(" BODY <none/native/external>");return;}foreach(var x in D(m))Console.WriteLine($" IL_{x.Item1:X4}: {x.Item2.Name} {x.Item3}");}
