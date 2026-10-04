@@ -38,7 +38,7 @@ internal static class DesktopDbOpenProbe
             Console.WriteLine("Stage: factory_created");
             if (factory is null) return Fail("factory_create_failed");
 
-            var setup = factoryType.GetMethod("SetupSqliteDesktop", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var setup = factoryType.GetMethod("SetupSqliteDesktop", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
             if (setup is null) return Fail("SetupSqliteDesktop_missing");
 
             Console.WriteLine("BITZER desktop DB bootstrap: invoking");
