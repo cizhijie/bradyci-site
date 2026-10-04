@@ -12,8 +12,8 @@ internal static class DesktopExeConfigScanner
     {
         var installRoot = Directory.GetParent(platformRoot)?.FullName;
         if (string.IsNullOrWhiteSpace(installRoot)) return Fail("install_root_missing");
-        var exe = Path.Combine(installRoot, "BitzerSoftware.exe");
-        if (!File.Exists(exe)) return Fail("BitzerSoftware.exe_missing");
+        var exe = Path.Combine(installRoot, "selection", "BITZER_API.exe");
+        if (!File.Exists(exe)) return Fail("BITZER_API.exe_missing");
 
         using var stream = File.OpenRead(exe);
         using var pe = new PEReader(stream);
@@ -43,7 +43,7 @@ internal static class DesktopExeConfigScanner
                         var token = BitConverter.ToInt32(il, i + 1);
                         var handle = MetadataTokens.UserStringHandle(token & 0x00FFFFFF);
                         if (!string.Equals(reader.GetUserString(handle), Needle, StringComparison.OrdinalIgnoreCase)) continue;
-                        Console.WriteLine("Executable config key reference method: " + typeName + "." + reader.GetString(method.Name));
+                        Console.WriteLine("BITZER_API config key reference method: " + typeName + "." + reader.GetString(method.Name));
                         hits++;
                     }
                     catch { }
@@ -51,14 +51,14 @@ internal static class DesktopExeConfigScanner
             }
         }
 
-        Console.WriteLine("Executable reference method count: " + hits);
+        Console.WriteLine("BITZER_API reference method count: " + hits);
         Console.WriteLine("Safety: method names only; no configuration or encryption values are read.");
         return hits == 0 ? 29 : 0;
     }
 
     private static int Fail(string reason)
     {
-        Console.WriteLine("Executable config scan: " + reason);
+        Console.WriteLine("BITZER_API config scan: " + reason);
         return 30;
     }
 }
