@@ -16,7 +16,7 @@ internal static class CalculationHhkIlSequenceInspector
    Console.WriteLine("CalculationHHK.CalculateSingle IL sequence: complete");Console.WriteLine("Safety: IL metadata only; no method invoked, database, HTTP, config values, services, or calculation.");return 0;
   }catch(Exception e){Console.Error.WriteLine($"{e.GetType().Name}: {e.Message}");return 63;}
  }
- static bool IsRelevant(string s)=>new[]{"i_CC","i_Method","i_OP","i_FCMV","hhkDesign","HHK","BitzerRemote","Input_","Output_"}.Any(x=>s.Contains(x,StringComparison.OrdinalIgnoreCase));
+ static bool IsRelevant(string s)=>!string.IsNullOrEmpty(s) && (s.StartsWith("Bitzer.",StringComparison.OrdinalIgnoreCase) || s.StartsWith("BitzerRemote.",StringComparison.OrdinalIgnoreCase) || new[]{"i_CC","i_Method","i_OP","i_FCMV","hhkDesign","Input_","Output_"}.Any(x=>s.Contains(x,StringComparison.OrdinalIgnoreCase)));
  static bool IsConst(OpCode o)=>o.Name!=null&&(o.Name.StartsWith("ldc.i4",StringComparison.Ordinal)||o.Name=="ldc.i8"||o.Name=="ldc.r4"||o.Name=="ldc.r8");
  static int Size(OperandType o,byte[]b,int p)=>o switch{OperandType.InlineNone=>0,OperandType.ShortInlineBrTarget or OperandType.ShortInlineI or OperandType.ShortInlineVar=>1,OperandType.InlineVar=>2,OperandType.InlineI or OperandType.InlineBrTarget or OperandType.InlineField or OperandType.InlineMethod or OperandType.InlineSig or OperandType.InlineString or OperandType.InlineTok or OperandType.InlineType or OperandType.ShortInlineR=>4,OperandType.InlineI8 or OperandType.InlineR=>8,OperandType.InlineSwitch=>4+4*BitConverter.ToInt32(b,p),_=>-1};
 }
