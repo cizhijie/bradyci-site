@@ -22,7 +22,18 @@ internal static class HhkFirstRealCall
     foreach(var ctor in t.GetConstructors(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)) Console.WriteLine(" CTOR "+ctor);
     foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance|BindingFlags.DeclaredOnly).Where(x=>x.Name.Contains("Calculation",StringComparison.OrdinalIgnoreCase)||x.Name.Contains("MapToAPIinput",StringComparison.OrdinalIgnoreCase))) Console.WriteLine(" ENTRY "+m+" static="+m.IsStatic);
    }
-   Console.WriteLine("Preflight complete; no calculation invoked in this pass.");
+   var dtoType=a.GetType("Bitzer.Selection.Platform.HHK.Inputs.HHKInputsDto",true)!;
+   var mapperType=a.GetType("Bitzer.Selection.Platform.HHK.Inputs.HHKInputsMapper",true)!;
+   var dto=Activator.CreateInstance(dtoType)!;
+   void Set(string n,object? v){var pr=dtoType.GetProperty(n)!;pr.SetValue(dto,v);}
+   Set("i_CC",0); Set("i_CR",100f); Set("i_FI",0); Set("i_Method",0); Set("i_OP",0);
+   Set("i_Ref","R404A"); Set("i_T0",-10d); Set("i_ProductTypes",new[]{"2KES-05Y"});
+   var mapper=Activator.CreateInstance(mapperType)!;
+   var map=mapperType.GetMethod("MapToAPIinput",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)!;
+   var api=map.Invoke(mapper,new[]{dto})!;
+   Console.WriteLine("MAPPED API INPUT");
+   foreach(var pr in api.GetType().GetProperties(BindingFlags.Public|BindingFlags.Instance).OrderBy(x=>x.Name)){object? v=null;try{v=pr.GetValue(api);}catch{} Console.WriteLine(" API "+pr.Name+"="+(v is Array ar?string.Join(",",ar.Cast<object?>()):v));}
+   Console.WriteLine("Mapper executed; calculation/native call still not invoked.");
    return 0;
   }catch(Exception e){Console.Error.WriteLine(e.GetType().Name+": "+e.Message);return 88;}
   finally{AssemblyLoadContext.Default.Resolving-=Resolve;}
