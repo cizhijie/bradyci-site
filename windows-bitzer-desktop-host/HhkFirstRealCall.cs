@@ -16,7 +16,8 @@ internal static class HhkFirstRealCall
    var a=AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
    foreach(var t in SafeTypes(a).Where(x=>(x.FullName??"").Contains("HHKModuleConfig")||(x.FullName??"").Contains("HHKInputsDto")||(x.FullName??"").Contains("HHKInputsMapper")) )
    {
-    Console.WriteLine("TYPE "+t.FullName);
+    Console.WriteLine("TYPE "+t.FullName+" class="+t.IsClass+" abstract="+t.IsAbstract+" base="+t.BaseType?.FullName);
+    foreach(var ctor in t.GetConstructors(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly)) Console.WriteLine(" CTOR "+ctor);
     foreach(var prop in t.GetProperties(BindingFlags.Public|BindingFlags.Instance).Where(x=>x.CanWrite).OrderBy(x=>x.Name)) Console.WriteLine(" PROP "+prop.PropertyType.FullName+" "+prop.Name);
     foreach(var ctor in t.GetConstructors(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)) Console.WriteLine(" CTOR "+ctor);
     foreach(var m in t.GetMethods(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance|BindingFlags.DeclaredOnly).Where(x=>x.Name.Contains("Calculation",StringComparison.OrdinalIgnoreCase)||x.Name.Contains("MapToAPIinput",StringComparison.OrdinalIgnoreCase))) Console.WriteLine(" ENTRY "+m+" static="+m.IsStatic);
