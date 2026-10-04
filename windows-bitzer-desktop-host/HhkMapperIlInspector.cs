@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.Loader;
 
 namespace Brady.BitzerDesktopHost;
@@ -30,11 +31,29 @@ internal static class HhkMapperIlInspector
                     Console.WriteLine("  Returns: " + (m.ReturnType.FullName ?? m.ReturnType.Name));
                     foreach (var p in m.GetParameters())
                         Console.WriteLine($"  Parameter: {p.Name} : {p.ParameterType.FullName}");
+                    var il = m.GetMethodBody()?.GetILAsByteArray();
+                    if (il != null)
+                    {
+                        for (int i = 0; i + 4 < il.Length; i++)
+                        {
+                            int token = BitConverter.ToInt32(il, i + 1);
+                            try
+                            {
+                                var member = m.Module.ResolveMember(token, m.DeclaringType?.GetGenericArguments(), m.GetGenericArguments());
+                                var s = member?.ToString() ?? "";
+                                if (s.Contains("i_") || s.Contains("Series") || s.Contains("Motor") || s.Contains("Frequency") ||
+                                    s.Contains("Voltage") || s.Contains("Refriger") || s.Contains("Operating") || s.Contains("Capacity") ||
+                                    s.Contains("Temperature") || s.Contains("Flags"))
+                                    Console.WriteLine($"  IL_REF @{i:X4}: {s}");
+                            }
+                            catch { }
+                        }
+                    }
                 }
             }
 
-            Console.WriteLine("HHK mapper inspection: complete");
-            Console.WriteLine("Safety: reflection metadata only; no database, DTO values, services, or calculation.");
+            Console.WriteLine("HHK mapper IL inspection: complete");
+            Console.WriteLine("Safety: reflection/IL metadata only; no database, DTO values, services, or calculation.");
             return 0;
         }
         catch (Exception ex)
