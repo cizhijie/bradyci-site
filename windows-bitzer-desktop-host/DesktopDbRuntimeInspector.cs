@@ -41,6 +41,14 @@ internal static class DesktopDbRuntimeInspector
                     Console.WriteLine("  " + file);
             }
 
+            Console.WriteLine("Desktop config keys (values hidden):");
+            foreach (var file in Directory.EnumerateFiles(root, "appsettings*.json", SearchOption.TopDirectoryOnly))
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file));
+                Console.WriteLine("  " + Path.GetFileName(file));
+                foreach (var p in doc.RootElement.EnumerateObject()) Console.WriteLine("    " + p.Name);
+            }
+
             Console.WriteLine("Desktop DB inspection: metadata_ready");
             Console.WriteLine("Safety: no configuration values printed; no database opened; no connection created.");
             return 0;
