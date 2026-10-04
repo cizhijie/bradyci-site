@@ -31,7 +31,12 @@ internal static class Program
         var root = Path.GetFullPath(args[1]);
         if (!Directory.Exists(root)) return Fail(4, "platform_directory_not_found");
 
-        if (string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase))\n        {\n            return HhkRuntimeInspector.Run(root);\n        }\n\n        var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
+        if (string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase))
+        {
+            return HhkRuntimeInspector.Run(root);
+        }
+
+        var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
 
         Assembly? Resolver(AssemblyLoadContext context, AssemblyName name)
