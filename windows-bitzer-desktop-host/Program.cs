@@ -22,16 +22,16 @@ internal static class Program
 
         if (!OperatingSystem.IsWindows()) return Fail(2, "windows_required");
         if (Environment.Is64BitProcess) return Fail(3, "x86_process_required");
-        if (args.Length != 2 || !string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase))
+        if (args.Length != 2 || !(string.Equals(args[0], "--probe", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase)))
         {
-            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe <BITZER-platform-directory>");
+            Console.Error.WriteLine("Usage: Brady.BitzerDesktopHost.exe --probe|--inspect-hhk-runtime <BITZER-platform-directory>");
             return 1;
         }
 
         var root = Path.GetFullPath(args[1]);
         if (!Directory.Exists(root)) return Fail(4, "platform_directory_not_found");
 
-        var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
+        if (string.Equals(args[0], "--inspect-hhk-runtime", StringComparison.OrdinalIgnoreCase))\n        {\n            return HhkRuntimeInspector.Run(root);\n        }\n\n        var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
 
         Assembly? Resolver(AssemblyLoadContext context, AssemblyName name)
