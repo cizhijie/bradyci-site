@@ -4,7 +4,8 @@ using System.Runtime.Loader;
 namespace Brady.BitzerDesktopHost;
 internal static class HhkNativeContractInspector{
  public static int Run(string root){
-  var dir=Path.Combine(Path.GetTempPath(),"brady-bitzer-inspect","hhk-candidates"), dll=Path.Combine(dir,"BitzerRemote.dll");
+  var dir=Path.Combine(Path.GetTempPath(),"brady-bitzer-inspect","hhk-candidates");
+  var dll=Path.Combine(dir,"BitzerRemote.dll");
   if(!File.Exists(dll)){Console.Error.WriteLine("BitzerRemote.dll not found.");return 83;}
   AssemblyLoadContext.Default.Resolving+=(c,n)=>{foreach(var d in new[]{dir,Path.GetFullPath(Path.Combine(root,"..","selection")),root}){var p=Path.Combine(d,n.Name+".dll");if(File.Exists(p))try{return c.LoadFromAssemblyPath(p);}catch{}}return null;};
   try{
