@@ -70,7 +70,8 @@ internal static class Program
         if (string.Equals(args[0], "--inspect-hhk-legacy-assignments", StringComparison.OrdinalIgnoreCase)) return HhkLegacyAssignmentInspector.Run(root);
         if (string.Equals(args[0], "--inspect-extracted-hhk-bridge", StringComparison.OrdinalIgnoreCase)) return ExtractedHhkBridgeInspector.Run(root);
         if (string.Equals(args[0], "--inspect-hhk-native-bridge-focused", StringComparison.OrdinalIgnoreCase)) return HhkNativeBridgeFocusedInspector.Run(root);
-        if (string.Equals(args[0], "--inspect-hhk-calculatesingle-gap", StringComparison.OrdinalIgnoreCase)) return HhkCalculateSingleGapInspector.Run(root);\n        if (string.Equals(args[0], "--inspect-hhk-invoke-path", StringComparison.OrdinalIgnoreCase)) return HhkInvokePathInspector.Run(root);
+        if (string.Equals(args[0], "--inspect-hhk-calculatesingle-gap", StringComparison.OrdinalIgnoreCase)) return HhkCalculateSingleGapInspector.Run(root);
+        if (string.Equals(args[0], "--inspect-hhk-invoke-path", StringComparison.OrdinalIgnoreCase)) return HhkInvokePathInspector.Run(root);
 
         var missing = RequiredAssemblies.Where(x => !File.Exists(Path.Combine(root, x))).ToArray();
         if (missing.Length != 0) return Fail(5, $"missing_assemblies: {string.Join(", ", missing)}");
