@@ -44,7 +44,7 @@
 <label><span>Refrigerant</span><select name="refrigerant"><option value="">Not sure</option><option>R404A</option><option>R507A</option><option>R448A / R449A</option><option>R22</option><option>CO₂ / R744</option><option>Other</option></select></label>
 <label class="full"><span>Message / Other Requirements</span><textarea name="message" rows="5" placeholder="Cooling/freezing time, local summer temperature, power supply, preferred compressor brand, drawings or any other information."></textarea></label>
 </div>
-<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
 <div class="form-actions"><button class="btn primary" type="submit" id="submit-btn">Submit Project Details</button><p class="note" id="form-status">Your inquiry will be sent to cizhijie@gmail.com.</p></div>
 </form>
 <aside class="contact-side">
@@ -61,7 +61,7 @@ const statusEl=document.getElementById('form-status');
 const submitBtn=document.getElementById('submit-btn');
 form.addEventListener('submit',async(e)=>{
  e.preventDefault();
- if(form.website.value)return;
+ if(form.website.value || form.botcheck.checked)return;
  submitBtn.disabled=true; submitBtn.textContent='Sending…'; statusEl.textContent='Sending your project details…';
  const data=Object.fromEntries(new FormData(form).entries());
  try{
@@ -71,9 +71,9 @@ form.addEventListener('submit',async(e)=>{
   const res=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:JSON.stringify(data)});
   const out=await res.json().catch(()=>({}));
   if(!res.ok)throw new Error(out.error||'Unable to send inquiry.');
-  form.reset(); statusEl.textContent='Thank you. Your project details have been received. We will review them and reply by email.';
+  form.reset(); statusEl.textContent='Thank you — your project details have been received. We will review your refrigeration requirements and reply by email.'; statusEl.classList.add('success');
  }catch(err){
-  statusEl.textContent='We could not send the form. Please email cizhijie@gmail.com directly.';
+  statusEl.textContent='We could not send the form. Please email cizhijie@gmail.com directly.'; statusEl.classList.remove('success');
  }finally{submitBtn.disabled=false;submitBtn.textContent='Submit Project Details';}
 });
 </script>
