@@ -1,0 +1,27 @@
+name: Submit changed pages to IndexNow
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Notify IndexNow
+        shell: bash
+        run: |
+          KEY="bradyci-indexnow-20261007-a8f3c2d91e6b47f5"
+          HOST="bradyci.com"
+          KEY_LOCATION="https://bradyci.com/bradyci-indexnow-20261007-a8f3c2d91e6b47f5.txt"
+          BASE="https://bradyci.com/"
+          URLS=$(git diff --name-only HEAD^ HEAD | awk '/\.html$/ {gsub(/index\.html$/,""); print "'"$BASE"'" $0}' | sed 's#\.html$##' | head -100)
+          [ -n "$URLS" ] || exit 0
+          JSON=$(printf '%s\n' "$URLS" | python3 -c 'import sys,json; print(json.dumps({"host":"bradyci.com","key":"bradyci-indexnow-20261007-a8f3c2d91e6b47f5","keyLocation":"https://bradyci.com/bradyci-indexnow-20261007-a8f3c2d91e6b47f5.txt","urlList":[x.strip() for x in sys.stdin if x.strip()]}))')
+          curl --fail-with-body -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data "$JSON"
