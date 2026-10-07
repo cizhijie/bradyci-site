@@ -65,12 +65,15 @@ form.addEventListener('submit',async(e)=>{
  submitBtn.disabled=true; submitBtn.textContent='Sending…'; statusEl.textContent='Sending your project details…';
  const data=Object.fromEntries(new FormData(form).entries());
  try{
-  const res=await fetch('/api/refrigeration-inquiry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
+  data.access_key='d681ecae-bb75-478e-b93b-818e548024f7';
+  data.subject='New Refrigeration Inquiry | BradyCi.com';
+  data.from_name='BradyCi.com Refrigeration Inquiry';
+  const res=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:JSON.stringify(data)});
   const out=await res.json().catch(()=>({}));
   if(!res.ok)throw new Error(out.error||'Unable to send inquiry.');
   form.reset(); statusEl.textContent='Thank you. Your project details have been received. We will review them and reply by email.';
  }catch(err){
-  statusEl.textContent='The online form is not connected yet. Please email cizhijie@gmail.com directly for now.';
+  statusEl.textContent='We could not send the form. Please email cizhijie@gmail.com directly.';
  }finally{submitBtn.disabled=false;submitBtn.textContent='Submit Project Details';}
 });
 </script>
