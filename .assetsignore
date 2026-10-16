@@ -6,3 +6,5 @@ preview-server.cjs
 wrangler.jsonc
 node_modules
 node_modules/**
+.wrangler
+.wrangler/**

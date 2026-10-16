@@ -4,5 +4,6 @@
   "assets": {
     "directory": ".",
     "html_handling": "none"
-  }
+  },
+  "previews": {}
 }
