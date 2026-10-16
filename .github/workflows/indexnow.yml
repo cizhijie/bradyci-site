@@ -42,5 +42,16 @@ jobs:
             echo "BAIDU_PUSH_TOKEN secret is not set; skipping Baidu push."
             exit 0
           fi
-          curl --fail-with-body -sS -H "Content-Type: text/plain" --data-binary @urls.txt \
-            "http://data.zz.baidu.com/urls?site=https://bradyci.com&token=${BAIDU_PUSH_TOKEN}"
+          # Baidu gives new sites a small daily quota, so push one URL at a
+          # time (sitemap order, home page first) and stop when it runs out.
+          while read -r url; do
+            [ -n "$url" ] || continue
+            RESP=$(curl -sS -H "Content-Type: text/plain" --data-binary "$url" \
+              "http://data.zz.baidu.com/urls?site=https://bradyci.com&token=${BAIDU_PUSH_TOKEN}")
+            echo "$url -> $RESP"
+            case "$RESP" in
+              *'"success"'*) ;;
+              *'over quota'*) echo "::warning::Baidu daily quota used up; remaining URLs will go in a later run."; break ;;
+              *) echo "::error::Baidu push failed: $RESP"; exit 1 ;;
+            esac
+          done < urls.txt
