@@ -1,8 +1,10 @@
-name: Submit changed pages to IndexNow
+name: Submit changed pages to search engines
 
 on:
   push:
     branches: [main]
+  # Run by hand from the Actions tab to submit every URL in sitemap.xml.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,14 +16,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      - name: Collect URLs
+        shell: bash
+        run: |
+          BASE="https://bradyci.com/"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's#</\?loc>##g' > urls.txt
+          else
+            git diff --name-only HEAD^ HEAD | awk '/\.html$/ {gsub(/index\.html$/,""); print "'"$BASE"'" $0}' | head -100 > urls.txt
+          fi
+          cat urls.txt
       - name: Notify IndexNow
         shell: bash
         run: |
-          KEY="bradyci-indexnow-20261007-a8f3c2d91e6b47f5"
-          HOST="bradyci.com"
-          KEY_LOCATION="https://bradyci.com/bradyci-indexnow-20261007-a8f3c2d91e6b47f5.txt"
-          BASE="https://bradyci.com/"
-          URLS=$(git diff --name-only HEAD^ HEAD | awk '/\.html$/ {gsub(/index\.html$/,""); print "'"$BASE"'" $0}' | head -100)
-          [ -n "$URLS" ] || exit 0
-          JSON=$(printf '%s\n' "$URLS" | python3 -c 'import sys,json; print(json.dumps({"host":"bradyci.com","key":"bradyci-indexnow-20261007-a8f3c2d91e6b47f5","keyLocation":"https://bradyci.com/bradyci-indexnow-20261007-a8f3c2d91e6b47f5.txt","urlList":[x.strip() for x in sys.stdin if x.strip()]}))')
+          [ -s urls.txt ] || exit 0
+          JSON=$(python3 -c 'import sys,json; print(json.dumps({"host":"bradyci.com","key":"bradyci-indexnow-20261007-a8f3c2d91e6b47f5","keyLocation":"https://bradyci.com/bradyci-indexnow-20261007-a8f3c2d91e6b47f5.txt","urlList":[x.strip() for x in open("urls.txt") if x.strip()]}))')
           curl --fail-with-body -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data "$JSON"
+      - name: Push to Baidu
+        shell: bash
+        env:
+          BAIDU_PUSH_TOKEN: ${{ secrets.BAIDU_PUSH_TOKEN }}
+        run: |
+          [ -s urls.txt ] || exit 0
+          if [ -z "$BAIDU_PUSH_TOKEN" ]; then
+            echo "BAIDU_PUSH_TOKEN secret is not set; skipping Baidu push."
+            exit 0
+          fi
+          curl --fail-with-body -sS -H "Content-Type: text/plain" --data-binary @urls.txt \
+            "http://data.zz.baidu.com/urls?site=https://bradyci.com&token=${BAIDU_PUSH_TOKEN}"
